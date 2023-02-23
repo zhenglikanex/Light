@@ -2,9 +2,7 @@
 #include "d12_device.h"
 
 #include <chrono>
-#include <iostream>
 #include "d3dcommon.h"
-#include "auto_timer.h"
 #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
 #pragma comment(lib,"dxguid.lib")
 #endif
@@ -89,17 +87,11 @@ namespace light::rhi
 	CommandListHandle D12CommandQueue::GetCommandList()
 	{
 		Handle<CommandList> command_list = nullptr;
-		//std::cout << available_command_lists_.Size() << std::endl;
+		
 		if(!available_command_lists_.TryPop(command_list))
 		{
-			//std::cout << "new commandlist\n";
-
-			auto str ="new commandlist" + std::to_string(available_command_lists_.Size()) + "  +  " + std::to_string(flight_command_lists_.Size());
-			AutoTimer timer(str);
 			command_list = MakeHandle<D12CommandList>(device_, command_list_type_,this);
 		}
-
-		//std::cout << std::ios::hex << command_list.Get() << std::endl;
 
 		return command_list;
 	}

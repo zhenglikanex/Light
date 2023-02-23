@@ -1,7 +1,10 @@
-#include "game.h"
+#include "../rhi_base.h"
 
 #include <thread>
 #include <chrono>
+
+#undef max
+#undef min
 
 using namespace light;
 using namespace light::rhi;

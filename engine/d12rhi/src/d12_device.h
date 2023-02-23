@@ -31,7 +31,7 @@ namespace light::rhi
 	class D12Device final : public Device
 	{
 	public:
-		D12Device();
+		explicit D12Device(size_t hwnd);
 
 		~D12Device() override;
 
@@ -39,9 +39,9 @@ namespace light::rhi
 
 		ID3D12Device* GetNative() noexcept { return device_; }
 
-		SwapChainHandle CreateSwapChian(HWND hwnd);
+		SwapChainHandle CreateSwapChain() override;
 
-		ShaderHandle CreateShader(ShaderType type, const std::string& filename,const std::string& entrypoint, const std::string& target) override;
+		ShaderHandle CreateShader(ShaderType type, const std::string& filename,const std::string& entry_point, const std::string& target) override;
 
 		BufferHandle CreateBuffer(BufferDesc desc) override;
 
@@ -72,10 +72,16 @@ namespace light::rhi
 
 		uint32_t GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const;
 	private:
+		HWND hwnd_;
 		Handle<ID3D12Device> device_;
 		Microsoft::WRL::ComPtr<IDXGIFactory5> dxgi_factory_;
 		std::array<Handle<D12CommandQueue>, static_cast<size_t>(CommandListType::kCopy) + 1> queues_;
 		std::unordered_map<size_t, RootSignature*> root_signature_cache_;
 		std::array<std::unique_ptr<DescriptorAllocator>, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES> descriptor_allocators_;
 	};
+}
+
+extern "C" inline __declspec(dllexport)  light::rhi::Device* CreateDevice(size_t hwnd)
+{
+	return new light::rhi::D12Device(hwnd);
 }

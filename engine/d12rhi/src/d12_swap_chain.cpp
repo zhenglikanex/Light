@@ -7,8 +7,6 @@
 
 #include <wrl.h>
 
-#include "auto_timer.h"
-
 using Microsoft::WRL::ComPtr;
 
 namespace light::rhi

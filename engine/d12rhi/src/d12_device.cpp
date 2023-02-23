@@ -7,7 +7,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // For HRESULT
 #include <comdef.h> // For _com_error class (used to decode HR result codes).
-#include "d3dx12.h"
 #include <D3Dcompiler.h>
 
 namespace light::rhi
@@ -26,7 +25,8 @@ namespace light::rhi
 		}
 	}
 
-	D12Device::D12Device()
+	D12Device::D12Device(size_t hwnd)
+		: hwnd_(reinterpret_cast<HWND>(hwnd))
 	{
 #if defined(DEBUG) || defined(_DEBUG)
 		{
@@ -75,12 +75,12 @@ namespace light::rhi
 		Flush();
 	}
 
-	SwapChainHandle D12Device::CreateSwapChian(HWND hwnd)
+	SwapChainHandle D12Device::CreateSwapChain()
 	{
-		return MakeHandle<D12SwapChain>(this, hwnd);
+		return MakeHandle<D12SwapChain>(this, hwnd_);
 	}
 
-	ShaderHandle D12Device::CreateShader(ShaderType type, const std::string& filename, const std::string& entrypoint, const std::string& target)
+	ShaderHandle D12Device::CreateShader(ShaderType type, const std::string& filename, const std::string& entry_point, const std::string& target)
 	{
 		UINT compile_flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
@@ -93,7 +93,7 @@ namespace light::rhi
 		Handle<ID3DBlob> errors;
 		// todo:¼ÓÈëshader_macro
 		hr = D3DCompileFromFile(wfilename.c_str(),nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			entrypoint.c_str(), target.c_str(), compile_flags, 0, &byte_code, &errors);
+			entry_point.c_str(), target.c_str(), compile_flags, 0, &byte_code, &errors);
 
 		if (errors != nullptr)
 			OutputDebugStringA((char*)errors->GetBufferPointer());

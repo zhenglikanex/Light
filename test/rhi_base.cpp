@@ -1,14 +1,15 @@
-#include "game.h"
+#include "rhi_base.h"
 
 #ifdef _WIN32
 #include "Windows.h"
-#include "d3d12/d12_device.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #endif
 
-#include <auto_timer.h>
+#undef max
+#undef min
 
+using CreateDeviceFunc = light::rhi::Device* (*)(size_t);
 
 namespace light
 {
@@ -113,14 +114,21 @@ namespace light
 	bool Game::InitDeviceAndSwapChain()
 	{
 #ifdef _WIN32
-
+		
 		switch (params_.api) 
 		{
 		case rhi::GraphicsApi::kNone:
 			//device_ = nullptr;
 			break;
 		case rhi::GraphicsApi::kD3D12:
-			device_ = rhi::MakeHandle<rhi::D12Device>();
+		{
+			rhi_module_ = LoadLibrary(L"D12RHI.dll");
+			auto func = reinterpret_cast<CreateDeviceFunc>(GetProcAddress(rhi_module_, "CreateDevice"));
+			if (func)
+			{
+				device_ = func(reinterpret_cast<size_t>(glfwGetWin32Window(window_)));
+			}
+		}
 			break;
 		case rhi::GraphicsApi::kVulkan:
 			//device_ = nullptr;
@@ -135,10 +143,7 @@ namespace light
 			return false;
 		}
 
-		if(device_->GetGraphicsApi() == rhi::GraphicsApi::kD3D12)
-		{
-			swap_chain_ = rhi::CheckedCast<rhi::D12Device*>(device_.Get())->CreateSwapChian(glfwGetWin32Window(window_));
-		}
+		swap_chain_ = device_->CreateSwapChain();
 
 		if(!swap_chain_)
 		{

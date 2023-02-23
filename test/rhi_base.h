@@ -6,7 +6,13 @@
 #include "rhi/device.h"
 #include "rhi/swap_chain.h"
 
+#ifdef _WIN32
+#include "Windows.h"
+#endif
+
 #include "GLFW/glfw3.h"
+
+
 
 namespace light
 {
@@ -49,6 +55,7 @@ namespace light
 		bool InitDeviceAndSwapChain();
 
 	protected:
+		HMODULE rhi_module_;
 		GameParams params_;
 		GLFWwindow* window_;
 		rhi::DeviceHandle device_;

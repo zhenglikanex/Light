@@ -10,12 +10,13 @@ add_requires("glm")
 add_requires("spdlog")
 add_requires("glfw")
 
+add_defines("UNICODE")
+
+set_rundir(".")
+
 includes("engine")
 includes("game")
-
-if has_config("build_test") then
-    includes("test")
-end
+includes("test")
 
 
 --
