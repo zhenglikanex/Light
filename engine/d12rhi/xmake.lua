@@ -1,2 +1,7 @@
 target("D12RHI")
+    set_kind("shared")
+    add_deps("RHI")
+    add_files("**/*.cpp")
+    add_headerfiles("**/*.hpp")
+    add_headerfiles("**/*.h")
     set_group("engine")

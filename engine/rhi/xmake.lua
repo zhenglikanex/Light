@@ -1,0 +1,7 @@
+target("RHI")
+    set_kind("static")
+    add_headerfiles("**/*.h")
+    add_headerfiles("**/*.hpp")
+    add_files("**/*.cpp")
+    add_includedirs("include",{public = true})
+    set_group("engine")

@@ -11,6 +11,7 @@ add_requires("spdlog")
 add_requires("glfw")
 
 includes("engine")
+includes("game")
 
 if has_config("build_test") then
     includes("test")

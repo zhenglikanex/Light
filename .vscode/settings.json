@@ -1,6 +1,6 @@
 {
     "files.associations": {
-        "*.lua": "lua",
+        "*.lua": "xmake",
         "glm.hpp": "c"
     }
 }
