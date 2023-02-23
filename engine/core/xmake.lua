@@ -1,0 +1,8 @@
+target("Core")
+    set_kind("static")
+    add_packages("spdlog")
+    add_packages("glm")
+    add_files("src/*.cpp")
+    add_files("src/*.h")
+    add_files("src/*.hpp")
+    set_group("engine")

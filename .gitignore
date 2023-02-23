@@ -3,6 +3,15 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Xmake cache
+.xmake/
+build/
+
+# MacOS Cache
+.DS_Store
+
+vsxmake2022
+
 # User-specific files
 *.rsuser
 *.suo

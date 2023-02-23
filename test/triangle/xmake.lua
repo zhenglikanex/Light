@@ -1,0 +1,6 @@
+target("Triangle")
+    set_kind("binary")
+    add_files("*.h")
+    add_files("*.hpp")
+    add_files("*.cpp")
+    set_group("test")

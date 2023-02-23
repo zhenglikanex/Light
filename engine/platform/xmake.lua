@@ -1,0 +1,7 @@
+target("GlfwAppaction")
+    set_kind("static")
+    add_packages("glfw")
+    add_deps("Core")
+    add_files("src/*.cpp")
+    add_files("src/*.h")
+    add_files("src/*.hpp")
