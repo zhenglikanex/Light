@@ -6,9 +6,7 @@ set_languages("c++17")
 
 add_rules("mode.debug", "mode.release")
 
-add_requires("glm")
-add_requires("spdlog")
-add_requires("glfw")
+add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json")
 
 add_defines("UNICODE")
 
