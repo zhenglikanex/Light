@@ -3,12 +3,11 @@
 #include <vector>
 
 #include "rhi/command_list.h"
+#include "rhi/buffer.h"
 
 #include "upload_buffer.h"
 #include "resource_state_tracker.h"
 #include "dynamic_descriptor_heap.h"
-
-#include "d3dx12.h"
 
 namespace light::rhi
 {
@@ -55,19 +54,21 @@ namespace light::rhi
 		void SetStructuredBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer,
 			uint32_t offset, uint32_t byte_size, ResourceStates state_after) override;
 
-		void SetUnoderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer,
+		void SetUnorderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer,
 			uint32_t offset, ResourceStates state_after) override;
 
-		void SetUnoderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer,
+		void SetUnorderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer,
 			uint32_t offset, uint32_t byte_size, ResourceStates state_after) override;
 
 		void SetShaderResourceView(uint32_t parameter_index, uint32_t descriptor_offset, Texture* texture,
-			Format format, TextureDimension dimension, uint32_t mip_level, uint32_t num_mip_leves, uint32_t array_slice,
+			Format format, TextureDimension dimension, uint32_t mip_level, uint32_t num_mip_levels, uint32_t array_slice,
 			uint32_t num_array_slices, ResourceStates state_after) override;
 
 		void SetGraphicsPipeline(GraphicsPipeline* pso) override;
 
 		void SetPrimitiveTopology(PrimitiveTopology primitive_topology) override;
+
+		void SetVertexBuffers(const std::vector<BufferHandle>& buffers) override;
 
 		void SetVertexBuffer(uint32_t slot, Buffer* buffer) override;
 

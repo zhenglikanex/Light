@@ -194,6 +194,8 @@ namespace light::rhi
 				entry.command_list->Reset();
 				available_command_lists_.Push(entry.command_list);
 			}
+
+			std::this_thread::yield();
 		}
 	}
 }

@@ -5,10 +5,10 @@
 #include "types.h"
 #include "resource.h"
 #include "render_target.h"
+#include "buffer.h"
 
 namespace light::rhi
 {
-	class Buffer;
 	class Texture;
 	class GraphicsPipeline;
 	class CommandQueue;
@@ -60,14 +60,14 @@ namespace light::rhi
 
 		virtual void SetStructuredBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer, uint32_t offset, uint32_t byte_size, ResourceStates state_after = ResourceStates::kGenericRead) = 0;
 
-		virtual void SetUnoderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer, uint32_t offset = 0, ResourceStates state_after = ResourceStates::kUnorderedAccess) = 0;
+		virtual void SetUnorderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer, uint32_t offset = 0, ResourceStates state_after = ResourceStates::kUnorderedAccess) = 0;
 
-		virtual void SetUnoderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer, uint32_t offset, uint32_t byte_size, ResourceStates state_after = ResourceStates::kUnorderedAccess) = 0;
+		virtual void SetUnorderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset, Buffer* buffer, uint32_t offset, uint32_t byte_size, ResourceStates state_after = ResourceStates::kUnorderedAccess) = 0;
 
 		virtual void SetShaderResourceView(uint32_t parameter_index, uint32_t descriptor_offset, Texture* texture,
 			Format format = Format::UNKNOWN,
 			TextureDimension dimension = TextureDimension::kTexture2D,
-			uint32_t mip_level = 0, uint32_t num_mip_leves = -1,
+			uint32_t mip_level = 0, uint32_t num_mip_levels = -1,
 			uint32_t array_slice = 0, uint32_t num_array_slices = -1,
 			ResourceStates state_after = ResourceStates::kPixelShaderResource) = 0;
 
@@ -76,6 +76,8 @@ namespace light::rhi
 		virtual void SetGraphicsPipeline(GraphicsPipeline* pso) = 0;
 
 		virtual void SetPrimitiveTopology(PrimitiveTopology primitive_topology) = 0;
+
+		virtual void SetVertexBuffers(const std::vector<BufferHandle>& buffer) = 0;
 
 		virtual void SetVertexBuffer(uint32_t slot, Buffer* buffer) = 0;
 

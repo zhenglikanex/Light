@@ -6,6 +6,6 @@ target("Triangle")
     add_deps("D12RHI")
     add_packages("glfw")
     set_group("test")
-    add_defines("UNICODE")
+    
 
     

@@ -82,8 +82,8 @@ namespace light::rhi
 		d12_desc.DepthBias = desc.depth_bias;
 		d12_desc.SlopeScaledDepthBias = desc.slope_scaled_depth_bias;
 		d12_desc.DepthClipEnable = desc.depth_clip_enable;
-		d12_desc.MultisampleEnable = desc.multisample_enable;
-		d12_desc.AntialiasedLineEnable = desc.antialiased_line_enable;
+		d12_desc.MultisampleEnable = desc.multi_sample_enable;
+		d12_desc.AntialiasedLineEnable = desc.anti_aliased_line_enable;
 		d12_desc.ForcedSampleCount = desc.forced_sample_count;
 		d12_desc.ConservativeRaster = static_cast<D3D12_CONSERVATIVE_RASTERIZATION_MODE>(desc.conservative_raster);
 		return d12_desc;

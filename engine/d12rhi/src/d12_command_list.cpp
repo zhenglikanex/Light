@@ -219,13 +219,14 @@ namespace light::rhi
 			parameter_index, descriptor_offset, 1, d12_buffer->GetSBV(offset, byte_size));
 	}
 
-	void D12CommandList::SetUnoderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset,
+	void D12CommandList::SetUnorderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset,
 		Buffer* buffer, uint32_t offset, ResourceStates state_after)
 	{
-		SetUnoderedAccessBufferView(parameter_index, descriptor_offset, buffer, offset, buffer->GetDesc().size_in_bytes, state_after);
+		
+		SetUnorderedAccessBufferView(parameter_index, descriptor_offset, buffer, offset, buffer->GetDesc().size_in_bytes, state_after);
 	}
 
-	void D12CommandList::SetUnoderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset,
+	void D12CommandList::SetUnorderedAccessBufferView(uint32_t parameter_index, uint32_t descriptor_offset,
 		Buffer* buffer, uint32_t offset, uint32_t byte_size, ResourceStates state_after)
 	{
 		TrackResource(buffer);
@@ -238,7 +239,7 @@ namespace light::rhi
 	}
 
 	void D12CommandList::SetShaderResourceView(uint32_t parameter_index, uint32_t descriptor_offset, Texture* texture,
-		Format format, TextureDimension dimension, uint32_t mip_level, uint32_t num_mip_leves, uint32_t array_slice,
+		Format format, TextureDimension dimension, uint32_t mip_level, uint32_t num_mip_levels, uint32_t array_slice,
 		uint32_t num_array_slices, ResourceStates state_after)
 	{
 		TrackResource(texture);
@@ -248,7 +249,7 @@ namespace light::rhi
 		auto d12_texture = CheckedCast<D12Texture*>(texture);
 		dynamic_descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
 			parameter_index, descriptor_offset, 1,
-			d12_texture->GetSRV(format, dimension, mip_level, num_mip_leves, array_slice, num_array_slices));
+			d12_texture->GetSRV(format, dimension, mip_level, num_mip_levels, array_slice, num_array_slices));
 	}
 
 	void D12CommandList::SetGraphicsPipeline(GraphicsPipeline* pso)
@@ -257,12 +258,12 @@ namespace light::rhi
 		{
 			auto d12_pso = CheckedCast<D12GraphicsPipeline*>(pso);
 
-			auto root_sigature = d12_pso->GetRootSignature();
-			d3d12_command_list_->SetGraphicsRootSignature(root_sigature->GetNative());
+			auto root_signature = d12_pso->GetRootSignature();
+			d3d12_command_list_->SetGraphicsRootSignature(root_signature->GetNative());
 			
 			for (auto& dynamic_descriptor_heap : dynamic_descriptor_heaps_)
 			{
-				dynamic_descriptor_heap->ParseRootSignature(root_sigature);
+				dynamic_descriptor_heap->ParseRootSignature(root_signature);
 			}
 
 			d3d12_command_list_->SetPipelineState(d12_pso->GetNative());
@@ -274,6 +275,33 @@ namespace light::rhi
 	void D12CommandList::SetPrimitiveTopology(PrimitiveTopology primitive_topology)
 	{
 		d3d12_command_list_->IASetPrimitiveTopology(ConvertPrimitiveTopology(primitive_topology));
+	}
+
+	void D12CommandList::SetVertexBuffers(const std::vector<BufferHandle>& buffers)
+	{
+		std::vector<D3D12_VERTEX_BUFFER_VIEW> views(buffers.size());
+		
+
+		for(int i = 0;i<buffers.size();++i)
+		{
+			auto& buffer = buffers[i];
+			auto& view = views[i];
+
+			const BufferDesc& desc = buffer->GetDesc();
+
+			CHECK(desc.type == BufferType::kVertex, "bufferµÄType²»ÊÇVertexBuffer");
+
+			auto d12_buffer = CheckedCast<D12Buffer*>(buffer.Get());
+
+			TrackResource(buffer);
+			TransitionBarrier(buffer, ResourceStates::kVertexAndConstantBuffer);
+
+			view.BufferLocation = d12_buffer->GetNative()->GetGPUVirtualAddress();
+			view.SizeInBytes = desc.size_in_bytes;
+			view.StrideInBytes = desc.stride;
+		}
+
+		d3d12_command_list_->IASetVertexBuffers(0, static_cast<UINT>(views.size()), views.data());
 	}
 
 	void D12CommandList::SetVertexBuffer(uint32_t slot, Buffer* buffer)

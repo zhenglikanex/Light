@@ -31,6 +31,7 @@ namespace light::rhi
 #if defined(DEBUG) || defined(_DEBUG)
 		{
 			Handle<ID3D12Debug> debug_controller;
+			
 			ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller)));
 			debug_controller->EnableDebugLayer();
 		}
@@ -58,8 +59,8 @@ namespace light::rhi
 		}
 
 		queues_[static_cast<size_t>(CommandListType::kDirect)] = MakeHandle<D12CommandQueue>(this, CommandListType::kDirect);
-		/*queues_[static_cast<size_t>(CommandListType::kCompute)] = MakeHandle<D12CommandQueue>(this, CommandListType::kCompute);
-		queues_[static_cast<size_t>(CommandListType::kCopy)] = MakeHandle<D12CommandQueue>(this, CommandListType::kCopy);*/
+		queues_[static_cast<size_t>(CommandListType::kCompute)] = MakeHandle<D12CommandQueue>(this, CommandListType::kCompute);
+		queues_[static_cast<size_t>(CommandListType::kCopy)] = MakeHandle<D12CommandQueue>(this, CommandListType::kCopy);
 
 		ThrowIfFailed(device_->GetDeviceRemovedReason());
 

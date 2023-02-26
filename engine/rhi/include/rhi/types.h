@@ -244,8 +244,8 @@ namespace light::rhi
 		float depth_bias_clamp = 0.0;
 		float slope_scaled_depth_bias = 0.0f;
 		bool depth_clip_enable = true;
-		bool multisample_enable = false;
-		bool antialiased_line_enable = false;
+		bool multi_sample_enable = false;
+		bool anti_aliased_line_enable = false;
 		uint32_t forced_sample_count = 0;
 		ConservativeRasterizationMode conservative_raster = ConservativeRasterizationMode::kOff;
 	};

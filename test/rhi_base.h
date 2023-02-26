@@ -28,7 +28,7 @@ namespace light
 	public:
 		explicit Game(const GameParams& desc);
 
-		virtual ~Game() = 0 {};
+		virtual ~Game() = 0 {}
 
 		Game(const Game&) = delete;
 		Game(Game&&) = delete;
