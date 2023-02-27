@@ -1,6 +1,7 @@
 #include "d12_command_list.h"
 
 #include <array>
+#include <memory>
 
 #include "d12_device.h"
 #include "d12_texture.h"
@@ -135,6 +136,51 @@ namespace light::rhi
 			ConvertClearFlags(clear_flags), depth, stencil, 0, nullptr);
 
 		TrackResource(d12_texture);
+	}
+
+	void D12CommandList::WriteTexture(Texture* texture, uint32_t first_subresource, uint32_t num_subresources, const TextureData& texture_data)
+	{
+		D12Texture* d12_texture = CheckedCast<D12Texture*>(texture);
+		
+		UINT64 total_bytes = 0;
+
+		UINT64 alloc_size = static_cast<UINT64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64)) * num_subresources;
+		std::unique_ptr<uint8_t[]> mem = std::make_unique<uint8_t[]>(alloc_size);
+
+		D3D12_RESOURCE_DESC resource_desc = d12_texture->GetNative()->GetDesc();
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT* layouts = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT*>(mem.get());
+		UINT64* row_size_in_bytes = reinterpret_cast<UINT64*>(layouts + num_subresources);
+		UINT* num_rows = reinterpret_cast<UINT*>(row_size_in_bytes + num_subresources);
+
+		device_->GetNative()->GetCopyableFootprints(&resource_desc, first_subresource, num_subresources, 0, layouts, num_rows, row_size_in_bytes, &total_bytes);
+
+		UploadBuffer::Allocation allocation = upload_buffer_.Allocate(total_bytes, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+		for (uint32_t i = 0; i < num_subresources; ++i)
+		{
+			layouts[i].Offset += allocation.offset;
+		}
+
+		for (uint32_t depthSlice = 0; depthSlice < footprint.Footprint.Depth; depthSlice++)
+		{
+			for (uint32_t row = 0; row < numRows; row++)
+			{
+				void* destAddress = (char*)cpuVA + footprint.Footprint.RowPitch * (row + depthSlice * numRows);
+				const void* srcAddress = (const char*)data + rowPitch * row + depthPitch * depthSlice;
+				memcpy(destAddress, srcAddress, std::min(rowPitch, rowSizeInBytes));
+			}
+		}
+
+		D3D12_TEXTURE_COPY_LOCATION destCopyLocation;
+		destCopyLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+		destCopyLocation.SubresourceIndex = subresource;
+		destCopyLocation.pResource = dest->resource;
+
+		D3D12_TEXTURE_COPY_LOCATION srcCopyLocation;
+		srcCopyLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+		srcCopyLocation.PlacedFootprint = footprint;
+		srcCopyLocation.pResource = uploadBuffer;
+
+		d3d12_command_list_->CopyTextureRegion(&destCopyLocation, 0, 0, 0, &srcCopyLocation, nullptr);
 	}
 
 	void D12CommandList::WriteBuffer(Buffer* buffer, const uint8_t* data, uint64_t size, uint64_t dest_offset_bytes)

@@ -389,4 +389,12 @@ namespace light::rhi
 		uint32_t count;
 		uint32_t quality;
 	};
+
+	struct TextureData
+	{
+		char* data;
+		// 每行纹理的字节数
+		uint32_t row_pitch;
+		uint32_t data_size;
+	};
 }
