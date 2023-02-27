@@ -6,6 +6,9 @@
 #include "d12_device.h"
 #include "d12_texture.h"
 
+#undef max
+#undef min
+
 namespace light::rhi
 {
 	D12CommandList::D12CommandList(D12Device* device, CommandListType type,CommandQueue* queue)
@@ -138,14 +141,17 @@ namespace light::rhi
 		TrackResource(d12_texture);
 	}
 
-	void D12CommandList::WriteTexture(Texture* texture, uint32_t first_subresource, uint32_t num_subresources, const TextureData& texture_data)
+	void D12CommandList::WriteTexture(Texture* texture, uint32_t first_subresource, uint32_t num_subresources, const TextureSubresourceData* data)
 	{
-		D12Texture* d12_texture = CheckedCast<D12Texture*>(texture);
-		
+		TrackResource(texture);
+		TransitionBarrier(texture, ResourceStates::kCopyDest);
+
+		auto d12_texture = CheckedCast<D12Texture*>(texture);
+
 		UINT64 total_bytes = 0;
 
-		UINT64 alloc_size = static_cast<UINT64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64)) * num_subresources;
-		std::unique_ptr<uint8_t[]> mem = std::make_unique<uint8_t[]>(alloc_size);
+		UINT64 alloc_size = (sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64)) * num_subresources;
+		auto mem = std::make_unique<uint8_t[]>(alloc_size);
 
 		D3D12_RESOURCE_DESC resource_desc = d12_texture->GetNative()->GetDesc();
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT* layouts = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT*>(mem.get());
@@ -155,32 +161,34 @@ namespace light::rhi
 		device_->GetNative()->GetCopyableFootprints(&resource_desc, first_subresource, num_subresources, 0, layouts, num_rows, row_size_in_bytes, &total_bytes);
 
 		UploadBuffer::Allocation allocation = upload_buffer_.Allocate(total_bytes, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+
 		for (uint32_t i = 0; i < num_subresources; ++i)
 		{
-			layouts[i].Offset += allocation.offset;
-		}
-
-		for (uint32_t depthSlice = 0; depthSlice < footprint.Footprint.Depth; depthSlice++)
-		{
-			for (uint32_t row = 0; row < numRows; row++)
+			for (uint32_t depth = 0; depth < layouts[i].Footprint.Depth; ++depth)
 			{
-				void* destAddress = (char*)cpuVA + footprint.Footprint.RowPitch * (row + depthSlice * numRows);
-				const void* srcAddress = (const char*)data + rowPitch * row + depthPitch * depthSlice;
-				memcpy(destAddress, srcAddress, std::min(rowPitch, rowSizeInBytes));
+				for (uint32_t row = 0; row < num_rows[i]; ++row)
+				{
+					void* dest_address = allocation.cpu + layouts[i].Offset + layouts[i].Footprint.RowPitch * (row + depth * num_rows[i]);
+					const void* src_address = data[i].data + data[i].row_pitch * (row + depth * num_rows[i]);
+					memcpy(dest_address, src_address, std::min(num_rows[i], data[i].row_pitch));
+				}
 			}
 		}
 
-		D3D12_TEXTURE_COPY_LOCATION destCopyLocation;
-		destCopyLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		destCopyLocation.SubresourceIndex = subresource;
-		destCopyLocation.pResource = dest->resource;
+		for (uint32_t i = 0; i < num_subresources; ++i)
+		{
+			D3D12_TEXTURE_COPY_LOCATION dest_copy_location;
+			dest_copy_location.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+			dest_copy_location.SubresourceIndex = i + first_subresource;
+			dest_copy_location.pResource = d12_texture->GetNative();
 
-		D3D12_TEXTURE_COPY_LOCATION srcCopyLocation;
-		srcCopyLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-		srcCopyLocation.PlacedFootprint = footprint;
-		srcCopyLocation.pResource = uploadBuffer;
+			D3D12_TEXTURE_COPY_LOCATION src_copy_location;
+			src_copy_location.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+			src_copy_location.PlacedFootprint = layouts[i];
+			src_copy_location.pResource = allocation.upload_resource;
 
-		d3d12_command_list_->CopyTextureRegion(&destCopyLocation, 0, 0, 0, &srcCopyLocation, nullptr);
+			d3d12_command_list_->CopyTextureRegion(&dest_copy_location, 0, 0, 0, &src_copy_location, nullptr);
+		}
 	}
 
 	void D12CommandList::WriteBuffer(Buffer* buffer, const uint8_t* data, uint64_t size, uint64_t dest_offset_bytes)

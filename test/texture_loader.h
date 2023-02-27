@@ -115,7 +115,7 @@ public:
 					// 强制读取RGBA格式,部分图形API不支持RGB纹理,如(DirteX,Vualkan)
 					if (channel == 3)
 					{
-						channel == 4;
+						channel = 4;
 					}
 
 					desc.width = width;

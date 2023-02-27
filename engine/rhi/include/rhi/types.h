@@ -390,11 +390,13 @@ namespace light::rhi
 		uint32_t quality;
 	};
 
-	struct TextureData
+	struct TextureSubresourceData
 	{
-		char* data;
-		// 每行纹理的字节数
-		uint32_t row_pitch;
+		char* data = nullptr;
+		//每行纹理的字节数
+		uint32_t row_pitch = 0;
+		//每个纹理数组元素的字节数
+		uint32_t depth_pitch = 0;
 		uint32_t data_size;
 	};
 }

@@ -35,7 +35,7 @@ namespace light::rhi
 
 		virtual void ClearDepthStencilTexture(Texture* texture, uint32_t mip_level, uint32_t array_slice, uint32_t num_array_slice, ClearFlags clear_flags, float depth, uint8_t stencil) = 0;
 
-		virtual void WriteTexture(Texture* texture, uint32_t first_subresource,uint32_t num_subresources,const TextureData& texture_data) = 0;
+		virtual void WriteTexture(Texture* texture, uint32_t first_subresource,uint32_t num_subresources,const TextureSubresourceData* texture_subresource_data) = 0;
 
 		virtual void WriteBuffer(Buffer* buffer, const uint8_t* data, uint64_t size, uint64_t dest_offset_bytes = 0) = 0;
 
