@@ -9,9 +9,12 @@
 
 namespace light::rhi
 {
+	class Sampler;
 	class Texture;
+	class Buffer;
 	class GraphicsPipeline;
 	class CommandQueue;
+	
 
 	class CommandList : public Resource
 	{
@@ -35,7 +38,7 @@ namespace light::rhi
 
 		virtual void ClearDepthStencilTexture(Texture* texture, uint32_t mip_level, uint32_t array_slice, uint32_t num_array_slice, ClearFlags clear_flags, float depth, uint8_t stencil) = 0;
 
-		virtual void WriteTexture(Texture* texture, uint32_t first_subresource,uint32_t num_subresources,const TextureSubresourceData* texture_subresource_data) = 0;
+		virtual void WriteTexture(Texture* texture, uint32_t first_subresource,uint32_t num_subresources, const std::vector<TextureSubresourceData>& data) = 0;
 
 		virtual void WriteBuffer(Buffer* buffer, const uint8_t* data, uint64_t size, uint64_t dest_offset_bytes = 0) = 0;
 
@@ -71,7 +74,9 @@ namespace light::rhi
 			TextureDimension dimension = TextureDimension::kTexture2D,
 			uint32_t mip_level = 0, uint32_t num_mip_levels = -1,
 			uint32_t array_slice = 0, uint32_t num_array_slices = -1,
-			ResourceStates state_after = ResourceStates::kPixelShaderResource) = 0;
+			ResourceStates state_after = ResourceStates::kPixelShaderResource | ResourceStates::kNonPixelShaderResource) = 0;
+
+		virtual void SetSampler(uint32_t parameter_index, uint32_t descriptor_offset, Sampler* sampler) = 0;
 
 		//virtual void SetShaderResourceView(uint32_t parameter_index,Texture* texture,ResourceStates state_after = ResourceStates::)
 

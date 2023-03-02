@@ -15,16 +15,22 @@ cbuffer cbConstansView : register(b2)
 	float4 gColor2;
 };
 
+Texture2D gDiffuseMap : register(t0);
+
+SamplerState gSamplerLinearWrap : register(s0);
+
 struct VertexIn
 {
 	float3 PosL  : POSITION;
 	float3 Normal : NORMAL;
+	float2 UV : TEXCOORD;
 };
 
 struct VertexOut
 {
 	float4 PosH  : SV_POSITION;
 	float3 Color : COLOR;
+	float2 UV : TEXCOORD;
 };
 
 VertexOut VS(VertexIn vin)
@@ -34,12 +40,13 @@ VertexOut VS(VertexIn vin)
 	float4x4 mvp = mul(gProjViewMatrix,gModelMatrix);
 	vout.PosH = mul(mvp,float4(vin.PosL, 1.0f));
 	vout.Color = vin.Normal;
-
+	vout.UV = vin.UV;
     
     return vout;
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    return float4(1.0,1.0,1.0,1.0);
+	float4 color = gDiffuseMap.SampleLevel(gSamplerLinearWrap,pin.UV,0);
+    return color;
 }

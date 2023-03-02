@@ -3,11 +3,14 @@
 #include <filesystem>
 #include <fstream>
 
+#include "rhi/types.h"
 #include "rhi/texture.h"
 #include "rhi/device.h"
 
 #include "DirectXTex.h"
-#include "stb/stb_image.h"
+
+#include "stb_image.h"
+#include <sstream>
 
 class TextureLoader
 {
@@ -32,7 +35,7 @@ public:
 		} else
 		{
 			
-			std::ifstream fin(filename.data());
+			std::ifstream fin(filename.data(),std::ios_base::binary);
 			if (fin.is_open())
 			{
 				fin.seekg(0, std::ios_base::end);
@@ -44,20 +47,21 @@ public:
 
 				light::rhi::TextureDesc desc;
 
+				char* image_data = nullptr;
+				int width = 0;
+				int height = 0;
+				int channel = 0;
+
 				uint8_t* buf = (uint8_t*)data.data();
 				size_t len = data.size();
 				if (stbi_is_16_bit_from_memory(buf, len)) 
 				{
-					int width;
-					int height;
-					int channel;
-					
-					auto image_data = stbi_load_16_from_memory(buf, len, &width, &height, &channel,0);
+					image_data = (char*)stbi_load_16_from_memory(buf, len, &width, &height, &channel,0);
 
 					// 强制读取RGBA格式,部分图形API不支持RGB纹理,如(DirteX,Vualkan)
 					if (channel == 3)
 					{
-						channel == 4;
+						channel = 4;
 					}
 
 					desc.width = width;
@@ -78,11 +82,7 @@ public:
 				}
 				else if(stbi_is_hdr_from_memory(buf,len))
 				{
-					int width;
-					int height;
-					int channel;
-					
-					auto image_data = stbi_loadf_from_memory(buf, len, &width, &height, &channel,0);
+					image_data = (char*)stbi_loadf_from_memory(buf, len, &width, &height, &channel,0);
 
 					desc.width = width;
 					desc.height = height;
@@ -106,11 +106,8 @@ public:
 				}
 				else
 				{
-					int width;
-					int height;
-					int channel;
 					// 强制读取RGBA格式,部分图形API不支持RGB纹理,如(DirteX,Vualkan)
-					auto image_data = stbi_load_from_memory(buf, len, &width, &height, &channel, 0);
+					image_data = (char*)stbi_load_from_memory(buf, len, &width, &height, &channel,0);
 
 					// 强制读取RGBA格式,部分图形API不支持RGB纹理,如(DirteX,Vualkan)
 					if (channel == 3)
@@ -135,11 +132,19 @@ public:
 					}
 				}
 
-				tex = device->CreateTexture(desc);
-				
-			}
+				desc.mip_levels = 1;
 
-			
+				uint8_t bytes_per_pixel = GetFormatInfo(desc.format).bytes_per_pixel;
+				std::vector<light::rhi::TextureSubresourceData> tex_data(desc.mip_levels);
+				tex_data[0].data = (char*)image_data;
+				tex_data[0].row_pitch = desc.width * bytes_per_pixel;
+				tex_data[0].data_size = desc.width * desc.height * bytes_per_pixel;
+
+				tex = device->CreateTexture(desc);
+				auto command_list = device->GetCommandList(light::rhi::CommandListType::kCopy);
+				command_list->WriteTexture(tex, 0, tex_data.size(), tex_data);
+				command_list->ExecuteCommandList();
+			}
 		}
 
 		return tex;

@@ -21,7 +21,7 @@ using namespace light::rhi;
 
 enum class VertexSlot
 {
-	kPosition,
+	kPosition, 
 };
 
 struct Mesh

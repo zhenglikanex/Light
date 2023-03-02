@@ -1,6 +1,7 @@
 #include "d12_device.h"
 #include "d12_buffer.h"
 #include "d12_texture.h"
+#include "d12_sampler.h"
 
 #include <codecvt>
 
@@ -126,6 +127,12 @@ namespace light::rhi
 	{
 		auto tex = MakeHandle<D12Texture>(this, desc, static_cast<ID3D12Resource*>(resource));
 		return tex;
+	}
+
+	SamplerHandle D12Device::CreateSampler(const SamplerDesc& desc)
+	{
+		auto sampler = MakeHandle<D12Sampler>(this, desc);
+		return sampler;
 	}
 
 	InputLayoutHandle D12Device::CreateInputLayout(std::vector<VertexAttributeDesc> attributes)

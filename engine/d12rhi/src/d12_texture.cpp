@@ -11,12 +11,26 @@ namespace light::rhi
 	{
 		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 		auto res_desc = CD3DX12_RESOURCE_DESC::Tex2D(GetDxgiFormatMapping(desc.format).rtv_format, desc.width, desc.height, desc.array_size, desc.mip_levels);
-		res_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-		D3D12_CLEAR_VALUE optClear;
-		optClear.Format = GetDxgiFormatMapping(desc.format).rtv_format;
-		optClear.DepthStencil.Depth = 1.0f;
-		optClear.DepthStencil.Stencil = 0;
-		device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, &optClear, IID_PPV_ARGS(&resource_));
+
+		auto& format_info = GetFormatInfo(desc.format);
+
+		// todo:¼ÓÉÏclear_value
+		if (format_info.has_depth)
+		{
+			res_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+			D3D12_CLEAR_VALUE optClear;
+			optClear.Format = GetDxgiFormatMapping(desc.format).rtv_format;
+			optClear.DepthStencil.Depth = 1.0f;
+			optClear.DepthStencil.Stencil = 0;
+
+			device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, &optClear, IID_PPV_ARGS(&resource_));
+		}
+		else {
+			device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource_));
+		}
+
+		
 	}
 
 	D12Texture::D12Texture(D12Device* device, const TextureDesc& desc, ID3D12Resource* native)

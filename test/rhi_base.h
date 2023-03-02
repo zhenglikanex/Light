@@ -12,8 +12,6 @@
 
 #include "GLFW/glfw3.h"
 
-
-
 namespace light
 {
 	struct GameParams

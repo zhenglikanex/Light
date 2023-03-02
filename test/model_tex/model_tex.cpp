@@ -1,5 +1,5 @@
 #include "../rhi_base.h"
-#include "../mesh.h"
+#include "rhi/sampler.h"
 
 #define GLM_FORCE_LEFT_HANDED
 
@@ -8,6 +8,9 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+#include "../texture_loader.h"
+#include "../mesh.h"
 
 #undef max
 #undef min
@@ -60,6 +63,9 @@ public:
 
 	bool OnInit() override
 	{
+		TextureLoader loader;
+		tex_ = loader.LoadTexture(device_,"assets/Cube/Cube_BaseColor.png");
+
 		GLTFReader reader(device_);
 
 		if(reader.Load("assets/Cube/Cube.gltf"))
@@ -73,7 +79,8 @@ public:
 		std::vector<VertexAttributeDesc> vertex_attributes =
 		{
 			{"POSITION",0,Format::RGB32_FLOAT,0,0u,false},
-			{"NORMAL",0,Format::RGB32_FLOAT,1,0u,false}
+			{"NORMAL",0,Format::RGB32_FLOAT,1,0u,false},
+			{"TEXCOORD",0,Format::RG32_FLOAT,2,0u,false}
 		};
 
 		std::vector<Vertex> vertexs
@@ -113,6 +120,9 @@ public:
 
 		depth_stencil_texture_ = device_->CreateTexture(depth_tex_desc);
 
+		SamplerDesc sampler_desc;
+		sampler_ = device_->CreateSampler(sampler_desc);
+
 		BindingParameter parameter1;
 		parameter1.InitAsConstants(sizeof(PerFrameConstants) / 4, 0);
 		
@@ -120,17 +130,25 @@ public:
 		parameter2.InitAsConstantBufferView(1);
 
 		BindingParameter::DescriptorRange range;
-		range.base_shader_register = 2;
+		range.base_shader_register = 0;
 		range.num_descriptors = 1;
-		range.range_type = DescriptorRangeType::kConstantsBufferView;
+		range.range_type = DescriptorRangeType::kSampler;
 
 		BindingParameter parameter3;
 		parameter3.InitAsDescriptorTable(1, &range);
 
-		auto* binding_layout = new BindingLayout(2);
+		BindingParameter::DescriptorRange tex_range;
+		tex_range.base_shader_register = 0;
+		tex_range.num_descriptors = 1;
+		tex_range.range_type = DescriptorRangeType::kShaderResourceView;
+		BindingParameter parameter4;
+		parameter4.InitAsDescriptorTable(1, &tex_range);
+		
+		auto* binding_layout = new BindingLayout(4);
 		binding_layout->Add(0, parameter1);
 		binding_layout->Add(1, parameter2);
 		binding_layout->Add(2, parameter3);
+		binding_layout->Add(3, parameter4);
 
 		GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device_->CreateInputLayout(std::move(vertex_attributes));
@@ -175,8 +193,11 @@ public:
 
 		command_list->SetGraphicsPipeline(pso_);
 
-
 		command_list->SetGraphics32BitConstants(0, per_frame_constants);
+
+		command_list->SetSampler(2, 0, sampler_);
+
+		command_list->SetShaderResourceView(3, 0, tex_);
 
 		/*command_list->SetPrimitiveTopology(PrimitiveTopology::kTriangleList);
 		command_list->SetVertexBuffer(0, vertex_buffer_);
@@ -218,6 +239,8 @@ private:
 	BufferHandle vertex_buffer_;
 	BufferHandle index_buffer_;
 	std::vector<Mesh> meshes_;
+	TextureHandle tex_;
+	SamplerHandle sampler_;
 };
 
 int main()

@@ -5,6 +5,7 @@
 
 #include "d12_device.h"
 #include "d12_texture.h"
+#include "d12_sampler.h"
 
 #undef max
 #undef min
@@ -25,7 +26,7 @@ namespace light::rhi
 			nullptr, 
 			IID_PPV_ARGS(&d3d12_command_list_)));
 		
-		for (size_t i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+		for (size_t i = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; i <= D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER; ++i)
 		{
 			dynamic_descriptor_heaps_[i] = std::make_unique<DynamicDescriptorHeap>(device_, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(i));
 			descriptr_heaps_[i] = nullptr;
@@ -48,6 +49,8 @@ namespace light::rhi
 		{
 			descriptr_heaps_[type] = heap;
 		}
+
+		CommitDescriptorHeaps();
 	}
 
 	void D12CommandList::TransitionBarrier(Buffer* buffer, ResourceStates state_afeter, uint32_t subresource,
@@ -141,7 +144,7 @@ namespace light::rhi
 		TrackResource(d12_texture);
 	}
 
-	void D12CommandList::WriteTexture(Texture* texture, uint32_t first_subresource, uint32_t num_subresources, const TextureSubresourceData* data)
+	void D12CommandList::WriteTexture(Texture* texture, uint32_t first_subresource, uint32_t num_subresources, const std::vector<TextureSubresourceData>& data)
 	{
 		TrackResource(texture);
 		TransitionBarrier(texture, ResourceStates::kCopyDest);
@@ -168,9 +171,9 @@ namespace light::rhi
 			{
 				for (uint32_t row = 0; row < num_rows[i]; ++row)
 				{
-					void* dest_address = allocation.cpu + layouts[i].Offset + layouts[i].Footprint.RowPitch * (row + depth * num_rows[i]);
+					void* dest_address = (char*)allocation.cpu + layouts[i].Offset + layouts[i].Footprint.RowPitch * (row + depth * num_rows[i]);
 					const void* src_address = data[i].data + data[i].row_pitch * (row + depth * num_rows[i]);
-					memcpy(dest_address, src_address, std::min(num_rows[i], data[i].row_pitch));
+					memcpy(dest_address, src_address, std::min(layouts[i].Footprint.RowPitch, data[i].row_pitch));
 				}
 			}
 		}
@@ -304,6 +307,14 @@ namespace light::rhi
 		dynamic_descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
 			parameter_index, descriptor_offset, 1,
 			d12_texture->GetSRV(format, dimension, mip_level, num_mip_levels, array_slice, num_array_slices));
+	}
+
+	void D12CommandList::SetSampler(uint32_t parameter_index, uint32_t descriptor_offset, Sampler* sampler)
+	{
+		TrackResource(sampler);
+
+		auto d12_sampler = CheckedCast<D12Sampler*>(sampler);
+		dynamic_descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER]->StageDescriptors(parameter_index, descriptor_offset, 1, d12_sampler->GetDescriptorHandle());
 	}
 
 	void D12CommandList::SetGraphicsPipeline(GraphicsPipeline* pso)
@@ -448,8 +459,6 @@ namespace light::rhi
 
 		D3D12_CPU_DESCRIPTOR_HANDLE* dsv = depth_stencil_descriptor.ptr != 0 ? &depth_stencil_descriptor : nullptr;
 		d3d12_command_list_->OMSetRenderTargets(num_render_target, render_target_descriptors.data(), false, dsv);
-
-		ThrowIfFailed(device_->GetNative()->GetDeviceRemovedReason());
 	}
 
 	void D12CommandList::SetViewport(const Viewport& viewport)
@@ -468,8 +477,6 @@ namespace light::rhi
 		}
 
 		d3d12_command_list_->RSSetViewports(d12_viewports.size(), d12_viewports.data());
-
-		ThrowIfFailed(device_->GetNative()->GetDeviceRemovedReason());
 	}
 
 	void D12CommandList::SetScissorRect(const Rect& rect)
@@ -488,8 +495,6 @@ namespace light::rhi
 		}
 
 		d3d12_command_list_->RSSetScissorRects(d12_rects.size(), d12_rects.data());
-
-		ThrowIfFailed(device_->GetNative()->GetDeviceRemovedReason());
 	}
 
 	void D12CommandList::ExecuteCommandList()
@@ -529,11 +534,21 @@ namespace light::rhi
 		upload_buffer_.Rest();
 
 		current_pso_ = nullptr;
+
+		for (auto& dynamic_descriptor_heap : dynamic_descriptor_heaps_)
+		{
+			dynamic_descriptor_heap->Rest();
+		}
 	}
 
 	void D12CommandList::DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t start_index,
 	                                 int32_t base_vertex, uint32_t start_instance)
 	{
+		for (auto& dynamic_descriptor_heap : dynamic_descriptor_heaps_)
+		{
+			dynamic_descriptor_heap->CommitStatedDescriptorsForDraw(this);
+		}
+
 		d3d12_command_list_->DrawIndexedInstanced(index_count, instance_count, start_index, base_vertex, start_instance);
 	}
 
@@ -542,7 +557,7 @@ namespace light::rhi
 		uint32_t num_heaps = 0;
 		ID3D12DescriptorHeap* heap[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
-		for (size_t type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; type < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++type)
+		for (size_t type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV; type <= D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER; ++type)
 		{
 			if(descriptr_heaps_[type])
 			{

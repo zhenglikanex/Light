@@ -157,6 +157,16 @@ namespace light::rhi
 		return static_cast<D3D12_RESOURCE_STATES>(states);
 	}
 
+	inline D3D12_FILTER ConvertFilter(SamplerFilter filter)
+	{
+		return static_cast<D3D12_FILTER>(filter);
+	}
+
+	inline D3D12_TEXTURE_ADDRESS_MODE ConvertTextureAddressMode(SamplerMode mode)
+	{
+		return static_cast<D3D12_TEXTURE_ADDRESS_MODE>(mode);
+	}
+
 	struct DxgiFormatMapping
 	{
 		Format abstract_format;

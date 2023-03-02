@@ -165,7 +165,7 @@ namespace light::rhi
 		D3D12_DESCRIPTOR_HEAP_DESC desc{};
 		desc.Type = heap_type_;
 		desc.NumDescriptors = heap_size_;
-		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
 		device_->GetNative()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&heap));
 

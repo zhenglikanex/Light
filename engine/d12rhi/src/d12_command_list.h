@@ -38,7 +38,7 @@ namespace light::rhi
 		void ClearDepthStencilTexture(Texture* texture, uint32_t mip_level, uint32_t array_slice,
 			uint32_t num_array_slice, ClearFlags clear_flags, float depth, uint8_t stencil) override;
 
-		void WriteTexture(Texture* texture, uint32_t first_subresource, uint32_t num_subresources,const TextureSubresourceData* texture_subresource_data) override;
+		void WriteTexture(Texture* texture, uint32_t first_subresource, uint32_t num_subresources,const std::vector<TextureSubresourceData>& texture_subresource_data) override;
 
 		void WriteBuffer(Buffer* buffer, const uint8_t* data, uint64_t size, uint64_t dest_offset_bytes = 0) override;
 
@@ -65,6 +65,8 @@ namespace light::rhi
 		void SetShaderResourceView(uint32_t parameter_index, uint32_t descriptor_offset, Texture* texture,
 			Format format, TextureDimension dimension, uint32_t mip_level, uint32_t num_mip_levels, uint32_t array_slice,
 			uint32_t num_array_slices, ResourceStates state_after) override;
+
+		void SetSampler(uint32_t parameter_index, uint32_t descriptor_offset, Sampler* sampler) override;
 
 		void SetGraphicsPipeline(GraphicsPipeline* pso) override;
 
@@ -114,9 +116,9 @@ namespace light::rhi
 		std::vector<Handle<ID3D12Resource>> track_upload_resources_;
 		UploadBuffer upload_buffer_;
 		ResourceStateTracker resource_state_tracker_;
-		std::unique_ptr<DynamicDescriptorHeap> dynamic_descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+		std::unique_ptr<DynamicDescriptorHeap> dynamic_descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER + 1];
 		GraphicsPipeline* current_pso_;
-		ID3D12DescriptorHeap* descriptr_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+		ID3D12DescriptorHeap* descriptr_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER + 1];
 		D3D12_GPU_VIRTUAL_ADDRESS buffer_gpu_virtual_address_[32];
 		D3D12_GPU_VIRTUAL_ADDRESS buffer_states_[32];
 	};

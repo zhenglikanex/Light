@@ -5,6 +5,7 @@
 #include "shader.h"
 #include "buffer.h"
 #include "texture.h"
+#include "sampler.h"
 #include "graphics_pipeline.h"
 #include "render_target.h"
 #include "command_queue.h"
@@ -31,6 +32,7 @@ namespace light::rhi
 		virtual ShaderHandle CreateShader(ShaderType type, const std::string& filename, const std::string& entry_point, const std::string& target) = 0;
 		virtual BufferHandle CreateBuffer(BufferDesc desc) = 0;
 		virtual TextureHandle CreateTexture(const TextureDesc& desc) = 0;
+		virtual SamplerHandle CreateSampler(const SamplerDesc& desc) = 0;
 		virtual TextureHandle CreateTextureForNative(const TextureDesc& desc, void* resource) = 0;
 		virtual InputLayoutHandle CreateInputLayout(std::vector<VertexAttributeDesc> attributes) = 0;
 		virtual GraphicsPipelineHandle CreateGraphicsPipeline(GraphicsPipelineDesc desc, const RenderTarget& render_target) = 0;

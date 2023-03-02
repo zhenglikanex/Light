@@ -49,6 +49,8 @@ namespace light::rhi
 
 		TextureHandle CreateTextureForNative(const TextureDesc& desc, void* resource) override;
 
+		SamplerHandle CreateSampler(const SamplerDesc& desc) override;
+
 		InputLayoutHandle CreateInputLayout(std::vector<VertexAttributeDesc> attributes) override;
 
 		GraphicsPipelineHandle CreateGraphicsPipeline(GraphicsPipelineDesc desc, const RenderTarget& render_target) override;
