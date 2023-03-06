@@ -1,0 +1,5 @@
+target("Sandbox")
+    set_kind("binary")
+    add_files("**/**.cpp")
+    add_deps("Engine")
+    set_group("game")

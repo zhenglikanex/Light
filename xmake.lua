@@ -2,7 +2,7 @@ option("build_test")
     set_showmenu(true)
 option_end()
 
-set_languages("c++17")
+set_languages("c++20")
 
 add_rules("mode.debug", "mode.release")
 
