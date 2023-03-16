@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Windows.h"
-#include "rhi/swap_chain.h"
+#include "engine/rhi/swap_chain.h"
 
 #include <dxgi1_5.h>
 #include "d3dx12.h"

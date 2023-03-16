@@ -19,8 +19,7 @@ package("DirectXTex")
     end)
 package_end()
 
-add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex")
-
+add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex","imgui docking")
 
 
 -- 如果当前编译模式是debug

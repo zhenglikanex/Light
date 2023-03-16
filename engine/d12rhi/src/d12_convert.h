@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhi/types.h"
+#include "engine/rhi/types.h"
 #include "d3dx12.h"
 
 namespace light::rhi

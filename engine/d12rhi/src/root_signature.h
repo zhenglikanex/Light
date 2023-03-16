@@ -2,8 +2,8 @@
 
 #include <d3d12.h>
 
-#include "rhi/resource.h"
-#include "rhi/binding_layout.h"
+#include "engine/rhi/resource.h"
+#include "engine/rhi/binding_layout.h"
 
 namespace light::rhi
 {
@@ -37,8 +37,8 @@ namespace light::rhi
 
 		size_t hash_;
 
-		// ¼ÇÂ¼Ã¿¸öÃèÊö·û±íµÄÃèÊö·û¸öÊı
-		// 32È¡Ã¿¸öroot signatureµÄ×î´óÃèÊö·û±í¸öÊı
+		// ï¿½ï¿½Â¼Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		// 32È¡Ã¿ï¿½ï¿½root signatureï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		uint32_t num_descriptors_per_table_[32];
 
 		uint32_t num_parameters_;

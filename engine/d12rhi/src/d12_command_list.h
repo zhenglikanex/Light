@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "rhi/command_list.h"
-#include "rhi/buffer.h"
+#include "engine/rhi/command_list.h"
+#include "engine/rhi/buffer.h"
 
 #include "upload_buffer.h"
 #include "resource_state_tracker.h"
@@ -104,7 +104,7 @@ namespace light::rhi
 	protected:
 		void CommitDescriptorHeaps();
 
-		// ×Ô¶¯×·×ÙÊ¹ÓÃÖÐµÄ×ÊÔ´ÉùÃ÷ÖÜÆÚ
+		// ï¿½Ô¶ï¿½×·ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		void TrackResource(Resource* resource) override;
 
 		void FlushResourceBarriers() override;

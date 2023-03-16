@@ -2,8 +2,8 @@
 
 #include <unordered_map>
 
-#include "rhi/types.h"
-#include "rhi/texture.h"
+#include "engine/rhi/types.h"
+#include "engine/rhi/texture.h"
 
 #include "descriptor_allocator.h"
 #include "d3dx12.h"

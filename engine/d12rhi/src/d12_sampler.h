@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhi/sampler.h"
+#include "engine/rhi/sampler.h"
 
 #include "descriptor_allocator.h"
 

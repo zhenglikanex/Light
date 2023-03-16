@@ -4,7 +4,7 @@
 #include <queue>
 #include <functional>
 
-#include "rhi/resource.h"
+#include "engine/rhi/resource.h"
 
 #include "d3dx12.h"
 
@@ -39,14 +39,14 @@ namespace light::rhi
 
 		Handle<ID3D12DescriptorHeap> CreateDescriptorHeap();
 
-		// ¼ÆËãĞèÒªÌá½»µ½GPU¿É¼û¶ÑµÄÊıÁ¿
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½á½»ï¿½ï¿½GPUï¿½É¼ï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½
 		uint32_t ComputeStaleDescriptorCount() const;
 
 		void CommitDescriptorTables(D12CommandList* command_list,
 			std::function<void(ID3D12GraphicsCommandList*, UINT, D3D12_GPU_DESCRIPTOR_HANDLE)> set_func);
 
-		//Ã¿¸ö¸ùÇ©ÃûµÄ×î´óÃèÊö·û±íÊı¡£
-		//32Î»ÑÚÂëÓÃÓÚ¸ú×Ù×÷ÎªÃèÊö·û±íµÄ¸ù²ÎÊıË÷Òı¡£
+		//Ã¿ï¿½ï¿½ï¿½ï¿½Ç©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		//32Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		static constexpr uint32_t kMaxDescriptorTables = 32;
 
 		
@@ -64,25 +64,25 @@ namespace light::rhi
 
 		D12Device* device_;
 
-		//ÓĞĞ§µÄÀàĞÍ£º
+		//ï¿½ï¿½Ğ§ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½
 		//	D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
 		//	D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER
-		//ÕâÁ©¸öÀàĞÍµÄÃèÊö·ûĞèÒª°ó¶¨µ½gpu¿É¼ûµÄheap
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ó¶¨µï¿½gpuï¿½É¼ï¿½ï¿½ï¿½heap
 		D3D12_DESCRIPTOR_HEAP_TYPE heap_type_;
 
 		uint32_t heap_size_;
 
 		uint32_t descriptor_handle_increment_size_;
 
-		//Ôİ´æËùÓĞµÄcpu¿É¼ûµÄÃèÊö·û
+		//ï¿½İ´ï¿½ï¿½ï¿½ï¿½Ğµï¿½cpuï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_descriptor_handles_;
 
 		DescriptorTableCache descriptor_table_cache_[kMaxDescriptorTables];
 
-		// root signature¶ÔÓ¦µÄÃèÊö·û±í¸ú²ÎÊı
+		// root signatureï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		uint32_t descriptor_table_bit_mask_;
 
-		// ĞèÒªµÄ¸üĞÂµÄroot signatureµÄÃèÊö·û±íµÄ¸ù²ÎÊıË÷ÒıµÄÑÚÂë
+		// ï¿½ï¿½Òªï¿½Ä¸ï¿½ï¿½Âµï¿½root signatureï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		uint32_t stale_descriptor_table_bit_mask_;
 
 		std::queue<Handle<ID3D12DescriptorHeap>> descriptor_heap_pool_;

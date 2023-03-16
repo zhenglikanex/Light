@@ -3,12 +3,17 @@
 #include <string>
 #include <string_view>
 #include <functional>
+#include <typeindex>
+#include <ostream>
 
 #define EVENT_IMPL(Class,Type,Category) \
+	const char* GetName() const  override{ return #Class; } \
 	static EventType StaticType() { return Type; } \
 	static EventCategory StaticCategory() { return Category; }\
 	EventType GetType() const override { return Type; }; \
 	EventCategory GetCategory() const override { return Category; }
+
+#define BIND_EVENT_1(...) std::bind(__VA_ARGS__, std::placeholders::_1)
 
 namespace light
 {
@@ -16,34 +21,35 @@ namespace light
 	{
 		kKeyPressed,
 		kKeyReleased,
-		kMouse,
-		kMousePressed,
-		kMouseReleased,
-		kWindowsResize,
-		kWindowsClose,
+		kMouseMoved,
+		kMouseButtonPressed,
+		kMouseButtonReleased,
+		kMouseScrolled,
+		kWindowsResized,
+		kWindowsClosed,
+		kWindowsMoved,
 	};
 
 	enum class EventCategory
 	{
-		kKey		= 1 << 1,
-		kMouse		= 1 << 2,
-		kWindows	= 1 << 3
+		kNone		= 0,
+		kKey		= 1 << 0,
+		kMouse		= 1 << 1,
+		kWindows	= 1 << 2
 	};
 
-	class Event
+	struct Event
 	{
-	public:
-		explicit Event(std::string_view name);
-
+		Event() = default;
 		virtual ~Event() = default;
 
 		virtual EventType GetType() const = 0;
 
 		virtual EventCategory GetCategory() const = 0;
 
-		virtual std::string ToString() = 0;
-	private:
-		std::string name_;
+		virtual const char* GetName() const = 0;
+
+		virtual std::string ToString() const = 0;
 	};
 
 	class EventDispatcher
@@ -60,14 +66,20 @@ namespace light
 			std::is_function_v<decltype(T::StaticType)>;
 			std::is_base_of_v<Event, T>;
 		}
-		void Dispatch(const std::function<void(Event&)>& func)
+		void Dispatch(const std::function<void(const T&)>& func)
 		{
 			if (event_.GetType() == T::StaticType())
 			{
-				func(event_);
+				func(static_cast<const T&>(event_));
 			}
 		}
 	private:
 		const Event& event_;
 	};
+
+	template<class Ostream>
+	inline Ostream& operator<<(Ostream& ostream, const Event& e)
+	{
+		return ostream << e.ToString();
+	}
 }

@@ -4,9 +4,9 @@
 #include <atomic>
 #include <thread>
 
-#include "rhi/thread_safe_queue.hpp"
-#include "rhi/command_queue.h"
-#include "rhi/command_list.h"
+#include "engine/rhi/thread_safe_queue.hpp"
+#include "engine/rhi/command_queue.h"
+#include "engine/rhi/command_list.h"
 
 #include "d12_command_list.h"
 

@@ -1,6 +1,6 @@
 target("D12RHI")
     set_kind("shared")
-    add_deps("RHI",{public=true})
+    add_deps("Engine",{public=true})
     add_files("**/*.cpp")
     add_headerfiles("**/*.hpp")
     add_headerfiles("**/*.h")

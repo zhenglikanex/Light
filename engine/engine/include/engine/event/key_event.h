@@ -4,16 +4,26 @@
 
 namespace light
 {
-	class KeyPressedEvent : public Event
+	struct KeyPressedEvent : public Event
 	{
-	public:
-		explicit KeyPressedEvent(int keycode);
+		int keycode;
+		int repeat_count = 0;
 
-		std::string ToString() const;
+		KeyPressedEvent(int keycode, int repeat_count);
+
+		std::string ToString() const override;
 
 		EVENT_IMPL(KeyPressedEvent, EventType::kKeyPressed, EventCategory::kKey)
-	private:
-		int keycode_;
-		int repeat_count_;
+	};
+
+	struct KeyReleasedEvent : public Event
+	{
+		int keycode;
+
+		explicit KeyReleasedEvent(int keycode);
+
+		std::string ToString() const override;
+
+		EVENT_IMPL(KeyReleasedEvent, EventType::kKeyReleased, EventCategory::kKey)
 	};
 }

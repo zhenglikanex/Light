@@ -1,6 +1,0 @@
-target("GlfwAppaction")
-    set_kind("static")
-    add_packages("glfw")
-    add_deps("Engine")
-    add_files("*.cpp")
-    set_group("engine")

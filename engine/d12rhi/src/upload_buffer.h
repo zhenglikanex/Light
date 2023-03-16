@@ -5,7 +5,7 @@
 #include <deque>
 #include <vector>
 
-#include "rhi/resource.h"
+#include "engine/rhi/resource.h"
 
 namespace light::rhi
 {
@@ -14,7 +14,7 @@ namespace light::rhi
 	class UploadBuffer
 	{
 	public:
-		// ·ÖÅäµÄcpuºÍgpuµØÖ·
+		// ï¿½ï¿½ï¿½ï¿½ï¿½cpuï¿½ï¿½gpuï¿½ï¿½Ö·
 		struct Allocation
 		{
 			void*						cpu = nullptr;
@@ -44,7 +44,7 @@ namespace light::rhi
 			Page(D12Device* device, size_t page_size);
 			~Page();
 
-			// ¼ì²éÊÇ·ñ»¹ÓÐ¿É·ÖÅäµÄ¿Õ¼ä
+			// ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ð¿É·ï¿½ï¿½ï¿½Ä¿Õ¼ï¿½
 			bool HasSpace(size_t bytes, size_t alignment) const;
 
 			Allocation Allocate(size_t bytes, size_t alignment);
@@ -71,10 +71,10 @@ namespace light::rhi
 
 		size_t page_size_;
 
-		// µ±Ç°·ÖÅä³öÈ¥µÄpage
+		// ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½È¥ï¿½ï¿½page
 		std::deque<std::shared_ptr<Page>> page_pool_;
 
-		// Î´·ÖÅä¿ÉÒÔ¸´ÓÃµÄpage
+		// Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¸ï¿½ï¿½Ãµï¿½page
 		std::deque<std::shared_ptr<Page>> available_pages_;
 
 		std::shared_ptr<Page> current_page_;

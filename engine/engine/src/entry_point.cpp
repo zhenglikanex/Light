@@ -1,11 +1,9 @@
 #include "engine/application.h"
 
-using namespace light;
-
 int main()
 {
-	Application* app = CreateApplication();
-	app->Run();
+	light::g_application = light::CreateApplication();
+	light::g_application->Run();
 
 	return 0;
 }
