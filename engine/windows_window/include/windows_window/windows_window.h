@@ -12,16 +12,21 @@ namespace light
 
 		~WindowsWindow() override;
 
-		virtual void CloseWindow() override;
+		void CloseWindow() override;
 
-		virtual void OnUpdate() override;
+		void OnUpdate() override;
 
-		virtual void* GetNativeWindow() const override;
+		void* GetNativeWindow() const override;
 
-		virtual void SetVSync(bool vsync);
+		void* GetHwnd() override;
+
+		void SetVSync(bool vsync);
 
 		void OnEvent(const Event& event);
 	private:
 		GLFWwindow* window_;
+
+		// 通过 Window 继承
+		
 	};
 }

@@ -31,7 +31,7 @@ namespace light::rhi
 	class D12Device final : public Device
 	{
 	public:
-		explicit D12Device(size_t hwnd);
+		explicit D12Device(void* hwnd);
 
 		~D12Device() override;
 
@@ -83,7 +83,7 @@ namespace light::rhi
 	};
 }
 
-extern "C" inline __declspec(dllexport)  light::rhi::Device* CreateDevice(size_t hwnd)
+extern "C" inline __declspec(dllexport)  light::rhi::Device* CreateDevice(void* hwnd)
 {
 	return new light::rhi::D12Device(hwnd);
 }

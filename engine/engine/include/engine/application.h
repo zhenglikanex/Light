@@ -5,6 +5,8 @@
 #include "engine/event/event.h"
 #include "engine/event/windows_event.h"
 #include "engine/layer/layer_stack.h"
+#include "engine/rhi/device.h"
+#include "engine/rhi/imgui.h"
 #include "engine/platform/window/window.h"
 
 namespace light
@@ -23,14 +25,23 @@ namespace light
 
 		void Run();
 
+		Window* GetWindow();
+
+		rhi::Device* GetDevice();
+
+		rhi::Imgui* GetImgui();
 	private:
-		
+		HMODULE rhi_module_;
 		void OnEvent(const Event& e);
 
 		void OnWindowClosed(const WindowClosedEvent& e);
 
 		bool running_;
 		std::unique_ptr<Window> window_;
+		rhi::DeviceHandle device_;
+		rhi::DeviceHandle device_;
+		rhi::SwapChainHandle swap_chain_;
+		rhi::Imgui* imgui_;
 		LayerStack layer_stack_;
 	};
 

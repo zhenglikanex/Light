@@ -4,6 +4,9 @@
 
 using namespace std::placeholders;
 
+using CreateDeviceFunc = light::rhi::Device* (*)(void*);
+using CreateImguiFunc = light::rhi::Imgui* (*)();
+
 namespace light
 {
 	Application* g_application = nullptr;
@@ -26,6 +29,20 @@ namespace light
 
 		window_ = std::unique_ptr<Window>(CreatePlatformWindow(params));
 		window_->SetEventCallback(std::bind(&Application::OnEvent, this,_1));
+
+		rhi_module_ = LoadLibrary(L"D12RHI.dll");
+		auto func = reinterpret_cast<CreateDeviceFunc>(GetProcAddress(rhi_module_, "CreateDevice"));
+		if (func)
+		{
+			device_ = func(window_->GetHwnd());
+		}
+
+		auto create_imgui = reinterpret_cast<CreateImguiFunc>(GetProcAddress(rhi_module_, "CreateImgui"));
+		if (create_imgui)
+		{
+			imgui_ = create_imgui();
+		}
+
 	}
 
 	Application::~Application()
@@ -46,6 +63,11 @@ namespace light
 
 			window_->OnUpdate();
 		}	
+	}
+
+	Window* Application::GetWindow()
+	{
+		return window_.get();
 	}
 
 	void Application::OnEvent(const Event& e)

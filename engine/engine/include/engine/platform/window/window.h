@@ -29,6 +29,8 @@ namespace light
 
 		virtual void OnUpdate() = 0;
 
+		virtual void* GetHwnd() = 0;
+
 		virtual void* GetNativeWindow() const = 0;
 
 		virtual void SetVSync(bool vsync) = 0;

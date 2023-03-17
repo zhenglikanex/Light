@@ -26,7 +26,7 @@ namespace light::rhi
 		}
 	}
 
-	D12Device::D12Device(size_t hwnd)
+	D12Device::D12Device(void* hwnd)
 		: hwnd_(reinterpret_cast<HWND>(hwnd))
 	{
 #if defined(DEBUG) || defined(_DEBUG)
@@ -52,7 +52,7 @@ namespace light::rhi
 		// Fallback to WARP device
 		if (FAILED(rt))
 		{
-			// »ØÍËµ½ÈíäÖÈ¾Æ÷
+			// å›žé€€åˆ°è½¯æ¸²æŸ“å™¨
 			Handle<IDXGIAdapter> warp_adapter;
 			ThrowIfFailed(dxgi_factory_->EnumWarpAdapter(IID_PPV_ARGS(&warp_adapter)));
 
@@ -93,7 +93,7 @@ namespace light::rhi
 		HRESULT hr = S_OK;
 		Handle<ID3DBlob> byte_code = nullptr;
 		Handle<ID3DBlob> errors;
-		// todo:¼ÓÈëshader_macro
+		// todo:åŠ å…¥shader_macro
 		hr = D3DCompileFromFile(wfilename.c_str(),nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			entry_point.c_str(), target.c_str(), compile_flags, 0, &byte_code, &errors);
 

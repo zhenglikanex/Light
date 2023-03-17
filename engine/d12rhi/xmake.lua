@@ -1,6 +1,7 @@
 target("D12RHI")
     set_kind("shared")
     add_deps("Engine",{public=true})
+    add_packages("imgui")
     add_files("**/*.cpp")
     add_headerfiles("**/*.hpp")
     add_headerfiles("**/*.h")

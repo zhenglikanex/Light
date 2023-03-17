@@ -5,6 +5,7 @@
 
 #include "log/log.h"
 
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"
 
 namespace light
@@ -157,5 +158,9 @@ namespace light
 			event_callback_(event);
 		}
 	}
-	
+
+	void* WindowsWindow::GetHwnd()
+	{
+		glfwGetWin32Window(window_);
+	}
 }
