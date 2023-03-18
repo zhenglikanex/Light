@@ -1,7 +1,7 @@
 #include "engine/application.h"
 
 #include "engine/event/key_event.h"
-#include "log/log.h"
+//#include "log/log.h"
 
 using namespace light;
 

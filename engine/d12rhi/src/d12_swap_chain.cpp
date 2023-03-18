@@ -112,7 +112,7 @@ namespace light::rhi
 	RenderTarget D12SwapChain::GetRenderTarget()
 	{
 		RenderTarget rt;
-		rt.AttacthAttachment(AttachmentPoint::kColor0, back_buffer_textures_[current_back_buffer_index_]);
+		rt.AttachAttachment(AttachmentPoint::kColor0, back_buffer_textures_[current_back_buffer_index_]);
 		return rt;
 	}
 

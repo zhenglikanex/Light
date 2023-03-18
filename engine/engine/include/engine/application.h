@@ -7,13 +7,8 @@
 #include "engine/layer/layer_stack.h"
 #include "engine/rhi/device.h"
 #include "engine/rhi/imgui.h"
+
 #include "engine/platform/window/window.h"
-
-#ifdef WINDOWS
-#include "Windows.h"
-#endif
-
-
 
 namespace light
 {
@@ -37,14 +32,10 @@ namespace light
 
 		rhi::Imgui* GetImgui();
 	private:
-
 		void OnEvent(const Event& e);
 
 		void OnWindowClosed(const WindowClosedEvent& e);
 
-#ifdef WINDOWS
-		HMODULE rhi_module_;
-#endif
 		bool running_;
 		std::unique_ptr<Window> window_;
 		rhi::DeviceHandle device_;

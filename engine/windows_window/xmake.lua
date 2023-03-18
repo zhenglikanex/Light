@@ -1,8 +1,0 @@
-target("WindowsWindow")
-    set_kind("static")
-    add_files("*/*.cpp")
-    add_headerfiles("**/**.h")
-    add_includedirs("../engine/include",{private = true})
-    add_includedirs("include",{public = true})
-    add_packages("glfw")
-    set_group("engine")

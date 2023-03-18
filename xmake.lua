@@ -21,6 +21,9 @@ package_end()
 
 add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex","imgui docking")
 
+if is_os("windows") then 
+    add_defines("WINDOWS")
+end
 
 -- 如果当前编译模式是debug
 if is_mode("debug") then
@@ -40,10 +43,10 @@ add_defines("UNICODE")
 
 set_rundir(".")
 
+
 includes("engine")
 includes("game")
 includes("test")
-
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

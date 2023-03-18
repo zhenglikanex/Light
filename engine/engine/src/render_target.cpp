@@ -1,8 +1,8 @@
-#include "rhi/render_target.h"
+#include "engine/rhi/render_target.h"
 
 namespace light::rhi
 {
-	void RenderTarget::AttacthAttachment(AttachmentPoint attachment_point, TextureHandle texture)
+	void RenderTarget::AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture)
 	{
 		Attachment attachment;
 		attachment.texture = texture;
@@ -10,7 +10,7 @@ namespace light::rhi
 		attachments_[static_cast<uint32_t>(attachment_point)] = attachment;
 	}
 
-	void RenderTarget::AttacthAttachment(AttachmentPoint attachment_point, TextureHandle texture, uint32_t mip_level,
+	void RenderTarget::AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture, uint32_t mip_level,
 		uint32_t array_slice)
 	{
 		Attachment attachment;

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "engine/platform/window/window.h"
 #include "engine/event/event.h"
 
@@ -8,7 +10,7 @@ namespace light
 	class WindowsWindow : public Window
 	{
 	public:
-		WindowsWindow(const WindowParams& params);
+		explicit WindowsWindow(const WindowParams& params);
 
 		~WindowsWindow() override;
 

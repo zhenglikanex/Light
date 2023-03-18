@@ -1,0 +1,8 @@
+target("Platform")
+    set_kind("static")
+    add_files("*/*.cpp")
+    add_headerfiles("**/**.h")
+    add_includedirs("include",{private = true})
+    add_deps("Engine")
+    add_packages("glfw")
+    set_group("engine")

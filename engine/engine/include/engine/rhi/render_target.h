@@ -50,9 +50,9 @@ namespace light::rhi
 
 		using AttachmentArray = std::array<Attachment, static_cast<uint32_t>(AttachmentPoint::kNumAttachmentPoints)>;
 
-		void AttacthAttachment(AttachmentPoint attachment_point, TextureHandle texture);
+		void AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture);
 
-		void AttacthAttachment(AttachmentPoint attachment_point, TextureHandle texture, uint32_t mip_level,uint32_t array_slice = 0);
+		void AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture, uint32_t mip_level,uint32_t array_slice = 0);
 
 		Attachment GetAttachment(AttachmentPoint attachment_point) const;
 

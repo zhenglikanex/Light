@@ -91,5 +91,10 @@ namespace light::rhi
 	{
 		ImGui_ImplDX12_Shutdown();
 	}
+
+    Imgui* CreateImgui()
+    {
+        return new D12Imgui();
+    }
 }
 

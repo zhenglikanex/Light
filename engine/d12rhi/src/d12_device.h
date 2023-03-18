@@ -81,9 +81,5 @@ namespace light::rhi
 		std::unordered_map<size_t, RootSignature*> root_signature_cache_;
 		std::array<std::unique_ptr<DescriptorAllocator>, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES> descriptor_allocators_;
 	};
-}
 
-extern "C" inline __declspec(dllexport)  light::rhi::Device* CreateDevice(void* hwnd)
-{
-	return new light::rhi::D12Device(hwnd);
 }

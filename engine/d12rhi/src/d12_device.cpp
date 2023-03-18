@@ -206,4 +206,9 @@ namespace light::rhi
 	{
 		return device_->GetDescriptorHandleIncrementSize(type);
 	}
+
+	Device* CreateD12Device(void* hwnd)
+	{
+		return new D12Device(hwnd);
+	}
 }

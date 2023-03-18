@@ -7,7 +7,7 @@
 #include <queue>
 #include <mutex>
 
-#include <rhi/resource.h>
+#include "engine/rhi/resource.h"
 
 #include "d3dx12.h"
 

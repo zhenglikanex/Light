@@ -79,7 +79,3 @@ namespace light::rhi
 	};
 }
 
-extern "C" inline __declspec(dllexport) light::rhi::D12Imgui* CreateImgui()
-{
-	return new light::rhi::D12Imgui();
-}

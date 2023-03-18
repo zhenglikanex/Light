@@ -50,4 +50,6 @@ namespace light::rhi
 	{
 		return mip_level + array_slice * mip_levels;
 	}
+
+	extern Device* CreateD12Device(void* hwnd);
 }

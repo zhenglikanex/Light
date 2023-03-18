@@ -2,8 +2,6 @@
 
 #include "engine/application.h"
 #include "engine/rhi/imgui.h"
-#include "engine/imgui/imgui_impl_dx12.h"
-#include "engine/imgui/imgui_impl_glfw.h"
 
 #include "imgui.h"
 
@@ -35,21 +33,19 @@ namespace light
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
 
-        // Setup Platform/Renderer backends
-        ImGui_ImplGlfw_InitForOther((GLFWwindow*)Application::Get().GetWindow()->GetNativeWindow(),true);
         Application::Get().GetImgui()->Init(Application::Get().GetDevice());
 	}
 
 	void ImguiLayer::OnDeattach()
 	{
         Application::Get().GetImgui()->Shutdown();
-        ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 	}
 
 	void ImguiLayer::OnUpdate()
 	{
-        Application::Get().GetImgui()->OnUpdate();
+        
+        Application::Get().GetImgui()->OnRender();
 	}
 
 	void ImguiLayer::OnEvent(const Event& e)
