@@ -1,8 +1,8 @@
 target("Engine")
     set_kind("static")
-    add_deps("Log")
     if is_os("windows") then 
         add_deps("WindowsWindow")
+        add_defines("WINDOWS")
     end
     add_packages("glm","imgui")
     add_files("*/*.cpp")

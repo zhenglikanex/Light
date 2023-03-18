@@ -9,6 +9,12 @@
 #include "engine/rhi/imgui.h"
 #include "engine/platform/window/window.h"
 
+#ifdef WINDOWS
+#include "Windows.h"
+#endif
+
+
+
 namespace light
 {
 	class Window;
@@ -31,14 +37,16 @@ namespace light
 
 		rhi::Imgui* GetImgui();
 	private:
-		HMODULE rhi_module_;
+
 		void OnEvent(const Event& e);
 
 		void OnWindowClosed(const WindowClosedEvent& e);
 
+#ifdef WINDOWS
+		HMODULE rhi_module_;
+#endif
 		bool running_;
 		std::unique_ptr<Window> window_;
-		rhi::DeviceHandle device_;
 		rhi::DeviceHandle device_;
 		rhi::SwapChainHandle swap_chain_;
 		rhi::Imgui* imgui_;
