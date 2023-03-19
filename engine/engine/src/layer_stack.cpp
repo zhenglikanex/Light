@@ -1,5 +1,7 @@
 #include "engine/layer/layer_stack.h"
 
+#include "engine/rhi/render_target.h"
+
 namespace light
 {
 	LayerStack::~LayerStack()
@@ -8,7 +10,8 @@ namespace light
 			auto it = layers_.begin();
 			while (it != layers_.end())
 			{
-				(*it)->OnDeattach();
+				(*it)->OnDetach();
+				++it;
 			}
 		}
 
@@ -16,7 +19,8 @@ namespace light
 			auto it = overlay_layers_.begin();
 			while (it != overlay_layers_.end())
 			{
-				(*it)->OnDeattach();
+				(*it)->OnDetach();
+				++it;
 			}
 		}
 	}
@@ -39,6 +43,7 @@ namespace light
 			while (it != overlay_layers_.rend())
 			{
 				(*it)->OnEvent(e);
+				++it;
 			}
 		}
 		
@@ -47,17 +52,19 @@ namespace light
 			while (it != layers_.rend())
 			{
 				(*it)->OnEvent(e);
+				++it;
 			}
 		}
 	}
 
-	void LayerStack::OnUpdate()
+	void LayerStack::OnUpdate(const rhi::RenderTarget& render_target)
 	{
 		{
 			auto it = layers_.begin();
 			while (it != layers_.end())
 			{
-				(*it)->OnUpdate();
+				(*it)->OnUpdate(render_target);
+				++it;
 			}
 		}
 
@@ -65,7 +72,8 @@ namespace light
 			auto it = overlay_layers_.begin();
 			while (it != overlay_layers_.end())
 			{
-				(*it)->OnUpdate();
+				(*it)->OnUpdate(render_target);
+				++it;
 			}
 		}
 	}

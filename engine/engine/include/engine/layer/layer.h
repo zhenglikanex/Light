@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/event/event.h"
+#include "engine/rhi/render_target.h"
 
 namespace light
 {
@@ -13,9 +14,9 @@ namespace light
 		virtual ~Layer() = default;
 
 		virtual void OnAttach() = 0;
-		virtual void OnDeattach() = 0;
+		virtual void OnDetach() = 0;
 
-		virtual void OnUpdate() = 0;
+		virtual void OnUpdate(const rhi::RenderTarget& render_target) = 0;
 		virtual void OnEvent(const Event& e) = 0;
 	};
 }

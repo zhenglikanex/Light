@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/layer/layer.h"
+#include "engine/rhi/render_target.h"
 
 namespace light
 {
@@ -8,10 +9,10 @@ namespace light
 	{
 	public:
 		// 通过 Layer 继承
-		virtual void OnAttach() override;
-		virtual void OnDeattach() override;
-		virtual void OnUpdate() override;
-		virtual void OnEvent(const Event& e) override;
+		void OnAttach() override;
+		void OnDetach() override;
+		void OnUpdate(const rhi::RenderTarget& render_target) override;
+		void OnEvent(const Event& e) override;
 	private:
 
 		

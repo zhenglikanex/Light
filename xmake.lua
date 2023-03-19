@@ -19,7 +19,8 @@ package("DirectXTex")
     end)
 package_end()
 
-add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex","imgui docking")
+add_requires("imgui docking",{debug = true})
+add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex")
 
 if is_os("windows") then 
     add_defines("WINDOWS")

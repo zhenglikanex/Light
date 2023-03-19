@@ -5,7 +5,6 @@
 #include "imgui_impl_dx12.h"
 
 #include <d3d12.h>
-#include <dxgi1_4.h>
 
 namespace light::rhi
 {
@@ -19,7 +18,7 @@ namespace light::rhi
 
 		void BeginFrame() override;
 
-		void OnRender() override;
+		void OnRender(const RenderTarget& render_target) override;
 
 		void Shutdown() override;
 
@@ -32,32 +31,32 @@ namespace light::rhi
 
 		void WaitForLastSubmittedFrame()
 		{
-			FrameContext* frame_ctx = &g_frameContext[g_frameIndex % kNumFramesInFlight];
+			FrameContext* frame_ctx = &frame_context_[frame_index_ % kNumFramesInFlight];
 
 			UINT64 fence_value = frame_ctx->fence_value;
 			if (fence_value == 0)
 				return; // No fence was signaled
 
 			frame_ctx->fence_value = 0;
-			if (g_fence_->GetCompletedValue() >= fence_value)
+			if (fence_->GetCompletedValue() >= fence_value)
 				return;
 
-			g_fence_->SetEventOnCompletion(fence_value, g_fence_event_);
-			WaitForSingleObject(g_fence_event_, INFINITE);
+			fence_->SetEventOnCompletion(fence_value, fence_event_);
+			WaitForSingleObject(fence_event_, INFINITE);
 		}
 
 		FrameContext* WaitForNextFrameResources()
 		{
-			UINT next_frame_index = g_frameIndex + 1;
-			g_frameIndex = next_frame_index;
+			UINT next_frame_index = frame_index_ + 1;
+			frame_index_ = next_frame_index;
 
-			FrameContext* frame_ctx = &g_frameContext[next_frame_index % kNumFramesInFlight];
+			FrameContext* frame_ctx = &frame_context_[next_frame_index % kNumFramesInFlight];
 			if (UINT64 fence_value = frame_ctx->fence_value; fence_value != 0) // means no fence was signaled
 			{
 				frame_ctx->fence_value = 0;
-				g_fence_->SetEventOnCompletion(fence_value, g_fence_event_);
+				fence_->SetEventOnCompletion(fence_value, fence_event_);
 
-				WaitForSingleObject(g_fence_event_, INFINITE);
+				WaitForSingleObject(fence_event_, INFINITE);
 			}
 
 			return frame_ctx;
@@ -67,15 +66,14 @@ namespace light::rhi
 		static constexpr int kNumFramesInFlight = 3;
 
 		D12Device* d12_device_ = nullptr;
-		FrameContext g_frameContext[kNumFramesInFlight] = {};
-		UINT g_frameIndex = 0;
-		ID3D12DescriptorHeap* g_pd3d_rtv_desc_heap_ = nullptr;
-		ID3D12DescriptorHeap* g_pd3d_srv_desc_heap_ = nullptr;
-		ID3D12CommandQueue* g_pd3d_command_queue_ = nullptr;
-		ID3D12GraphicsCommandList* g_pd3d_command_list_ = nullptr;
-		ID3D12Fence* g_fence_ = nullptr;
-		HANDLE g_fence_event_ = nullptr;
-		UINT64 g_fence_last_signaled_value_ = 0;
+		FrameContext frame_context_[kNumFramesInFlight] = {};
+		UINT frame_index_ = 0;
+		Handle<ID3D12DescriptorHeap> pd3d_rtv_desc_heap_ = nullptr;
+		Handle<ID3D12DescriptorHeap> pd3d_srv_desc_heap_ = nullptr;
+		Handle<ID3D12GraphicsCommandList> pd3d_command_list_ = nullptr;
+		Handle<ID3D12Fence> fence_ = nullptr;
+		HANDLE fence_event_ = nullptr;
+		UINT64 fence_last_signaled_value_ = 0;
 	};
 }
 

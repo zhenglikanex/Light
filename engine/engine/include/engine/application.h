@@ -28,9 +28,9 @@ namespace light
 
 		Window* GetWindow();
 
-		rhi::Device* GetDevice();
+		rhi::Device* GetDevice() { return device_; }
 
-		rhi::Imgui* GetImgui();
+		rhi::Imgui* GetImgui() { return imgui_.get(); }
 	private:
 		void OnEvent(const Event& e);
 
@@ -40,7 +40,7 @@ namespace light
 		std::unique_ptr<Window> window_;
 		rhi::DeviceHandle device_;
 		rhi::SwapChainHandle swap_chain_;
-		rhi::Imgui* imgui_;
+		std::unique_ptr<rhi::Imgui> imgui_;
 		LayerStack layer_stack_;
 	};
 

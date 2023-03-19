@@ -13,7 +13,7 @@ namespace light::rhi
 
 		virtual void BeginFrame() = 0;
 
-		virtual void OnRender() = 0;
+		virtual void OnRender(const RenderTarget& render_target) = 0;
 
 		virtual void Shutdown() = 0;
 	};

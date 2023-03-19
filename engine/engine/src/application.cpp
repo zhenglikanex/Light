@@ -1,8 +1,10 @@
 #include "engine/application.h"
 
 //#include "engine/log/log.h"
+#include "engine/layer/imgui_layer.h"
 
 #include "imgui.h"
+
 
 using namespace std::placeholders;
 
@@ -52,18 +54,23 @@ namespace light
 		window_ = std::unique_ptr<Window>(CreatePlatformWindow(params));
 		window_->SetEventCallback(std::bind(&Application::OnEvent, this,_1));
 
-		device_ = rhi::CreateD12Device(window_->GetHwnd());
-		imgui_ = rhi::CreateImgui();
+		device_ =  rhi::DeviceHandle::Create(rhi::CreateD12Device(window_->GetHwnd()));
+
+		swap_chain_ = device_->CreateSwapChain();
+
+		imgui_ = std::unique_ptr<rhi::Imgui>(rhi::CreateImgui());
 
 		if(imgui_)
 		{
 			imgui_->Init(device_);
 		}
+
+		layer_stack_.PushLayer(new ImguiLayer());
 	}
 
 	Application::~Application()
 	{
-		
+		imgui_->Shutdown();
 	}
 
 	void Application::OnUpdate()
@@ -75,9 +82,24 @@ namespace light
 	{
 		while (running_)
 		{
-			layer_stack_.OnUpdate();
-
 			window_->OnUpdate();
+
+			auto command_list = device_->GetCommandList(rhi::CommandListType::kDirect);
+
+			auto render_target = swap_chain_->GetRenderTarget();
+
+			command_list->SetRenderTarget(render_target);
+			command_list->SetViewport(render_target.GetViewport());
+			command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+
+			constexpr float clear_color[] = { 1.0, 0.0, 0.0, 1.0 };
+			command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+
+			command_list->ExecuteCommandList();
+
+			layer_stack_.OnUpdate(render_target);
+
+			swap_chain_->Present();
 		}	
 	}
 
