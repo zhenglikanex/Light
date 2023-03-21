@@ -1,10 +1,10 @@
-#include "d12_imgui.h"
+#include "d12_imgui_renderer.h"
 #include "imgui_impl_dx12.h"
 #include "d12_device.h"
 
 namespace light::rhi
 {
-	bool D12Imgui::Init(Device* device)
+	bool D12ImGuiRenderer::Init(Device* device)
 	{
 		d12_device_ = CheckedCast<D12Device*>(device);
 
@@ -42,18 +42,18 @@ namespace light::rhi
         return true;
 	}
 
-    void D12Imgui::BeginFrame()
+    void D12ImGuiRenderer::BeginFrame()
     {
         ImGui_ImplDX12_NewFrame();
-        ImGui::NewFrame();
+        ::ImGui::NewFrame();
     }
 
-	void D12Imgui::OnRender(const RenderTarget& render_target)
+	void D12ImGuiRenderer::EndFrame(const RenderTarget& render_target)
 	{
         // Rendering
         ImGui::Render();
 
-        auto draw_data = ImGui::GetDrawData();
+        auto draw_data = ::ImGui::GetDrawData();
         if (draw_data && draw_data->CmdListsCount != 0)
         {
             FrameContext* frameCtx = WaitForNextFrameResources();
@@ -96,20 +96,18 @@ namespace light::rhi
                 ImGui::UpdatePlatformWindows();
                 ImGui::RenderPlatformWindowsDefault(nullptr, (void*)pd3d_command_list_);
             }
-        }
-
-        
+        }   
 	}
 
-	void D12Imgui::Shutdown()
+	void D12ImGuiRenderer::Shutdown()
 	{
         WaitForLastSubmittedFrame();
 		ImGui_ImplDX12_Shutdown();
 	}
 
-    Imgui* CreateImgui()
+    ImGuiRenderer* CreateImGuiRenderer()
     {
-        return new D12Imgui();
+        return new D12ImGuiRenderer();
     }
 }
 

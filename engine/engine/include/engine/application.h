@@ -6,7 +6,7 @@
 #include "engine/event/windows_event.h"
 #include "engine/layer/layer_stack.h"
 #include "engine/rhi/device.h"
-#include "engine/rhi/imgui.h"
+#include "engine/rhi/imgui_renderer.h"
 
 #include "engine/platform/window/window.h"
 
@@ -30,7 +30,7 @@ namespace light
 
 		rhi::Device* GetDevice() { return device_; }
 
-		rhi::Imgui* GetImgui() { return imgui_.get(); }
+		rhi::ImGuiRenderer* GetImgui() { return imgui_renderer_.get(); }
 	private:
 		void OnEvent(const Event& e);
 
@@ -40,7 +40,7 @@ namespace light
 		std::unique_ptr<Window> window_;
 		rhi::DeviceHandle device_;
 		rhi::SwapChainHandle swap_chain_;
-		std::unique_ptr<rhi::Imgui> imgui_;
+		std::unique_ptr<rhi::ImGuiRenderer> imgui_renderer_;
 		LayerStack layer_stack_;
 	};
 

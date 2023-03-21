@@ -37,7 +37,7 @@ namespace light
 
 	void LayerStack::OnEvent(const Event& e)
 	{
-		// ???????????????????,????§Ú??????
+		// ???????????????????,????Ð¸??????
 		{
 			auto it = overlay_layers_.rbegin();
 			while (it != overlay_layers_.rend())
@@ -57,13 +57,13 @@ namespace light
 		}
 	}
 
-	void LayerStack::OnUpdate(const rhi::RenderTarget& render_target)
+	void LayerStack::OnUpdate()
 	{
 		{
 			auto it = layers_.begin();
 			while (it != layers_.end())
 			{
-				(*it)->OnUpdate(render_target);
+				(*it)->OnUpdate();
 				++it;
 			}
 		}
@@ -72,7 +72,25 @@ namespace light
 			auto it = overlay_layers_.begin();
 			while (it != overlay_layers_.end())
 			{
-				(*it)->OnUpdate(render_target);
+				(*it)->OnUpdate();
+				++it;
+			}
+		}
+
+		{
+			auto it = layers_.begin();
+			while (it != layers_.end())
+			{
+				(*it)->OnImGuiRender();
+				++it;
+			}
+		}
+
+		{
+			auto it = overlay_layers_.begin();
+			while (it != overlay_layers_.end())
+			{
+				(*it)->OnImGuiRender();
 				++it;
 			}
 		}

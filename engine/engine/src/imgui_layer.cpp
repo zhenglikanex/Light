@@ -1,8 +1,5 @@
 #include "engine/layer/imgui_layer.h"
 
-#include "engine/application.h"
-#include "engine/rhi/imgui.h"
-
 #include "imgui.h"
 
 namespace light
@@ -16,18 +13,20 @@ namespace light
 	{
 	}
 
-	void ImguiLayer::OnUpdate(const rhi::RenderTarget& render_target)
+	void ImguiLayer::OnUpdate()
 	{
-		Application::Get().GetImgui()->BeginFrame();
-
-		bool show_demo = true;
+		static bool show_demo = true;
 		ImGui::ShowDemoWindow(&show_demo);
+	}
 
-        Application::Get().GetImgui()->OnRender(render_target);
+	void ImguiLayer::OnImGuiRender()
+	{
+
 	}
 
 	void ImguiLayer::OnEvent(const Event& e)
 	{
+
 	}
 }
 

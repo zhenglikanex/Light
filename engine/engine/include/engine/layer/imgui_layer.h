@@ -8,13 +8,11 @@ namespace light
 	class ImguiLayer : public Layer
 	{
 	public:
-		// 通过 Layer 继承
 		void OnAttach() override;
 		void OnDetach() override;
-		void OnUpdate(const rhi::RenderTarget& render_target) override;
+		void OnUpdate() override;
+		void OnImGuiRender() override;
 		void OnEvent(const Event& e) override;
-	private:
-
-		
+	private:		
 	};
 }

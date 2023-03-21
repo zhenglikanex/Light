@@ -16,7 +16,9 @@ namespace light
 		virtual void OnAttach() = 0;
 		virtual void OnDetach() = 0;
 
-		virtual void OnUpdate(const rhi::RenderTarget& render_target) = 0;
+		virtual void OnUpdate() = 0;
+		virtual void OnImGuiRender() = 0;
+
 		virtual void OnEvent(const Event& e) = 0;
 	};
 }

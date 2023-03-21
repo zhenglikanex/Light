@@ -1,6 +1,6 @@
 #include "engine/application.h"
 
-//#include "engine/log/log.h"
+#include "engine/log/log.h"
 #include "engine/layer/imgui_layer.h"
 
 #include "imgui.h"
@@ -20,7 +20,7 @@ namespace light
 	Application::Application()
 		: running_(true)
 	{
-		//log::Init();
+		log::Init();
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -58,11 +58,11 @@ namespace light
 
 		swap_chain_ = device_->CreateSwapChain();
 
-		imgui_ = std::unique_ptr<rhi::Imgui>(rhi::CreateImgui());
+		imgui_renderer_ = std::unique_ptr<rhi::ImGuiRenderer>(rhi::CreateImGuiRenderer());
 
-		if(imgui_)
+		if(imgui_renderer_)
 		{
-			imgui_->Init(device_);
+			imgui_renderer_->Init(device_);
 		}
 
 		layer_stack_.PushLayer(new ImguiLayer());
@@ -70,7 +70,7 @@ namespace light
 
 	Application::~Application()
 	{
-		imgui_->Shutdown();
+		imgui_renderer_->Shutdown();
 	}
 
 	void Application::OnUpdate()
@@ -82,8 +82,6 @@ namespace light
 	{
 		while (running_)
 		{
-			window_->OnUpdate();
-
 			auto command_list = device_->GetCommandList(rhi::CommandListType::kDirect);
 
 			auto render_target = swap_chain_->GetRenderTarget();
@@ -97,9 +95,15 @@ namespace light
 
 			command_list->ExecuteCommandList();
 
-			layer_stack_.OnUpdate(render_target);
+			imgui_renderer_->BeginFrame();
+
+			layer_stack_.OnUpdate();
+
+			imgui_renderer_->EndFrame(render_target);
 
 			swap_chain_->Present();
+
+			window_->OnUpdate();
 		}	
 	}
 
@@ -112,7 +116,7 @@ namespace light
 	{
 		EventDispatcher dispatcher(e);
 		
-		//LOG_ENGINE_INFO(e);
+		LOG_ENGINE_INFO(e);
 
 		dispatcher.Dispatch<WindowClosedEvent>(std::bind(&Application::OnWindowClosed,this,_1));
 	}

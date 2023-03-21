@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/rhi/imgui.h"
+#include "engine/rhi/imgui_renderer.h"
 
 #include "imgui_impl_dx12.h"
 
@@ -10,7 +10,7 @@ namespace light::rhi
 {
 	class D12Device;
 
-	class D12Imgui : public Imgui
+	class D12ImGuiRenderer: public ImGuiRenderer
 	{
 	public:
 		// 通过 Imgui 继承
@@ -18,7 +18,7 @@ namespace light::rhi
 
 		void BeginFrame() override;
 
-		void OnRender(const RenderTarget& render_target) override;
+		void EndFrame(const RenderTarget& render_target) override;
 
 		void Shutdown() override;
 

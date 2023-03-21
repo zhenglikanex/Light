@@ -24,7 +24,8 @@ namespace light
 	{
 		if (!glfwInit())
 		{
-			//LOG_ENGINE_ERROR("glfw init failed!")
+			LOG_ENGINE_ERROR("glfw init failed!");
+			return;
 		}
 
 		glfwDefaultWindowHints();
@@ -34,7 +35,8 @@ namespace light
 		window_ = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, nullptr);
 		if (!window_)
 		{
-			//LOG_ENGINE_ERROR("glfw windows create failed!")
+			LOG_ENGINE_ERROR("glfw windows create failed!");
+			return;
 		}
 
 		glfwSetWindowUserPointer(window_, this);
@@ -130,6 +132,7 @@ namespace light
 		if(ImGui::GetCurrentContext())
 		{
 			ImGui_ImplGlfw_InitForOther(window_, true);
+			ImGui_ImplGlfw_NewFrame();
 		}
 	}
 
@@ -161,7 +164,7 @@ namespace light
 
 	void* WindowsWindow::GetNativeWindow() const
 	{
-		return nullptr;
+		return window_;
 	}
 
 	void WindowsWindow::SetVSync(bool vsync)

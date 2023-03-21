@@ -4,19 +4,19 @@
 
 namespace light::rhi
 {
-	class Imgui
+	class ImGuiRenderer
 	{
 	public:
-		virtual ~Imgui() = default;
+		virtual ~ImGuiRenderer() = default;
 
 		virtual bool Init(Device* device) = 0;
 
 		virtual void BeginFrame() = 0;
 
-		virtual void OnRender(const RenderTarget& render_target) = 0;
+		virtual void EndFrame(const RenderTarget& render_target) = 0;
 
 		virtual void Shutdown() = 0;
 	};
 
-	extern Imgui* CreateImgui();
+	extern ImGuiRenderer* CreateImGuiRenderer();
 }
