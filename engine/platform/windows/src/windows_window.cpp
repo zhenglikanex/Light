@@ -4,7 +4,7 @@
 #include "engine/event/key_event.h"
 #include "engine/event/mouse_event.h"
 
-//#include "log/log.h"
+#include "engine/log/log.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"
@@ -47,6 +47,14 @@ namespace light
 			WindowResizedEvent e(width, height);
 			windows_window->OnEvent(e);
 		});
+
+		glfwSetWindowSizeCallback(window_, [](GLFWwindow* window, int width, int height)
+			{
+				auto windows_window = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
+
+				WindowResizedEvent e(width, height);
+				windows_window->OnEvent(e);
+			});
 
 		glfwSetWindowCloseCallback(window_, [](GLFWwindow* window)
 		{
