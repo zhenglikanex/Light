@@ -11,14 +11,14 @@ namespace light
 	class Layer
 	{
 	public:
-		virtual ~Layer() = default;
+		virtual ~Layer() {};
 
-		virtual void OnAttach() = 0;
-		virtual void OnDetach() = 0;
+		virtual void OnAttach() {};
+		virtual void OnDetach() {};
 
-		virtual void OnUpdate() = 0;
-		virtual void OnImGuiRender() = 0;
+		virtual void OnUpdate() {};
+		virtual void OnImGuiRender() {};
 
-		virtual void OnEvent(const Event& e) = 0;
+		virtual void OnEvent(const Event& e) {};
 	};
 }

@@ -5,7 +5,6 @@
 
 #include "imgui.h"
 
-
 using namespace std::placeholders;
 
 namespace light
@@ -65,7 +64,7 @@ namespace light
 			imgui_renderer_->Init(device_);
 		}
 
-		layer_stack_.PushLayer(new ImguiLayer());
+		layer_stack_.PushOverlayLayer(new ImguiLayer());
 	}
 
 	Application::~Application()
@@ -76,6 +75,16 @@ namespace light
 	void Application::OnUpdate()
 	{
 		
+	}
+
+	void Application::PushLayer(Layer* layer)
+	{
+		layer_stack_.PushLayer(layer);
+	}
+
+	void Application::PushOverlayLayer(Layer* layer)
+	{
+		layer_stack_.PushOverlayLayer(layer);
 	}
 
 	void Application::Run()

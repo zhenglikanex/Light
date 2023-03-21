@@ -22,6 +22,8 @@ namespace light
 		: Window(params)
 		  , window_(nullptr)
 	{
+		SetConsoleOutputCP(CP_UTF8);
+
 		if (!glfwInit())
 		{
 			LOG_ENGINE_ERROR("glfw init failed!");

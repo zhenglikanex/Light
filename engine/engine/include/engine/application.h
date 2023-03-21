@@ -26,6 +26,10 @@ namespace light
 
 		void Run();
 
+		void PushLayer(Layer* layer);
+
+		void PushOverlayLayer(Layer* layer);
+
 		Window* GetWindow();
 
 		rhi::Device* GetDevice() { return device_; }
