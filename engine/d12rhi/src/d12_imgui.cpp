@@ -53,34 +53,52 @@ namespace light::rhi
         // Rendering
         ImGui::Render();
 
-        FrameContext* frameCtx = WaitForNextFrameResources();
-        frameCtx->command_allocator->Reset();
-
-        pd3d_command_list_->Reset(frameCtx->command_allocator, nullptr);
-
-        auto d12_texture = CheckedCast<D12Texture*>(render_target.GetAttachment(AttachmentPoint::kColor0).texture.Get());
-        auto rtv = d12_texture->GetRTV();
-        pd3d_command_list_->OMSetRenderTargets(1,&rtv,false,nullptr);
-        pd3d_command_list_->SetDescriptorHeaps(1, &pd3d_srv_desc_heap_);
-        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), pd3d_command_list_);
-        pd3d_command_list_->Close();
-
-        auto command_queue = CheckedCast<D12CommandQueue*>(d12_device_->GetCommandQueue(CommandListType::kDirect));
-        auto d3d12_queue = command_queue->GetNative();
-        d3d12_queue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&pd3d_command_list_));
-
-        ImGuiIO& io = ImGui::GetIO();
-        // Update and Render additional Platform Windows
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        auto draw_data = ImGui::GetDrawData();
+        if (draw_data && draw_data->CmdListsCount != 0)
         {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault(nullptr, (void*)pd3d_command_list_);
+            FrameContext* frameCtx = WaitForNextFrameResources();
+            frameCtx->command_allocator->Reset();
+
+            pd3d_command_list_->Reset(frameCtx->command_allocator, nullptr);
+
+            auto d12_texture = CheckedCast<D12Texture*>(render_target.GetAttachment(AttachmentPoint::kColor0).texture.Get());
+            auto rtv = d12_texture->GetRTV();
+
+            pd3d_command_list_->OMSetRenderTargets(1, &rtv, false, nullptr);
+            pd3d_command_list_->SetDescriptorHeaps(1, &pd3d_srv_desc_heap_);
+            ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), pd3d_command_list_);
+
+            pd3d_command_list_->Close();
+
+            auto command_queue = CheckedCast<D12CommandQueue*>(d12_device_->GetCommandQueue(CommandListType::kDirect));
+            auto d3d12_queue = command_queue->GetNative();
+            d3d12_queue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&pd3d_command_list_));
+
+            ImGuiIO& io = ImGui::GetIO();
+            // Update and Render additional Platform Windows
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault(nullptr, (void*)pd3d_command_list_);
+            }
+
+            UINT64 fence_value = fence_last_signaled_value_ + 1;
+            d3d12_queue->Signal(fence_, fence_value);
+            fence_last_signaled_value_ = fence_value;
+            frameCtx->fence_value = fence_value;
+        }
+        else
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            // Update and Render additional Platform Windows
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault(nullptr, (void*)pd3d_command_list_);
+            }
         }
 
-        UINT64 fence_value = fence_last_signaled_value_ + 1;
-        d3d12_queue->Signal(fence_, fence_value);
-        fence_last_signaled_value_ = fence_value;
-        frameCtx->fence_value = fence_value;
+        
 	}
 
 	void D12Imgui::Shutdown()
