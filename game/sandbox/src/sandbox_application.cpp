@@ -11,8 +11,7 @@ class ExampleLayer : public Layer
 {
 	virtual void OnUpdate() override
 	{
-		std::cout << "我";
-		//LOG_GAME_INFO("Key 1 Is Pressed 我 ： {}",Input::IsKeyPressed(Input::Key::KEY_1));
+		LOG_GAME_INFO("Key 1 Is Pressed 我 ： {}",Input::IsKeyPressed(Input::Key::KEY_1));
 	}
 
 	virtual void OnImGuiRender() override
