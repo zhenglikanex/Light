@@ -19,13 +19,13 @@ namespace light::rhi
 		virtual uint64_t ExecuteCommandList(CommandList* command_list) = 0;
 		virtual uint64_t ExecuteCommandLists(uint64_t num, CommandList* command_lists) = 0;
 
-		// µİÔöfence²¢·¢ËÍĞÅºÅ
+		// é€’å¢fenceå¹¶å‘é€ä¿¡å·
 		virtual uint64_t Signal() = 0;
 
 		virtual bool IsFenceCompleted(uint64_t fence_value) = 0;
 		virtual void WaitForFenceValue(uint64_t fence_value) = 0;
 
-		// µÈ´ıµ±Ç°ËùÓĞµÄFightCommandList½áÊø
+		// ç­‰å¾…å½“å‰æ‰€æœ‰çš„FightCommandListç»“æŸ
 		virtual void Flush() = 0;
 
 		virtual void ProcessCommandLists() = 0;

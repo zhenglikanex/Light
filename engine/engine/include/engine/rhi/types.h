@@ -46,9 +46,9 @@ namespace light::rhi
 
 	enum class CpuAccess : uint8_t
 	{
-		kNone,		// ²»ÔÚCPU¶Ë·ÃÎÊ
-		kRead,		// ÔÚCPU¶Ë¶ÁÈ¡
-		kWrite		// ÔÚCPU¶ËĞ´Èë
+		kNone,		// ä¸åœ¨CPUç«¯è®¿é—®
+		kRead,		// åœ¨CPUç«¯è¯»å–
+		kWrite		// åœ¨CPUç«¯å†™å…¥
 	};
 
 	enum class BufferType : uint8_t
@@ -555,9 +555,9 @@ namespace light::rhi
 	struct TextureSubresourceData
 	{
 		char* data = nullptr;
-		//Ã¿ĞĞÎÆÀíµÄ×Ö½ÚÊı
+		//æ¯è¡Œçº¹ç†çš„å­—èŠ‚æ•°
 		uint32_t row_pitch = 0;
-		//Ã¿¸öÎÆÀíÊı×éÔªËØµÄ×Ö½ÚÊı
+		//æ¯ä¸ªçº¹ç†æ•°ç»„å…ƒç´ çš„å­—èŠ‚æ•°
 		uint32_t depth_pitch = 0;
 		uint32_t data_size = 0;
 	};

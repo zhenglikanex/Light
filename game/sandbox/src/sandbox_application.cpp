@@ -3,8 +3,8 @@
 #include "engine/event/key_event.h"
 #include "engine/log/log.h"
 #include "engine/input/input.h"
+#include "imgui.h"
 
-#include <iostream>
 using namespace light;
 
 class ExampleLayer : public Layer
@@ -16,7 +16,9 @@ class ExampleLayer : public Layer
 
 	virtual void OnImGuiRender() override
 	{
-		
+		ImGui::Begin("hello light");
+		ImGui::Button("hello light");
+		ImGui::End();
 	}
 
 	virtual void OnEvent(const Event& e) override

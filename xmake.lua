@@ -24,6 +24,7 @@ add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex"
 
 if is_os("windows") then 
     add_defines("WINDOWS")
+    add_defines("_CRT_SECURE_NO_WARNINGS")
 end
 
 -- 如果当前编译模式是debug
