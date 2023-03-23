@@ -1,6 +1,8 @@
 #include "engine/application.h"
-
 #include "engine/log/log.h"
+#include "engine/renderer/renderer.h"
+#include "engine/renderer/camera.h"
+
 #include "engine/layer/imgui_layer.h"
 
 #include "imgui.h"
@@ -18,6 +20,7 @@ namespace light
 
 	Application::Application()
 		: running_(true)
+		, camera_(-1.6, 1.6, -0.9, 0.9)
 	{
 		log::Init();
 
@@ -46,8 +49,8 @@ namespace light
 
 		WindowParams params;
 		params.title = "Light";
-		params.width = 1024;
-		params.height = 768;
+		params.width = 800;
+		params.height = 450;
 		params.vsync = false;
 
 		window_ = std::unique_ptr<Window>(CreatePlatformWindow(params));
@@ -56,6 +59,8 @@ namespace light
 		device_ =  rhi::DeviceHandle::Create(rhi::CreateD12Device(window_->GetHwnd()));
 
 		swap_chain_ = device_->CreateSwapChain();
+
+		renderer_ = std::make_unique<Renderer>(device_, swap_chain_);
 
 		imgui_renderer_ = std::unique_ptr<rhi::ImGuiRenderer>(rhi::CreateImGuiRenderer());
 
@@ -72,9 +77,9 @@ namespace light
 		imgui_renderer_->Shutdown();
 	}
 
-	void Application::OnUpdate()
+	void Application::OnRender(const rhi::RenderTarget& render_target)
 	{
-		
+		GetMainCamera().SetPosition(glm::vec3(0.0f, 0.f, 0.f));
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -91,18 +96,13 @@ namespace light
 	{
 		while (running_)
 		{
-			auto command_list = device_->GetCommandList(rhi::CommandListType::kDirect);
-
 			auto render_target = swap_chain_->GetRenderTarget();
 
-			command_list->SetRenderTarget(render_target);
-			command_list->SetViewport(render_target.GetViewport());
-			command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+			renderer_->BeginScene(camera_);
 
-			constexpr float clear_color[] = { 1.0, 0.0, 0.0, 1.0 };
-			command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+			OnRender(render_target);
 
-			command_list->ExecuteCommandList();
+			renderer_->EndScene();
 
 			imgui_renderer_->BeginFrame();
 

@@ -58,7 +58,7 @@ public:
 				{
 					image_data = (char*)stbi_load_16_from_memory(buf, len, &width, &height, &channel,0);
 
-					// Ç¿ÖÆ¶ÁÈ¡RGBA¸ñÊ½,²¿·ÖÍ¼ĞÎAPI²»Ö§³ÖRGBÎÆÀí,Èç(DirteX,Vualkan)
+					// å¼ºåˆ¶è¯»å–RGBAæ ¼å¼,éƒ¨åˆ†å›¾å½¢APIä¸æ”¯æŒRGBçº¹ç†,å¦‚(DirteX,Vualkan)
 					if (channel == 3)
 					{
 						channel = 4;
@@ -106,10 +106,10 @@ public:
 				}
 				else
 				{
-					// Ç¿ÖÆ¶ÁÈ¡RGBA¸ñÊ½,²¿·ÖÍ¼ĞÎAPI²»Ö§³ÖRGBÎÆÀí,Èç(DirteX,Vualkan)
+					// å¼ºåˆ¶è¯»å–RGBAæ ¼å¼,éƒ¨åˆ†å›¾å½¢APIä¸æ”¯æŒRGBçº¹ç†,å¦‚(DirteX,Vualkan)
 					image_data = (char*)stbi_load_from_memory(buf, len, &width, &height, &channel,0);
 
-					// Ç¿ÖÆ¶ÁÈ¡RGBA¸ñÊ½,²¿·ÖÍ¼ĞÎAPI²»Ö§³ÖRGBÎÆÀí,Èç(DirteX,Vualkan)
+					// å¼ºåˆ¶è¯»å–RGBAæ ¼å¼,éƒ¨åˆ†å›¾å½¢APIä¸æ”¯æŒRGBçº¹ç†,å¦‚(DirteX,Vualkan)
 					if (channel == 3)
 					{
 						channel = 4;

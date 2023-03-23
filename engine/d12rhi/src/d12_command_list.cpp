@@ -354,7 +354,7 @@ namespace light::rhi
 
 			const BufferDesc& desc = buffer->GetDesc();
 
-			CHECK(desc.type == BufferType::kVertex, "bufferµÄType²»ÊÇVertexBuffer");
+			CHECK(desc.type == BufferType::kVertex, "bufferçš„Typeä¸æ˜¯VertexBuffer");
 
 			auto d12_buffer = CheckedCast<D12Buffer*>(buffer.Get());
 
@@ -373,7 +373,7 @@ namespace light::rhi
 	{
 		const BufferDesc& desc = buffer->GetDesc();
 
-		CHECK(desc.type == BufferType::kVertex, "bufferµÄType²»ÊÇVertexBuffer");
+		CHECK(desc.type == BufferType::kVertex, "bufferçš„Typeä¸æ˜¯VertexBuffer");
 
 		auto d12_buffer = CheckedCast<D12Buffer*>(buffer);
 
@@ -392,7 +392,7 @@ namespace light::rhi
 	{
 		const BufferDesc& desc = buffer->GetDesc();
 
-		CHECK(desc.type == BufferType::kIndex,"bufferµÄType²»ÊÇIndexBuffer");
+		CHECK(desc.type == BufferType::kIndex,"bufferçš„Typeä¸æ˜¯IndexBuffer");
 
 		auto d12_buffer = CheckedCast<D12Buffer*>(buffer);
 
@@ -412,7 +412,7 @@ namespace light::rhi
 		uint32_t num_render_target = 0;
 		const auto& textures = render_target.GetAttachments();
 
-		//²éÕÒËùÓĞcolor target
+		//æŸ¥æ‰¾æ‰€æœ‰color target
 		for (uint32_t i = 0; i < static_cast<uint32_t>(AttachmentPoint::kDepthStencil); ++i)
 		{
 			const auto& attachment = textures[i];
@@ -504,13 +504,13 @@ namespace light::rhi
 
 	bool D12CommandList::Close(CommandList* pending_command_list)
 	{
-		//Ë¢ĞÂÊ£Óà×ÊÔ´ÆÁÕÏ
+		//åˆ·æ–°å‰©ä½™èµ„æºå±éšœ
 		FlushResourceBarriers();
 
-		//Ë¢ĞÂ¹ÒÆğµÄ×ÊÔ´ÆÁÕÏ
+		//åˆ·æ–°æŒ‚èµ·çš„èµ„æºå±éšœ
 		uint32_t num_pending_barries = resource_state_tracker_.FlushPendingResourceBarriers(CheckedCast<D12CommandList*>(pending_command_list));
 
-		// Ìá½»×îÖÕ×ÊÔ´µ¼È«¾Ö×´Ì¬
+		// æäº¤æœ€ç»ˆèµ„æºå¯¼å…¨å±€çŠ¶æ€
 		resource_state_tracker_.CommitFinalResourceStates();
 
 		d3d12_command_list_->Close();
