@@ -1,6 +1,7 @@
 #include "engine/light.h"
 
 #include "glm/gtx/transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 using namespace light;
 using namespace rhi;
@@ -57,9 +58,13 @@ public:
 		BindingParameter model_matrix_param;
 		model_matrix_param.InitAsConstants(sizeof(glm::mat4) / 4, 1);
 
+		BindingParameter material_param;
+		material_param.InitAsConstants(sizeof(glm::vec4) / 4, 2);
+
 		BindingLayout* binding_layout = new BindingLayout(1);
 		binding_layout->Add(static_cast<uint32_t>(Renderer::ParameterIndex::kSceneData), scene_data_param);
 		binding_layout->Add(static_cast<uint32_t>(Renderer::ParameterIndex::kModelMatrix), model_matrix_param);
+		binding_layout->Add(static_cast<uint32_t>(Renderer::ParameterIndex::kMaterial), material_param);
 
 		GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device->CreateInputLayout(std::move(vertex_attributes));
@@ -120,7 +125,7 @@ public:
 			
 			glm::mat4 model_matrix = glm::translate(glm::mat4(1), pos);
 			
-			Application::Get().GetRenderer()->Submit(pso_, vertex_buffer_, index_buffer_, model_matrix);
+			Application::Get().GetRenderer()->Submit(pso_, vertex_buffer_, index_buffer_, model_matrix,glm::vec4(color_,1.0f));
 		}
 
 		Application::Get().GetRenderer()->EndScene();
@@ -128,8 +133,8 @@ public:
 
 	virtual void OnImGuiRender(const Timestep& ts) override
 	{
-		ImGui::Begin("hello light");
-		ImGui::Button("hello light");
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("color",glm::value_ptr(color_));
 		ImGui::End();
 	}
 
@@ -142,6 +147,7 @@ private:
 	BufferHandle index_buffer_;
 	GraphicsPipelineHandle pso_;
 	OrthographicCamera camera_;
+	glm::vec3 color_;
 };
 
 class SandboxApplication : public Application

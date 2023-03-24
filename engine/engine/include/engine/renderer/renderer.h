@@ -13,6 +13,7 @@ namespace light
 		{
 			kSceneData = 0,
 			kModelMatrix,
+			kMaterial
 		};
 
 		struct SceneData
@@ -28,7 +29,7 @@ namespace light
 		void BeginScene(const OrthographicCamera& camera);
 
 		// 提交渲染命令
-		void Submit(rhi::GraphicsPipeline* pso, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer,const glm::mat4& model_matrix);
+		void Submit(rhi::GraphicsPipeline* pso, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix, const glm::vec4& color);
 
 		void EndScene();
 	private:
