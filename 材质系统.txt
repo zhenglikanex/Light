@@ -1,0 +1,8 @@
+Material    //包含shader和一堆数据资产
+MaterialInstance  //继承Material的运行时材质实例
+
+Material* mat = Material(Shader)
+
+MaterialInstance* im = new MaterialInstance(mat);
+
+mesh->setMaterial(im);
