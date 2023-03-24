@@ -2,9 +2,14 @@
 
 #include <memory>
 
+#include <chrono>
+
+#include "engine/core/timestep.h"
+
 #include "engine/event/event.h"
 #include "engine/event/windows_event.h"
 #include "engine/layer/layer_stack.h"
+
 #include "engine/rhi/device.h"
 #include "engine/renderer/renderer.h"
 #include "engine/rhi/imgui_renderer.h"
@@ -23,6 +28,8 @@ namespace light
 		Application();
 		virtual ~Application();
 
+		virtual void Init();
+
 		virtual void OnRender(const rhi::RenderTarget& render_target);
 
 		void Run();
@@ -39,9 +46,10 @@ namespace light
 
 		Renderer* GetRenderer() { return renderer_.get(); }
 
-		OrthographicCamera& GetMainCamera() { return camera_; }
-
 		rhi::ImGuiRenderer* GetImgui() { return imgui_renderer_.get(); }
+
+		Timestep GetTimestep() const { return timestep_; }
+
 	private:
 		void OnEvent(const Event& e);
 
@@ -54,7 +62,8 @@ namespace light
 		std::unique_ptr<Renderer> renderer_;
 		std::unique_ptr<rhi::ImGuiRenderer> imgui_renderer_;
 		LayerStack layer_stack_;
-		OrthographicCamera camera_;
+		Timestep timestep_;
+		std::chrono::high_resolution_clock::time_point last_frame_clock_;
 	};
 
 	extern Application* g_application;

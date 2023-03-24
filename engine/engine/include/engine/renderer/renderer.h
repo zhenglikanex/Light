@@ -9,6 +9,12 @@ namespace light
 	class Renderer
 	{
 	public:
+		enum class ParameterIndex
+		{
+			kSceneData = 0,
+			kModelMatrix,
+		};
+
 		struct SceneData
 		{
 			glm::mat4 projection_matrix;
@@ -22,7 +28,7 @@ namespace light
 		void BeginScene(const OrthographicCamera& camera);
 
 		// 提交渲染命令
-		void Submit(rhi::GraphicsPipeline* pso, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer);
+		void Submit(rhi::GraphicsPipeline* pso, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer,const glm::mat4& model_matrix);
 
 		void EndScene();
 	private:

@@ -10,8 +10,8 @@ namespace light
 	public:
 		void OnAttach() override;
 		void OnDetach() override;
-		void OnUpdate() override;
-		void OnImGuiRender() override;
+		void OnUpdate(const Timestep& ts) override;
+		void OnImGuiRender(const Timestep& ts) override;
 		void OnEvent(const Event& e) override;
 	private:		
 	};

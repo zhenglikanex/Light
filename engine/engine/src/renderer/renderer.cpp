@@ -31,11 +31,12 @@ namespace light
 		scene_data_.view_projection_matrix = camera.GetViewProjectionMatrix();
 	}
 
-	void Renderer::Submit(rhi::GraphicsPipeline* pso, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer)
+	void Renderer::Submit(rhi::GraphicsPipeline* pso, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer,const glm::mat4& model_matrix)
 	{
 		command_list_->SetGraphicsPipeline(pso);
 
-		command_list_->SetGraphics32BitConstants(0, scene_data_);
+		command_list_->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_);
+		command_list_->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
 		command_list_->SetVertexBuffer(0,vertex_buffer);
 		command_list_->SetIndexBuffer(index_buffer);
 		command_list_->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);

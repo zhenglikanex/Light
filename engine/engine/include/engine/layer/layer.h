@@ -1,5 +1,7 @@
 #pragma once
 
+#include "engine/core/timestep.h"
+
 #include "engine/event/event.h"
 #include "engine/rhi/render_target.h"
 
@@ -16,8 +18,8 @@ namespace light
 		virtual void OnAttach() {};
 		virtual void OnDetach() {};
 
-		virtual void OnUpdate() {};
-		virtual void OnImGuiRender() {};
+		virtual void OnUpdate(const Timestep& ts) {};
+		virtual void OnImGuiRender(const Timestep& ts) {};
 
 		virtual void OnEvent(const Event& e) {};
 	};

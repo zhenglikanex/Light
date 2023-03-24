@@ -13,13 +13,13 @@ namespace light
 	{
 	}
 
-	void ImguiLayer::OnUpdate()
+	void ImguiLayer::OnUpdate(const Timestep& ts)
 	{
 		static bool show_demo = true;
 		ImGui::ShowDemoWindow(&show_demo);
 	}
 
-	void ImguiLayer::OnImGuiRender()
+	void ImguiLayer::OnImGuiRender(const Timestep& ts)
 	{
 
 	}

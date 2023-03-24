@@ -1,4 +1,5 @@
 #include "engine/application.h"
+
 #include "engine/log/log.h"
 #include "engine/renderer/renderer.h"
 #include "engine/renderer/camera.h"
@@ -19,9 +20,22 @@ namespace light
 	}
 
 	Application::Application()
-		: running_(true)
-		, camera_(-1.6, 1.6, -0.9, 0.9)
+		: running_(false)
+		, timestep_(0)
+		, last_frame_clock_(std::chrono::high_resolution_clock::now())
 	{
+		
+	}
+
+	Application::~Application()
+	{
+		imgui_renderer_->Shutdown();
+	}
+
+	void Application::Init()
+	{
+		running_ = true;
+
 		log::Init();
 
 		// Setup Dear ImGui context
@@ -54,9 +68,9 @@ namespace light
 		params.vsync = false;
 
 		window_ = std::unique_ptr<Window>(CreatePlatformWindow(params));
-		window_->SetEventCallback(std::bind(&Application::OnEvent, this,_1));
+		window_->SetEventCallback(std::bind(&Application::OnEvent, this, _1));
 
-		device_ =  rhi::DeviceHandle::Create(rhi::CreateD12Device(window_->GetHwnd()));
+		device_ = rhi::DeviceHandle::Create(rhi::CreateD12Device(window_->GetHwnd()));
 
 		swap_chain_ = device_->CreateSwapChain();
 
@@ -64,22 +78,19 @@ namespace light
 
 		imgui_renderer_ = std::unique_ptr<rhi::ImGuiRenderer>(rhi::CreateImGuiRenderer());
 
-		if(imgui_renderer_)
+		if (imgui_renderer_)
 		{
 			imgui_renderer_->Init(device_);
 		}
 
 		layer_stack_.PushOverlayLayer(new ImguiLayer());
-	}
 
-	Application::~Application()
-	{
-		imgui_renderer_->Shutdown();
+		last_frame_clock_ = std::chrono::high_resolution_clock::now();
 	}
 
 	void Application::OnRender(const rhi::RenderTarget& render_target)
 	{
-		GetMainCamera().SetPosition(glm::vec3(0.0f, 0.f, 0.f));
+		
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -96,19 +107,17 @@ namespace light
 	{
 		while (running_)
 		{
-			auto render_target = swap_chain_->GetRenderTarget();
+			auto now = std::chrono::high_resolution_clock::now();
+			auto seconds = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_clock_).count();
+			last_frame_clock_ = now;
 
-			renderer_->BeginScene(camera_);
-
-			OnRender(render_target);
-
-			renderer_->EndScene();
+			timestep_ = Timestep(seconds);
 
 			imgui_renderer_->BeginFrame();
 
-			layer_stack_.OnUpdate();
+			layer_stack_.OnUpdate(timestep_);
 
-			imgui_renderer_->EndFrame(render_target);
+			imgui_renderer_->EndFrame(swap_chain_->GetRenderTarget());
 
 			swap_chain_->Present();
 

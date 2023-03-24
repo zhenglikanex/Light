@@ -57,13 +57,13 @@ namespace light
 		}
 	}
 
-	void LayerStack::OnUpdate()
+	void LayerStack::OnUpdate(const Timestep& ts)
 	{
 		{
 			auto it = layers_.begin();
 			while (it != layers_.end())
 			{
-				(*it)->OnUpdate();
+				(*it)->OnUpdate(ts);
 				++it;
 			}
 		}
@@ -72,7 +72,7 @@ namespace light
 			auto it = overlay_layers_.begin();
 			while (it != overlay_layers_.end())
 			{
-				(*it)->OnUpdate();
+				(*it)->OnUpdate(ts);
 				++it;
 			}
 		}
@@ -81,7 +81,7 @@ namespace light
 			auto it = layers_.begin();
 			while (it != layers_.end())
 			{
-				(*it)->OnImGuiRender();
+				(*it)->OnImGuiRender(ts);
 				++it;
 			}
 		}
@@ -90,7 +90,7 @@ namespace light
 			auto it = overlay_layers_.begin();
 			while (it != overlay_layers_.end())
 			{
-				(*it)->OnImGuiRender();
+				(*it)->OnImGuiRender(ts);
 				++it;
 			}
 		}

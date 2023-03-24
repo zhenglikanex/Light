@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 
+#include "engine/core/timestep.h"
+
 #include "engine/layer/layer.h"
 #include "engine/event/event.h"
 
@@ -18,7 +20,7 @@ namespace light
 
 		void OnEvent(const Event& e);
 
-		void OnUpdate();
+		void OnUpdate(const Timestep& ts);
 
 	private:
 		std::vector<std::unique_ptr<Layer>> layers_;
