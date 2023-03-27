@@ -82,7 +82,7 @@ namespace light::rhi
 		return MakeHandle<D12SwapChain>(this, hwnd_);
 	}
 
-	ShaderHandle D12Device::CreateShader(ShaderType type, const std::string& filename, const std::string& entry_point, const std::string& target)
+	ShaderHandle D12Device::CreateShader(ShaderType type, std::string_view filename, std::string_view entry_point, std::string_view target)
 	{
 		UINT compile_flags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
@@ -95,7 +95,7 @@ namespace light::rhi
 		Handle<ID3DBlob> errors;
 		// todo:加入shader_macro
 		hr = D3DCompileFromFile(wfilename.c_str(),nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-			entry_point.c_str(), target.c_str(), compile_flags, 0, &byte_code, &errors);
+			entry_point.data(), target.data(), compile_flags, 0, &byte_code, &errors);
 
 		if (errors != nullptr)
 			OutputDebugStringA((char*)errors->GetBufferPointer());

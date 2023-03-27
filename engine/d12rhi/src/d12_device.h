@@ -41,7 +41,7 @@ namespace light::rhi
 
 		SwapChainHandle CreateSwapChain() override;
 
-		ShaderHandle CreateShader(ShaderType type, const std::string& filename,const std::string& entry_point, const std::string& target) override;
+		ShaderHandle CreateShader(ShaderType type, std::string_view filename,std::string_view entry_point,std::string_view target) override;
 
 		BufferHandle CreateBuffer(BufferDesc desc) override;
 

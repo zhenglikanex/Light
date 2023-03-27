@@ -35,7 +35,7 @@ namespace light
 	{
 		command_list_->SetGraphicsPipeline(pso);
 
-		command_list_->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_);
+		command_list_->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_);
 		command_list_->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
 		command_list_->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kMaterial), color);
 		command_list_->SetVertexBuffer(0,vertex_buffer);

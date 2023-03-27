@@ -10,7 +10,7 @@ cbuffer cbModelMatrix : register(b1)
 	float4x4 model_matrix;
 }
 
-cbuffer cbMaterial : register(b0)
+cbuffer cbMaterial : register(b2)
 {
 	float4 color;
 }

@@ -12,6 +12,9 @@ public:
 	ExampleLayer()
 		: camera_(-1.6, 1.6, -0.9, 0.9)
 	{
+		shader_library_.Load("color",ShaderType::kVertex, "assets/shaders/color.hlsl");
+		shader_library_.Load("color",ShaderType::kPixel, "assets/shaders/color.hlsl");
+
 		std::vector<rhi::VertexAttributeDesc> vertex_attributes =
 		{
 			{"POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false}
@@ -53,7 +56,7 @@ public:
 		command_list->ExecuteCommandList();
 
 		BindingParameter scene_data_param;
-		scene_data_param.InitAsConstants(sizeof(Renderer::SceneData) / 4, 0);
+		scene_data_param.InitAsConstantBufferView(0);
 
 		BindingParameter model_matrix_param;
 		model_matrix_param.InitAsConstants(sizeof(glm::mat4) / 4, 1);
@@ -69,8 +72,8 @@ public:
 		GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device->CreateInputLayout(std::move(vertex_attributes));
 		pso_desc.binding_layout = BindingLayoutHandle::Create(binding_layout);
-		pso_desc.vs = device->CreateShader(ShaderType::kVertex, "assets/shaders/color.hlsl", "VS", "vs_5_0");
-		pso_desc.ps = device->CreateShader(ShaderType::kPixel, "assets/shaders/color.hlsl", "PS", "ps_5_0");
+		pso_desc.vs = shader_library_.Get("color",rhi::ShaderType::kVertex);
+		pso_desc.ps = shader_library_.Get("color", rhi::ShaderType::kPixel);
 		pso_desc.primitive_type = PrimitiveTopology::kTriangleList;
 
 		RenderTarget render_target = Application::Get().GetSwapChain()->GetRenderTarget();
@@ -143,6 +146,7 @@ public:
 
 	}
 private:
+	ShaderLibrary shader_library_;
 	BufferHandle vertex_buffer_;
 	BufferHandle index_buffer_;
 	GraphicsPipelineHandle pso_;
