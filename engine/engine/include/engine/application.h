@@ -30,8 +30,6 @@ namespace light
 
 		virtual void Init();
 
-		virtual void OnRender(const rhi::RenderTarget& render_target);
-
 		void Run();
 
 		void PushLayer(Layer* layer);

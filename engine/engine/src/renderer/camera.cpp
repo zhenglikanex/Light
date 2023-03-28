@@ -13,6 +13,13 @@ namespace light
 		RecalculateViewMatrix();
 	}
 
+	void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
+	{
+		projection_matrix_ = glm::orthoLH(left, right, bottom, top, 0.0f, 1.0f);
+
+		RecalculateViewMatrix();
+	}
+
 	void OrthographicCamera::RecalculateViewMatrix()
 	{
 		glm::mat4 transform = glm::translate(glm::identity<glm::mat4>(), position_) * glm::rotate(glm::identity<glm::mat4>(), rotation_, glm::vec3(0, 0, 1));

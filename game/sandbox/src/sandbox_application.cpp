@@ -10,7 +10,7 @@ class ExampleLayer : public Layer
 {
 public:
 	ExampleLayer()
-		: camera_(-1.6, 1.6, -0.9, 0.9)
+		: camera_controller_(800.0f/450.0f,false)
 	{
 		shader_library_.Load("color",ShaderType::kVertex, "assets/shaders/color.hlsl");
 		shader_library_.Load("color",ShaderType::kPixel, "assets/shaders/color.hlsl");
@@ -83,43 +83,11 @@ public:
 
 	virtual void OnUpdate(const Timestep& ts) override
 	{
-		LOG_ENGINE_INFO("time : {}s {}ms", ts.GetSeconds(), ts.GetMilliseconds());
+		//LOG_ENGINE_INFO("time : {}s {}ms", ts.GetSeconds(), ts.GetMilliseconds());
 
-		float speed = 10;
+		camera_controller_.OnUpdate(ts);
 
-		float ts_speed = speed * ts;
-
-		if (Input::IsKeyPressed(Input::Key::KEY_LEFT))
-		{
-			glm::vec3 pos = camera_.GetPosition();
-			pos += glm::vec3(-ts_speed, 0, 0);
-			camera_.SetPosition(pos);
-		}
-		else if (Input::IsKeyPressed(Input::Key::KEY_RIGHT))
-		{
-			glm::vec3 pos = camera_.GetPosition();
-			pos += glm::vec3(ts_speed, 0, 0);
-			camera_.SetPosition(pos);
-		}
-		else if (Input::IsKeyPressed(Input::Key::KEY_UP))
-		{
-			glm::vec3 pos = camera_.GetPosition();
-			pos += glm::vec3(0, ts_speed, 0);
-			camera_.SetPosition(pos);
-		}
-		else if (Input::IsKeyPressed(Input::Key::KEY_DOWN))
-		{
-			glm::vec3 pos = camera_.GetPosition();
-			pos += glm::vec3(0, -ts_speed, 0);
-			camera_.SetPosition(pos);
-		}
-		else if (Input::IsKeyPressed(Input::Key::KEY_R))
-		{
-			float rotation = camera_.GetRotation();
-			camera_.SetRotation(rotation + ts_speed);
-		}
-
-		Application::Get().GetRenderer()->BeginScene(camera_);
+		Application::Get().GetRenderer()->BeginScene(camera_controller_.GetCamera());
 
 		glm::vec3 pos(-0.5, 0, 0);
 		for (int i = 0; i < 10; ++i)
@@ -143,14 +111,14 @@ public:
 
 	virtual void OnEvent(const Event& e) override
 	{
-
+		camera_controller_.OnEvent(e);
 	}
 private:
 	ShaderLibrary shader_library_;
 	BufferHandle vertex_buffer_;
 	BufferHandle index_buffer_;
 	GraphicsPipelineHandle pso_;
-	OrthographicCamera camera_;
+	OrthographicCameraController camera_controller_;
 	glm::vec3 color_;
 };
 
@@ -167,12 +135,6 @@ public:
 		Application::Init();
 
 		PushOverlayLayer(new ExampleLayer());
-	}
-
-	void OnRender(const RenderTarget& render_target) override
-	{
-		
-		
 	}
 private:
 	

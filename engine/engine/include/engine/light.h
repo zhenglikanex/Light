@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/core/timestep.h"
+#include "engine/core/orthographic_camera_controller.h"
 
 #include "engine/event/event.h"
 #include "engine/event/key_event.h"

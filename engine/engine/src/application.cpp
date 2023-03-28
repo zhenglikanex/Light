@@ -88,11 +88,6 @@ namespace light
 		last_frame_clock_ = std::chrono::high_resolution_clock::now();
 	}
 
-	void Application::OnRender(const rhi::RenderTarget& render_target)
-	{
-		
-	}
-
 	void Application::PushLayer(Layer* layer)
 	{
 		layer_stack_.PushLayer(layer);
@@ -132,6 +127,8 @@ namespace light
 
 	void Application::OnEvent(const Event& e)
 	{
+		layer_stack_.OnEvent(e);
+
 		EventDispatcher dispatcher(e);
 		
 		LOG_ENGINE_INFO(e);
