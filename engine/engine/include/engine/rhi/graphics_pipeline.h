@@ -30,9 +30,8 @@ namespace light::rhi
 	class GraphicsPipeline : public Resource
 	{
 	public:
-		GraphicsPipeline(const GraphicsPipelineDesc& desc,const RenderTarget& render_target)
+		GraphicsPipeline(const GraphicsPipelineDesc& desc)
 			: desc_(desc)
-			, render_target_(render_target)
 		{
 			
 		}
@@ -40,7 +39,6 @@ namespace light::rhi
 		const GraphicsPipelineDesc& GetDesc() const { return desc_; }
 	protected:
 		GraphicsPipelineDesc desc_;
-		RenderTarget render_target_;
 	};
 
 	using GraphicsPipelineHandle = Handle<GraphicsPipeline>;

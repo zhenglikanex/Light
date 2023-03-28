@@ -69,7 +69,7 @@ namespace light
 
 	void OrthographicCameraController::OnWindowResizedEvent(const WindowResizedEvent& e)
 	{
-		aspect_ratio_ = e.width / e.height;
+		aspect_ratio_ = static_cast<float>(e.width) / static_cast<float>(e.height);
 		camera_.SetProjection(-aspect_ratio_ * zoom_level_, aspect_ratio_ * zoom_level_, -zoom_level_, zoom_level_);
 	}
 }

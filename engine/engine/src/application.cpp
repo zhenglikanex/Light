@@ -134,6 +134,13 @@ namespace light
 		LOG_ENGINE_INFO(e);
 
 		dispatcher.Dispatch<WindowClosedEvent>(std::bind(&Application::OnWindowClosed,this,_1));
+		dispatcher.Dispatch<WindowResizedEvent>(std::bind(&Application::OnWindowResized, this, _1));
+	}
+
+	void Application::OnWindowResized(const WindowResizedEvent& e)
+	{
+		imgui_renderer_->Flush();
+		swap_chain_->Resize(e.width, e.height);
 	}
 
 	void Application::OnWindowClosed(const WindowClosedEvent& e)

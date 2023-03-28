@@ -7,7 +7,7 @@
 namespace light::rhi
 {
 	D12GraphicsPipeline::D12GraphicsPipeline(D12Device* device, const GraphicsPipelineDesc& desc, const RenderTarget& render_target, RootSignature* root_signature)
-		: GraphicsPipeline(desc, render_target)
+		: GraphicsPipeline(desc)
 		, root_signature_(root_signature)
 	{
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc{};
@@ -70,9 +70,9 @@ namespace light::rhi
 		pso_desc.BlendState = ConvertBlendDesc(desc.blend_state);
 		pso_desc.DepthStencilState = ConvertDepthStencilDesc(desc.depth_stencil_state);
 		pso_desc.SampleMask = UINT_MAX;
-		pso_desc.NumRenderTargets = render_target_.GetNumColors();
+		pso_desc.NumRenderTargets = render_target.GetNumColors();
 
-		const auto& attachments = render_target_.GetAttachments();
+		const auto& attachments = render_target.GetAttachments();
 		for (uint32_t i = 0; i < pso_desc.NumRenderTargets; ++i)
 		{
 			if (attachments[i].texture)
@@ -81,13 +81,13 @@ namespace light::rhi
 			}
 		}
 
-		const auto& depth_attachment = render_target_.GetAttachment(AttachmentPoint::kDepthStencil);
+		const auto& depth_attachment = render_target.GetAttachment(AttachmentPoint::kDepthStencil);
 		if (depth_attachment.texture)
 		{
 			pso_desc.DSVFormat = GetDxgiFormatMapping(depth_attachment.texture->GetDesc().format).rtv_format;
 		}
 
-		SampleDesc sample_desc = render_target_.GetSampleDesc();
+		SampleDesc sample_desc = render_target.GetSampleDesc();
 		pso_desc.SampleDesc.Count = sample_desc.count;
 		pso_desc.SampleDesc.Quality = sample_desc.quality;
 

@@ -15,6 +15,8 @@ namespace light::rhi
 
 		virtual void EndFrame(const RenderTarget& render_target) = 0;
 
+		virtual void Flush() = 0;
+
 		virtual void Shutdown() = 0;
 	};
 

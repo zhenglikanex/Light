@@ -51,6 +51,7 @@ namespace light
 	private:
 		void OnEvent(const Event& e);
 
+		void OnWindowResized(const WindowResizedEvent& e);
 		void OnWindowClosed(const WindowClosedEvent& e);
 
 		bool running_;

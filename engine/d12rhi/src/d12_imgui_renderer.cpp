@@ -99,6 +99,11 @@ namespace light::rhi
         }   
 	}
 
+    void D12ImGuiRenderer::Flush()
+    {
+        WaitForLastSubmittedFrame();
+    }
+
 	void D12ImGuiRenderer::Shutdown()
 	{
         WaitForLastSubmittedFrame();

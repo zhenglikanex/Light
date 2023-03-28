@@ -20,6 +20,8 @@ namespace light::rhi
 
 		void EndFrame(const RenderTarget& render_target) override;
 
+		void Flush() override;
+
 		void Shutdown() override;
 
 	private:
