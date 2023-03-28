@@ -9,9 +9,9 @@ namespace light::log
 	{
 		g_engine_logger = spdlog::stdout_color_mt("Engine");
 		g_engine_logger->set_level(spdlog::level::trace);
-		g_engine_logger->set_pattern("[%T.%F] [%n] [%^%l%$] %v");
+		g_engine_logger->set_pattern("[%T] [%n] [%^%l%$] %v");
 		g_game_logger = spdlog::stdout_color_mt("Game");
 		g_game_logger->set_level(spdlog::level::trace);
-		g_game_logger->set_pattern("[%T.%F] [%n]   [%^%l%$] %v");
+		g_game_logger->set_pattern("[%T] [%n]   [%^%l%$] %v");
 	}
 }

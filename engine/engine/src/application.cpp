@@ -1,4 +1,4 @@
-#include "engine/application.h"
+#include "engine/core/application.h"
 
 #include "engine/log/log.h"
 #include "engine/renderer/renderer.h"
@@ -21,6 +21,7 @@ namespace light
 
 	Application::Application()
 		: running_(false)
+		, minimized_(false)
 		, timestep_(0)
 		, last_frame_clock_(std::chrono::high_resolution_clock::now())
 	{
@@ -110,7 +111,7 @@ namespace light
 
 			imgui_renderer_->BeginFrame();
 
-			layer_stack_.OnUpdate(timestep_);
+			layer_stack_.OnUpdate(timestep_, minimized_);
 
 			imgui_renderer_->EndFrame(swap_chain_->GetRenderTarget());
 
@@ -139,6 +140,8 @@ namespace light
 
 	void Application::OnWindowResized(const WindowResizedEvent& e)
 	{
+		minimized_ = e.width == 0 || e.height == 0;
+
 		imgui_renderer_->Flush();
 		swap_chain_->Resize(e.width, e.height);
 	}

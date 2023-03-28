@@ -20,7 +20,7 @@ namespace light
 
 		void OnEvent(const Event& e);
 
-		void OnUpdate(const Timestep& ts);
+		void OnUpdate(const Timestep& ts,bool minimized);
 
 	private:
 		std::vector<std::unique_ptr<Layer>> layers_;

@@ -55,6 +55,7 @@ namespace light
 		void OnWindowClosed(const WindowClosedEvent& e);
 
 		bool running_;
+		bool minimized_;
 		std::unique_ptr<Window> window_;
 		rhi::DeviceHandle device_;
 		rhi::SwapChainHandle swap_chain_;
