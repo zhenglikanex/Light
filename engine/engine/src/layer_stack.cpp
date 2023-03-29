@@ -28,11 +28,13 @@ namespace light
 	void LayerStack::PushLayer(Layer* layer)
 	{
 		layers_.emplace_back(layer);
+		layer->OnAttach();
 	}
 
 	void LayerStack::PushOverlayLayer(Layer* layer)
 	{
 		overlay_layers_.emplace_back(layer);
+		layer->OnAttach();
 	}
 
 	void LayerStack::OnEvent(const Event& e)

@@ -31,7 +31,6 @@ VertexOut VS(VertexIn vin)
 	
 	float4x4 mvp = mul(view_projection_matrix,model_matrix);
 	vout.PosH = mul(mvp,float4(vin.PosL, 1.0f));
-    
     return vout;
 }
 

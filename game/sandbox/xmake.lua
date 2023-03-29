@@ -1,5 +1,6 @@
 target("Sandbox")
     set_kind("binary")
+    add_headerfiles("**/**.h")
     add_files("**/**.cpp")
     add_deps("Engine")
     if is_os("windows") then

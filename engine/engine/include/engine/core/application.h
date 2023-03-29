@@ -30,6 +30,8 @@ namespace light
 
 		virtual void Init();
 
+		virtual void Shutdown();
+
 		void Run();
 
 		void PushLayer(Layer* layer);

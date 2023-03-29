@@ -2,6 +2,7 @@
 
 #include "engine/log/log.h"
 #include "engine/renderer/renderer.h"
+#include "engine/renderer/renderer2d.h"
 #include "engine/renderer/camera.h"
 
 #include "engine/layer/imgui_layer.h"
@@ -82,9 +83,16 @@ namespace light
 			imgui_renderer_->Init(device_);
 		}
 
+		Renderer2D::Init();
+
 		layer_stack_.PushOverlayLayer(new ImguiLayer());
 
 		last_frame_clock_ = std::chrono::high_resolution_clock::now();
+	}
+
+	void Application::Shutdown()
+	{
+		Renderer2D::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)

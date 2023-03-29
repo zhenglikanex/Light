@@ -17,7 +17,6 @@ namespace light
 	void Renderer::Submit(rhi::CommandList* command_list,rhi::GraphicsPipeline* pso, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer,const glm::mat4& model_matrix,const glm::vec4& color)
 	{
 		command_list->SetGraphicsPipeline(pso);
-
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData),s_scene_data);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kMaterial), color);

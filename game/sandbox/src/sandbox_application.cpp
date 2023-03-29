@@ -147,8 +147,8 @@ public:
 	{
 		Application::Init();
 
-		PushOverlayLayer(new ExampleLayer());
-		//PushOverlayLayer(new Sandbox2D());
+		//PushOverlayLayer(new ExampleLayer());
+		PushOverlayLayer(new Sandbox2D());
 	}
 private:
 

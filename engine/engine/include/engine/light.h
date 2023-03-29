@@ -16,6 +16,7 @@
 
 #include "engine/renderer/camera.h"
 #include "engine/renderer/renderer.h"
+#include "engine/renderer/renderer2d.h"
 #include "engine/renderer/shader_library.h"
 
 #include "engine/rhi/device.h"
