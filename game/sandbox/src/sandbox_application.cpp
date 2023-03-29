@@ -1,7 +1,6 @@
 #include "engine/light.h"
 
-#include "glm/gtx/transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "sandbox2d.h"
 
 using namespace light;
 using namespace rhi;
@@ -10,10 +9,10 @@ class ExampleLayer : public Layer
 {
 public:
 	ExampleLayer()
-		: camera_controller_(800.0f/450.0f,false)
+		: camera_controller_(800.0f / 450.0f, false)
 	{
-		shader_library_.Load("color",ShaderType::kVertex, "assets/shaders/color.hlsl");
-		shader_library_.Load("color",ShaderType::kPixel, "assets/shaders/color.hlsl");
+		shader_library_.Load("color", ShaderType::kVertex, "assets/shaders/color.hlsl");
+		shader_library_.Load("color", ShaderType::kPixel, "assets/shaders/color.hlsl");
 
 		std::vector<rhi::VertexAttributeDesc> vertex_attributes =
 		{
@@ -72,7 +71,7 @@ public:
 		GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device->CreateInputLayout(std::move(vertex_attributes));
 		pso_desc.binding_layout = BindingLayoutHandle::Create(binding_layout);
-		pso_desc.vs = shader_library_.Get("color",rhi::ShaderType::kVertex);
+		pso_desc.vs = shader_library_.Get("color", rhi::ShaderType::kVertex);
 		pso_desc.ps = shader_library_.Get("color", rhi::ShaderType::kPixel);
 		pso_desc.primitive_type = PrimitiveTopology::kTriangleList;
 
@@ -85,27 +84,41 @@ public:
 	{
 		//LOG_ENGINE_INFO("time : {}s {}ms", ts.GetSeconds(), ts.GetMilliseconds());
 
+		// update
 		camera_controller_.OnUpdate(ts);
 
-		Application::Get().GetRenderer()->BeginScene(camera_controller_.GetCamera());
+		// render
+		auto command_list = Application::Get().GetDevice()->GetCommandList(CommandListType::kDirect);
+
+		auto render_target = Application::Get().GetSwapChain()->GetRenderTarget();
+		command_list->SetRenderTarget(render_target);
+		command_list->SetViewport(render_target.GetViewport());
+		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+
+		constexpr float clear_color[] = { 1.0, 0.0, 0.0, 1.0 };
+		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+
+		Renderer::BeginScene(command_list, camera_controller_.GetCamera());
 
 		glm::vec3 pos(-0.5, 0, 0);
 		for (int i = 0; i < 10; ++i)
 		{
 			pos.x += 0.2;
-			
+
 			glm::mat4 model_matrix = glm::translate(glm::mat4(1), pos);
-			
-			Application::Get().GetRenderer()->Submit(pso_, vertex_buffer_, index_buffer_, model_matrix,glm::vec4(color_,1.0f));
+
+			Renderer::Submit(command_list, pso_, vertex_buffer_, index_buffer_, model_matrix, glm::vec4(color_, 1.0f));
 		}
 
-		Application::Get().GetRenderer()->EndScene();
+		Renderer::EndScene();
+
+		command_list->ExecuteCommandList();
 	}
 
 	virtual void OnImGuiRender(const Timestep& ts) override
 	{
 		ImGui::Begin("Settings");
-		ImGui::ColorEdit3("color",glm::value_ptr(color_));
+		ImGui::ColorEdit3("color", glm::value_ptr(color_));
 		ImGui::End();
 	}
 
@@ -135,9 +148,10 @@ public:
 		Application::Init();
 
 		PushOverlayLayer(new ExampleLayer());
+		//PushOverlayLayer(new Sandbox2D());
 	}
 private:
-	
+
 };
 
 light::Application* light::CreateApplication()

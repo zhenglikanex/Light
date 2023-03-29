@@ -42,8 +42,6 @@ namespace light
 
 		rhi::SwapChain* GetSwapChain() { return swap_chain_; }
 
-		Renderer* GetRenderer() { return renderer_.get(); }
-
 		rhi::ImGuiRenderer* GetImgui() { return imgui_renderer_.get(); }
 
 		Timestep GetTimestep() const { return timestep_; }
@@ -59,7 +57,6 @@ namespace light
 		std::unique_ptr<Window> window_;
 		rhi::DeviceHandle device_;
 		rhi::SwapChainHandle swap_chain_;
-		std::unique_ptr<Renderer> renderer_;
 		std::unique_ptr<rhi::ImGuiRenderer> imgui_renderer_;
 		LayerStack layer_stack_;
 		Timestep timestep_;

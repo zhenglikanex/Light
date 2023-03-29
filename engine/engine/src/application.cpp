@@ -75,8 +75,6 @@ namespace light
 
 		swap_chain_ = device_->CreateSwapChain();
 
-		renderer_ = std::make_unique<Renderer>(device_, swap_chain_);
-
 		imgui_renderer_ = std::unique_ptr<rhi::ImGuiRenderer>(rhi::CreateImGuiRenderer());
 
 		if (imgui_renderer_)
