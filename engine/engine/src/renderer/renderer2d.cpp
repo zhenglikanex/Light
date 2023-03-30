@@ -19,6 +19,24 @@ namespace light
 			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,12,false}
 		};
 
+		auto device = Application::Get().GetDevice();
+		auto render_target = Application::Get().GetRenderTarget();
+		auto command_list = device->GetCommandList(rhi::CommandListType::kCopy);
+
+		rhi::TextureDesc white_desc;
+		white_desc.width = 1;
+		white_desc.height = 1;
+		white_desc.format = rhi::Format::RGBA8_UNORM;
+		
+		s_storage->white_texture = device->CreateTexture(white_desc);
+
+		uint32_t data = 0xffffffff;
+		std::vector<rhi::TextureSubresourceData> texture_data(1);
+		texture_data[0].data = (char*)&data;
+		texture_data[0].data_size = sizeof(data);
+		texture_data[0].row_pitch = 4;
+		command_list->WriteTexture(s_storage->white_texture, 0, 1, texture_data);
+
 		std::array<float, 4 * 5> vertices
 		{
 			-0.5f, -0.5f, 0.0f,0.0f,1.0f,
@@ -32,10 +50,6 @@ namespace light
 			0,1,2,
 			0,2,3,
 		};
-
-		auto device = Application::Get().GetDevice();
-		auto render_target = Application::Get().GetRenderTarget();
-		auto command_list = device->GetCommandList(rhi::CommandListType::kCopy);
 
 		rhi::BufferDesc vertex_desc;
 		vertex_desc.type = rhi::BufferType::kVertex;
@@ -82,28 +96,12 @@ namespace light
 		rhi::BindingParameter tex_param;
 		tex_param.InitAsDescriptorTable(1, &tex_range);
 
-		// create flat_color_pso
-		rhi::BindingLayout* color_binding_layout = new rhi::BindingLayout(3);
-		color_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
-		color_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
-		color_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kMaterial), color_param);
-
-		rhi::ShaderHandle color_vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/flat_color.hlsl", "VS", "vs_5_0");
-		rhi::ShaderHandle color_pixel_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/flat_color.hlsl", "PS", "ps_5_0");
-
-		rhi::GraphicsPipelineDesc color_pso_desc;
-		color_pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
-		color_pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(color_binding_layout);
-		color_pso_desc.vs = color_vertex_shader;
-		color_pso_desc.ps = color_pixel_shader;
-		color_pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
-		s_storage->flat_color_pso = device->CreateGraphicsPipeline(color_pso_desc, render_target);
-
 		// create tex_pso
 		rhi::BindingLayout* tex_binding_layout = new rhi::BindingLayout(3);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kMaterial), tex_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kColor),color_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kTexture), tex_param);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSampler), sampler_param);
 
 		rhi::ShaderHandle texture_vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.hlsl", "VS", "vs_5_0");
@@ -149,10 +147,12 @@ namespace light
 	{
 		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-		command_list->SetGraphicsPipeline(s_storage->flat_color_pso);
+		command_list->SetGraphicsPipeline(s_storage->texture_pso);
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kMaterial), color);
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kColor), color);
+		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, s_storage->white_texture);
+		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_storage->point_sampler);
 		command_list->SetVertexBuffer(0, s_storage->vertex_buffer);
 		command_list->SetIndexBuffer(s_storage->index_buffer);
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
@@ -171,7 +171,8 @@ namespace light
 		command_list->SetGraphicsPipeline(s_storage->texture_pso);
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
-		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kMaterial), 0, texture);
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kColor), glm::vec4(1.0f));
+		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, texture);
 		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_storage->point_sampler);
 		command_list->SetVertexBuffer(0, s_storage->vertex_buffer);
 		command_list->SetIndexBuffer(s_storage->index_buffer);

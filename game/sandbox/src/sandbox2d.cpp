@@ -41,7 +41,7 @@ void Sandbox2D::OnUpdate(const light::Timestep& ts)
 	
 	Renderer2D::DrawQuad(command_list, glm::vec3(0.0f,0.0f,0.1f), glm::vec2(3.0f), texture_);
 
-	Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.0,1.0 });
+	Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
 
 	Renderer2D::DrawQuad(command_list, glm::vec2(-0.5f), glm::vec2(0.3f), { 1.0,1.0,0.0,1.0 });
 	

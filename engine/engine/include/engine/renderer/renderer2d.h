@@ -16,15 +16,16 @@ namespace light
 		{
 			kSceneData = 0,
 			kModelMatrix,
-			kMaterial,
+			kColor,
+			kTexture,
 			kSampler
 		};
 
 		struct Storage
 		{
+			rhi::TextureHandle white_texture;
 			rhi::BufferHandle vertex_buffer;
 			rhi::BufferHandle index_buffer;
-			rhi::GraphicsPipelineHandle flat_color_pso;
 			rhi::GraphicsPipelineHandle texture_pso;
 			rhi::SamplerHandle point_sampler;
 		};

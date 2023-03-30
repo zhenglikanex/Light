@@ -10,6 +10,11 @@ cbuffer cbModelMatrix : register(b1)
 	float4x4 model_matrix;
 }
 
+cbuffer cbColor : register(b2)
+{
+	float4 color;
+}
+
 Texture2D color_map : register(t0);
 SamplerState sampler_point_warp : register(s0);
 
@@ -37,5 +42,5 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    return color_map.SampleLevel(sampler_point_warp,pin.UV,0);
+    return color_map.SampleLevel(sampler_point_warp,pin.UV,0) * color;
 }
