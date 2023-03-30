@@ -4,6 +4,7 @@
 #include "engine/rhi/buffer.h"
 #include "engine/rhi/graphics_pipeline.h"
 #include "engine/rhi/command_list.h"
+#include "engine/rhi/sampler.h"
 #include "glm/glm.hpp"
 
 namespace light
@@ -15,14 +16,17 @@ namespace light
 		{
 			kSceneData = 0,
 			kModelMatrix,
-			kMaterial
+			kMaterial,
+			kSampler
 		};
 
 		struct Storage
 		{
 			rhi::BufferHandle vertex_buffer;
 			rhi::BufferHandle index_buffer;
-			rhi::GraphicsPipelineHandle default_pso;
+			rhi::GraphicsPipelineHandle flat_color_pso;
+			rhi::GraphicsPipelineHandle texture_pso;
+			rhi::SamplerHandle point_sampler;
 		};
 
 		struct SceneData
@@ -43,8 +47,8 @@ namespace light
 		
 		static void DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 		static void DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
-		static void DrawQuad(rhi::CommandList* command_list, rhi::GraphicsPipeline* pso, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-		static void DrawQuad(rhi::CommandList* command_list, rhi::GraphicsPipeline* pso, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
+		static void DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, rhi::Texture* texture);
+		static void DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, rhi::Texture* texture);
 	private:
 		static Storage* s_storage;
 		static SceneData s_scene_data;

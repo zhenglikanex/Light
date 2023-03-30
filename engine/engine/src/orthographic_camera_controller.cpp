@@ -10,7 +10,7 @@ namespace light
 		, rotation_(rotation)
 		, speed_(10)
 		, rotation_speed_(10)
-		, camera_(-aspect_ratio_ * zoom_level_,aspect_ratio_ * zoom_level_,-zoom_level_,zoom_level_)
+		, camera_(- aspect_ratio_ * zoom_level_, aspect_ratio_* zoom_level_, -zoom_level_, zoom_level_)
 	{
 	}
 

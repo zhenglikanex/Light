@@ -63,18 +63,24 @@ namespace light
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		WindowParams params;
-		params.title = "Light";
-		params.width = 800;
-		params.height = 450;
-		params.vsync = false;
+		WindowParams window_params;
+		window_params.title = "Light";
+		window_params.width = 800;
+		window_params.height = 450;
+		window_params.vsync = false;
 
-		window_ = std::unique_ptr<Window>(CreatePlatformWindow(params));
+		window_ = std::unique_ptr<Window>(CreatePlatformWindow(window_params));
 		window_->SetEventCallback(std::bind(&Application::OnEvent, this, _1));
 
 		device_ = rhi::DeviceHandle::Create(rhi::CreateD12Device(window_->GetHwnd()));
 
 		swap_chain_ = device_->CreateSwapChain();
+
+		rhi::TextureDesc depth_desc;
+		depth_desc.format = rhi::Format::D24S8;
+		depth_desc.width = window_params.width;
+		depth_desc.height = window_params.height;
+		depth_texture_ = device_->CreateTexture(depth_desc);
 
 		imgui_renderer_ = std::unique_ptr<rhi::ImGuiRenderer>(rhi::CreateImGuiRenderer());
 
@@ -130,6 +136,13 @@ namespace light
 	Window* Application::GetWindow()
 	{
 		return window_.get();
+	}
+
+	rhi::RenderTarget Application::GetRenderTarget()
+	{
+		auto render_target = swap_chain_->GetRenderTarget();
+		render_target.AttachAttachment(rhi::AttachmentPoint::kDepthStencil, depth_texture_);
+		return render_target;
 	}
 
 	void Application::OnEvent(const Event& e)

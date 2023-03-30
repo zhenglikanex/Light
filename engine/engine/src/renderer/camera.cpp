@@ -6,7 +6,7 @@ namespace light
 {
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
 	{
-		projection_matrix_ = glm::orthoLH(left, right, bottom, top, 0.0f, 1.0f);
+		projection_matrix_ = glm::orthoLH_ZO(left, right, bottom, top, -1.0f, 1.0f);
 		view_matrix_ = glm::identity<glm::mat4>();
 		position_ = glm::vec3(0);
 
@@ -15,7 +15,7 @@ namespace light
 
 	void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
 	{
-		projection_matrix_ = glm::orthoLH(left, right, bottom, top, 0.0f, 1.0f);
+		projection_matrix_ = glm::orthoLH_ZO(left, right, bottom, top, -1.0f, 1.0f);
 
 		RecalculateViewMatrix();
 	}

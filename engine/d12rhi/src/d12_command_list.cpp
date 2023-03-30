@@ -164,7 +164,6 @@ namespace light::rhi
 		device_->GetNative()->GetCopyableFootprints(&resource_desc, first_subresource, num_subresources, 0, layouts, num_rows, row_size_in_bytes, &total_bytes);
 
 		UploadBuffer::Allocation allocation = upload_buffer_.Allocate(total_bytes, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-
 		for (uint32_t i = 0; i < num_subresources; ++i)
 		{
 			for (uint32_t depth = 0; depth < layouts[i].Footprint.Depth; ++depth)

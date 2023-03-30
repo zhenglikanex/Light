@@ -59,6 +59,8 @@ namespace light
 		{
 			return pixel_shaders_[name];
 		}
+
+		return nullptr;
 	}
 
 	bool ShaderLibrary::Exist(const std::string& name, rhi::ShaderType type)
@@ -71,5 +73,7 @@ namespace light
 		{
 			return pixel_shaders_.contains(name);
 		}
+
+		return false;
 	}
 }

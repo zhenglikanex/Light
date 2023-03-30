@@ -15,31 +15,33 @@ namespace light
 
 		std::vector<rhi::VertexAttributeDesc> vertex_attributes =
 		{
-			{"POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false}
+			{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false},
+			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,12,false}
 		};
 
-		std::vector<glm::vec3> vertices
+		std::array<float, 4 * 5> vertices
 		{
-			{ -0.5f, -0.5f, 0.5f },
-			{ -0.5f, +0.5f, 0.5f },
-			{ +0.5f, +0.5f, 0.5f },
-			{ +0.5f, -0.5f, 0.5f },
+			-0.5f, -0.5f, 0.0f,0.0f,1.0f,
+			-0.5f, +0.5f, 0.0f,0.0f,0.0f,
+			+0.5f, +0.5f, 0.0f,1.0f,0.0f,
+			+0.5f, -0.5f, 0.0f,1.0f,1.0f,
 		};
 
-		std::vector<uint16_t> indices
+		std::array<uint16_t, 6> indices
 		{
 			0,1,2,
 			0,2,3,
 		};
 
 		auto device = Application::Get().GetDevice();
+		auto render_target = Application::Get().GetRenderTarget();
 		auto command_list = device->GetCommandList(rhi::CommandListType::kCopy);
 
 		rhi::BufferDesc vertex_desc;
 		vertex_desc.type = rhi::BufferType::kVertex;
 		vertex_desc.format = rhi::Format::RGB32_FLOAT;
-		vertex_desc.size_in_bytes = vertices.size() * sizeof(glm::vec3);
-		vertex_desc.stride = sizeof(glm::vec3);
+		vertex_desc.size_in_bytes = vertices.size() * sizeof(float);
+		vertex_desc.stride = sizeof(float) * 5;
 		s_storage->vertex_buffer = device->CreateBuffer(vertex_desc);
 
 		command_list->WriteBuffer(s_storage->vertex_buffer, reinterpret_cast<uint8_t*>(vertices.data()), vertex_desc.size_in_bytes);
@@ -61,26 +63,63 @@ namespace light
 		rhi::BindingParameter model_matrix_param;
 		model_matrix_param.InitAsConstants(sizeof(glm::mat4) / 4, 1);
 
-		rhi::BindingParameter material_param;
-		material_param.InitAsConstants(sizeof(glm::vec4) / 4, 2);
+		rhi::BindingParameter color_param;
+		color_param.InitAsConstants(sizeof(glm::vec4) / 4, 2);
 
-		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(1);
-		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
-		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
-		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kMaterial), material_param);
+		rhi::BindingParameter::DescriptorRange sampler_range;
+		sampler_range.base_shader_register = 0;
+		sampler_range.num_descriptors = 1;
+		sampler_range.range_type = rhi::DescriptorRangeType::kSampler;
 
-		rhi::ShaderHandle vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/color.hlsl", "VS", "vs_5_0");
-		rhi::ShaderHandle pixel_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/color.hlsl", "PS", "ps_5_0");
+		rhi::BindingParameter sampler_param;
+		sampler_param.InitAsDescriptorTable(1, &sampler_range);
 
-		rhi::GraphicsPipelineDesc pso_desc;
-		pso_desc.input_layout = device->CreateInputLayout(std::move(vertex_attributes));
-		pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(binding_layout);
-		pso_desc.vs = vertex_shader;
-		pso_desc.ps = pixel_shader;
-		pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
+		rhi::BindingParameter::DescriptorRange tex_range;
+		tex_range.base_shader_register = 0;
+		tex_range.num_descriptors = 1;
+		tex_range.range_type = rhi::DescriptorRangeType::kShaderResourceView;
 
-		rhi::RenderTarget render_target = Application::Get().GetSwapChain()->GetRenderTarget();
-		s_storage->default_pso = device->CreateGraphicsPipeline(pso_desc, render_target);
+		rhi::BindingParameter tex_param;
+		tex_param.InitAsDescriptorTable(1, &tex_range);
+
+		// create flat_color_pso
+		rhi::BindingLayout* color_binding_layout = new rhi::BindingLayout(3);
+		color_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
+		color_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
+		color_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kMaterial), color_param);
+
+		rhi::ShaderHandle color_vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/flat_color.hlsl", "VS", "vs_5_0");
+		rhi::ShaderHandle color_pixel_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/flat_color.hlsl", "PS", "ps_5_0");
+
+		rhi::GraphicsPipelineDesc color_pso_desc;
+		color_pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
+		color_pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(color_binding_layout);
+		color_pso_desc.vs = color_vertex_shader;
+		color_pso_desc.ps = color_pixel_shader;
+		color_pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
+		s_storage->flat_color_pso = device->CreateGraphicsPipeline(color_pso_desc, render_target);
+
+		// create tex_pso
+		rhi::BindingLayout* tex_binding_layout = new rhi::BindingLayout(3);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kMaterial), tex_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSampler), sampler_param);
+
+		rhi::ShaderHandle texture_vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.hlsl", "VS", "vs_5_0");
+		rhi::ShaderHandle texture_pixel_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/texture.hlsl", "PS", "ps_5_0");
+
+		rhi::GraphicsPipelineDesc tex_pso_desc;
+		tex_pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
+		tex_pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(tex_binding_layout);
+		tex_pso_desc.vs = texture_vertex_shader;
+		tex_pso_desc.ps = texture_pixel_shader;
+		tex_pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
+		s_storage->texture_pso = device->CreateGraphicsPipeline(tex_pso_desc, render_target);
+
+		rhi::SamplerDesc sampler_desc;
+		sampler_desc.filter = rhi::SamplerFilter::kMIN_MAG_MIP_POINT;
+		s_storage->point_sampler = device->CreateSampler(sampler_desc);
 	}
 
 	void Renderer2D::Shutdown()
@@ -103,27 +142,37 @@ namespace light
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		DrawQuad(command_list, s_storage->default_pso, glm::vec3(position, 0.0f), size, color);
+		DrawQuad(command_list, glm::vec3(position, 0.0f), size, color);
 	}
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		DrawQuad(command_list, s_storage->default_pso, position, size, color);
-	}
+		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-	void Renderer2D::DrawQuad(rhi::CommandList* command_list, rhi::GraphicsPipeline* pso, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-	{
-		DrawQuad(command_list, pso, glm::vec3(position, 0.0f), size, color);
-	}
-
-	void Renderer2D::DrawQuad(rhi::CommandList* command_list, rhi::GraphicsPipeline* pso, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
-	{
-		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
-
-		command_list->SetGraphicsPipeline(pso);
+		command_list->SetGraphicsPipeline(s_storage->flat_color_pso);
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kMaterial), color);
+		command_list->SetVertexBuffer(0, s_storage->vertex_buffer);
+		command_list->SetIndexBuffer(s_storage->index_buffer);
+		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
+		command_list->DrawIndexed(s_storage->index_buffer->GetDesc().size_in_bytes / s_storage->index_buffer->GetDesc().stride, 1, 0, 0, 0);
+	}
+
+	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, rhi::Texture* texture)
+	{
+		DrawQuad(command_list, glm::vec3(position, 0.0f), size, texture);
+	}
+
+	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, rhi::Texture* texture)
+	{
+		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+
+		command_list->SetGraphicsPipeline(s_storage->texture_pso);
+		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
+		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kMaterial), 0, texture);
+		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_storage->point_sampler);
 		command_list->SetVertexBuffer(0, s_storage->vertex_buffer);
 		command_list->SetIndexBuffer(s_storage->index_buffer);
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);

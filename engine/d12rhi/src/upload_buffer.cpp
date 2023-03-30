@@ -15,7 +15,7 @@ namespace light::rhi
 
 	UploadBuffer::Allocation UploadBuffer::Allocate(size_t bytes, size_t alignment)
 	{
-		if(bytes > page_size_)
+		if(bytes > page_size_ || true )
 		{
 			return AllocateLarge(bytes, alignment);
 		}
@@ -86,6 +86,7 @@ namespace light::rhi
 		Allocation result;
 		
 		upload_resource->Map(0, nullptr, &result.cpu);
+		
 		result.gpu = upload_resource->GetGPUVirtualAddress();
 		result.upload_resource = upload_resource;
 
