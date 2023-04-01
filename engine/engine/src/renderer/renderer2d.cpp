@@ -131,6 +131,13 @@ namespace light
 		s_scene_data.projection_matrix = camera.GetProjectionMatrix();
 		s_scene_data.view_matrix = camera.GetViewMatrix();
 		s_scene_data.view_projection_matrix = camera.GetViewProjectionMatrix();
+
+		command_list->SetGraphicsPipeline(s_storage->texture_pso);
+		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
+		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_storage->point_sampler);
+		command_list->SetVertexBuffer(0, s_storage->vertex_buffer);
+		command_list->SetIndexBuffer(s_storage->index_buffer);
+		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
 	}
 
 	void Renderer2D::EndScene()
@@ -147,15 +154,9 @@ namespace light
 	{
 		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-		command_list->SetGraphicsPipeline(s_storage->texture_pso);
-		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kColor), color);
 		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, s_storage->white_texture);
-		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_storage->point_sampler);
-		command_list->SetVertexBuffer(0, s_storage->vertex_buffer);
-		command_list->SetIndexBuffer(s_storage->index_buffer);
-		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
 		command_list->DrawIndexed(s_storage->index_buffer->GetDesc().size_in_bytes / s_storage->index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}
 
@@ -168,15 +169,9 @@ namespace light
 	{
 		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-		command_list->SetGraphicsPipeline(s_storage->texture_pso);
-		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kColor), glm::vec4(1.0f));
 		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, texture);
-		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_storage->point_sampler);
-		command_list->SetVertexBuffer(0, s_storage->vertex_buffer);
-		command_list->SetIndexBuffer(s_storage->index_buffer);
-		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
 		command_list->DrawIndexed(s_storage->index_buffer->GetDesc().size_in_bytes / s_storage->index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}
 }

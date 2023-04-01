@@ -23,4 +23,5 @@ private:
 	light::OrthographicCameraController camera_controller_;
 	glm::vec3 color_;
 	light::rhi::TextureHandle texture_;
+	std::vector<std::tuple<std::string,float>> profile_results_;
 };

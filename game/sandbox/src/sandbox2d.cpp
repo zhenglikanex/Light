@@ -1,7 +1,11 @@
 #include "sandbox2d.h"
 
+#include "spdlog/fmt/fmt.h"
+
 using namespace light;
 using namespace light::rhi;
+
+#define PROFILE_SCOPE(name) Timer timer__FILE__##__LINE__(name,[this](std::tuple<std::string,float> result) { profile_results_.push_back(result); })
 
 Sandbox2D::Sandbox2D()
 	:camera_controller_(800.0f / 450.0f, false)
@@ -22,39 +26,56 @@ void Sandbox2D::OnDetach()
 
 void Sandbox2D::OnUpdate(const light::Timestep& ts)
 {
-	camera_controller_.OnUpdate(ts);
+	{
+		PROFILE_SCOPE("CameraController OnUpdate");
+		camera_controller_.OnUpdate(ts);
+	}
 
 	auto command_list = Application::Get().GetDevice()->GetCommandList(CommandListType::kDirect);
-
 	auto render_target = Application::Get().GetRenderTarget();
-	
-	command_list->SetRenderTarget(render_target);
-	command_list->SetViewport(render_target.GetViewport());
-	command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
 
-	constexpr float clear_color[] = { 0.1, 0.1, 0.1, 1.0 };
-	command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
-	command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
-		rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
+	{
+		PROFILE_SCOPE("Renderer Prep");
 
-	Renderer2D::BeginScene(command_list,camera_controller_.GetCamera());
-	
-	Renderer2D::DrawQuad(command_list, glm::vec3(0.0f,0.0f,0.1f), glm::vec2(3.0f), texture_);
+		command_list->SetRenderTarget(render_target);
+		command_list->SetViewport(render_target.GetViewport());
+		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
 
-	Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
+		constexpr float clear_color[] = { 0.1, 0.1, 0.1, 1.0 };
+		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+		command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
+			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
+	}
 
-	Renderer2D::DrawQuad(command_list, glm::vec2(-0.5f), glm::vec2(0.3f), { 1.0,1.0,0.0,1.0 });
-	
-	Renderer2D::EndScene();
+	{
+		PROFILE_SCOPE("Renderer Draw");
+		Renderer2D::BeginScene(command_list, camera_controller_.GetCamera());
 
-	command_list->ExecuteCommandList();
+		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.1f), glm::vec2(3.0f), texture_);
+
+		Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
+
+		Renderer2D::DrawQuad(command_list, glm::vec2(-0.5f), glm::vec2(0.3f), { 1.0,1.0,0.0,1.0 });
+
+		Renderer2D::EndScene();		
+	}
+
+	{
+		PROFILE_SCOPE("Renderer ExecuteCommandList");
+		command_list->ExecuteCommandList();
+	}
 }
 
 void Sandbox2D::OnImGuiRender(const light::Timestep& ts)
 {
-	ImGui::Begin("Settings");
-	ImGui::ColorEdit3("color", glm::value_ptr(color_));
+	ImGui::Begin("Profile");
+	for (auto& [name,dt] : profile_results_)
+	{
+		std::string str = fmt::format("{} : {}ms", name, dt);
+		ImGui::Text(str.c_str());
+	}
 	ImGui::End();
+	profile_results_.clear();
 }
 
 void Sandbox2D::OnEvent(const light::Event& e)
