@@ -121,4 +121,16 @@ namespace light::rhi
 
 		return ubv_map_[hash].GetDescriptorHandle();
 	}
+
+	void* D12Buffer::GetCpuAddress()
+	{
+		assert(desc_.cpu_access == CpuAccess::kWrite);
+
+		if (cpu_address_ == nullptr)
+		{
+			resource_->Map(0, 0, &cpu_address_);
+		}
+
+		return cpu_address_;
+	}
 }

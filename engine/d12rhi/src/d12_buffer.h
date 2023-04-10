@@ -20,6 +20,8 @@ namespace light::rhi
 		D3D12_CPU_DESCRIPTOR_HANDLE GetSBV(uint32_t offset, uint32_t byte_size);
 		D3D12_CPU_DESCRIPTOR_HANDLE GetUBV(uint32_t offset,uint32_t byte_size);
 
+		void* GetCpuAddress();
+
 		ID3D12Resource* GetNative() { return resource_.Get(); }
 	private:
 		D12Device* device_;
@@ -28,5 +30,7 @@ namespace light::rhi
 		DescriptorAllocation cbv_;
 		std::unordered_map<size_t, DescriptorAllocation> sbv_map_;
 		std::unordered_map<size_t, DescriptorAllocation> ubv_map_;
+
+		void* cpu_address_;
 	};
 }

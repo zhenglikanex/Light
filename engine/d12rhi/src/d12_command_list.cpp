@@ -199,20 +199,27 @@ namespace light::rhi
 		{
 			return;
 		}
-
+		
 		auto d12_buffer = CheckedCast<D12Buffer*>(buffer);
 
- 		UploadBuffer::Allocation allocation = upload_buffer_.Allocate(size, 1);
+		if (buffer->GetDesc().cpu_access == CpuAccess::kWrite)
+		{
+			memcpy(d12_buffer->GetCpuAddress(), data, size);
+		}
+		else
+		{
+			UploadBuffer::Allocation allocation = upload_buffer_.Allocate(size, 1);
 
-		memcpy(allocation.cpu, data, size);
+			memcpy(allocation.cpu, data, size);
 
-		TransitionBarrier(buffer, ResourceStates::kCopyDest);
+			TransitionBarrier(buffer, ResourceStates::kCopyDest,~0,true);
 
-		d3d12_command_list_->CopyBufferRegion(
-			d12_buffer->GetNative(), 
-			dest_offset_bytes,
-			allocation.upload_resource, 
-			allocation.offset, size);
+			d3d12_command_list_->CopyBufferRegion(
+				d12_buffer->GetNative(),
+				dest_offset_bytes,
+				allocation.upload_resource,
+				allocation.offset, size);
+		}
 	}
 
 	void D12CommandList::SetGraphicsDynamicConstantBuffer(uint32_t parameter_index, size_t bytes, const void* data)
@@ -387,6 +394,20 @@ namespace light::rhi
 		d3d12_command_list_->IASetVertexBuffers(slot, 1, &view);
 	}
 
+	void D12CommandList::SetDynamicVertexBuffer(uint32_t slot, void* data, uint32_t size, uint32_t stride)
+	{
+		UploadBuffer::Allocation allocation = upload_buffer_.Allocate(size,1);
+		
+		memcpy(allocation.cpu, data, size);
+		
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = allocation.gpu;
+		view.SizeInBytes = size;
+		view.StrideInBytes = stride;
+		
+		d3d12_command_list_->IASetVertexBuffers(slot, 1, &view);
+	}
+
 	void D12CommandList::SetIndexBuffer(Buffer* buffer)
 	{
 		const BufferDesc& desc = buffer->GetDesc();
@@ -543,6 +564,8 @@ namespace light::rhi
 	void D12CommandList::DrawIndexed(uint32_t index_count, uint32_t instance_count, uint32_t start_index,
 	                                 int32_t base_vertex, uint32_t start_instance)
 	{
+		FlushResourceBarriers();
+
 		for (auto& dynamic_descriptor_heap : dynamic_descriptor_heaps_)
 		{
 			dynamic_descriptor_heap->CommitStatedDescriptorsForDraw(this);

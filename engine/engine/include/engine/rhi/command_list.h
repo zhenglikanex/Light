@@ -88,6 +88,8 @@ namespace light::rhi
 
 		virtual void SetVertexBuffer(uint32_t slot, Buffer* buffer) = 0;
 
+		virtual void SetDynamicVertexBuffer(uint32_t slot, void* data, uint32_t size, uint32_t stride) = 0;
+
 		virtual void SetIndexBuffer(Buffer* buffer) = 0;
 
 		virtual void SetRenderTarget(const RenderTarget& target) = 0;

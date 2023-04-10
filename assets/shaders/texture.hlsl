@@ -23,12 +23,14 @@ struct VertexIn
 {
 	float3 PosL  : POSITION;
 	float2 UV : TEXCOORD0;
+	float4 Color : COLOR;
 };
 
 struct VertexOut
 {
 	float4 PosH  : SV_POSITION;
 	float2 UV : TEXCOORD0;
+	float4 Color : COLOR;
 };
 
 VertexOut VS(VertexIn vin)
@@ -38,10 +40,11 @@ VertexOut VS(VertexIn vin)
 	float4x4 mvp = mul(view_projection_matrix,model_matrix);
 	vout.PosH = mul(mvp,float4(vin.PosL, 1.0f));
 	vout.UV = vin.UV;
+	vout.Color = vin.Color;
     return vout;
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    return color_map.SampleLevel(sampler_point_warp,pin.UV * tiling_factor,0) * color;
+    return color_map.SampleLevel(sampler_point_warp,pin.UV * tiling_factor,0) * pin.Color;
 }

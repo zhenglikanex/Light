@@ -76,6 +76,8 @@ namespace light::rhi
 
 		void SetVertexBuffer(uint32_t slot, Buffer* buffer) override;
 
+		void SetDynamicVertexBuffer(uint32_t slot, void* data, uint32_t size, uint32_t stride) override;
+
 		void SetIndexBuffer(Buffer* buffer) override;
 
 		void SetRenderTarget(const RenderTarget& render_target) override;

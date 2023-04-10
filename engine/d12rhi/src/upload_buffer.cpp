@@ -139,7 +139,7 @@ namespace light::rhi
 
 		Allocation result{ static_cast<char*>(cpu_) + offset_,gpu_ + offset_,resource_,offset_ };
 
-		offset_ += Align(bytes,alignment);
+		offset_ += Align(bytes, alignment);
 
 		return result;
 	}
