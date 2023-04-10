@@ -27,7 +27,7 @@ namespace light
 		white_desc.width = 1;
 		white_desc.height = 1;
 		white_desc.format = rhi::Format::RGBA8_UNORM;
-		
+
 		s_storage->white_texture = device->CreateTexture(white_desc);
 
 		uint32_t data = 0xffffffff;
@@ -78,7 +78,7 @@ namespace light
 		model_matrix_param.InitAsConstants(sizeof(glm::mat4) / 4, 1);
 
 		rhi::BindingParameter color_param;
-		color_param.InitAsConstants(sizeof(glm::vec4) / 4, 2);
+		color_param.InitAsConstants(sizeof(QuadMaterial) / 4, 2);
 
 		rhi::BindingParameter::DescriptorRange sampler_range;
 		sampler_range.base_shader_register = 0;
@@ -100,7 +100,7 @@ namespace light
 		rhi::BindingLayout* tex_binding_layout = new rhi::BindingLayout(3);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kColor),color_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::QuadMaterial), color_param);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kTexture), tex_param);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSampler), sampler_param);
 
@@ -154,23 +154,73 @@ namespace light
 	{
 		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
+		QuadMaterial mat;
+		mat.color = color;
+		mat.tiling_factor = 1.0f;
+
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kColor), color);
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
 		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, s_storage->white_texture);
 		command_list->DrawIndexed(s_storage->index_buffer->GetDesc().size_in_bytes / s_storage->index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}
 
-	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, rhi::Texture* texture)
+	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
 	{
-		DrawQuad(command_list, glm::vec3(position, 0.0f), size, texture);
+		DrawQuad(command_list, glm::vec3(position, 0.0f), size, texture, tiling_factor, tint_color);
 	}
 
-	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, rhi::Texture* texture)
+	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
 	{
 		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
+		QuadMaterial mat;
+		mat.color = tint_color;
+		mat.tiling_factor = tiling_factor;
+
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kColor), glm::vec4(1.0f));
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
+		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, texture);
+		command_list->DrawIndexed(s_storage->index_buffer->GetDesc().size_in_bytes / s_storage->index_buffer->GetDesc().stride, 1, 0, 0, 0);
+	}
+
+	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec2& position, float rotation, const glm::vec2& size, const glm::vec4& color)
+	{
+		DrawRotationQuad(command_list, glm::vec3(position, 0.0f), rotation, size, color);
+	}
+
+	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec3& position, float rotation, const glm::vec2& size, const glm::vec4& color)
+	{
+		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f),rotation, glm::vec3(0, 0, 1.0))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+
+		QuadMaterial mat;
+		mat.color = color;
+		mat.tiling_factor = 1.0f;
+
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
+		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, s_storage->white_texture);
+		command_list->DrawIndexed(s_storage->index_buffer->GetDesc().size_in_bytes / s_storage->index_buffer->GetDesc().stride, 1, 0, 0, 0);
+	}
+
+	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec2& position, float rotation, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
+	{
+		DrawRotationQuad(command_list, glm::vec3(position, 0.0f), rotation, size, texture, tiling_factor, tint_color);
+	}
+
+	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec3& position, float rotation, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
+	{
+		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0, 0, 1.0))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+
+		QuadMaterial mat;
+		mat.color = tint_color;
+		mat.tiling_factor = tiling_factor;
+
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
+		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
 		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, texture);
 		command_list->DrawIndexed(s_storage->index_buffer->GetDesc().size_in_bytes / s_storage->index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}

@@ -13,6 +13,7 @@ cbuffer cbModelMatrix : register(b1)
 cbuffer cbColor : register(b2)
 {
 	float4 color;
+	float tiling_factor;
 }
 
 Texture2D color_map : register(t0);
@@ -42,5 +43,5 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-    return color_map.SampleLevel(sampler_point_warp,pin.UV,0) * color;
+    return color_map.SampleLevel(sampler_point_warp,pin.UV * tiling_factor,0) * color;
 }

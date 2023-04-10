@@ -62,8 +62,8 @@ namespace light
 	}
 	void OrthographicCameraController::OnMouseScrolledEvent(const MouseScrolledEvent& e)
 	{
-		zoom_level_ += e.y;
-		zoom_level_ = std::max(1.0f, zoom_level_);
+		zoom_level_ += e.y * 0.25;
+		zoom_level_ = std::max(0.250f, zoom_level_);
 		camera_.SetProjection(-aspect_ratio_ * zoom_level_, aspect_ratio_ * zoom_level_, -zoom_level_, zoom_level_);
 	}
 
