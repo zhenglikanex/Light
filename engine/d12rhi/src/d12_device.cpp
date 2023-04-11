@@ -88,6 +88,8 @@ namespace light::rhi
 #if defined(DEBUG) || defined(_DEBUG)  
 		compile_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
+		compile_flags |= D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES;
+
 		std::wstring wfilename(filename.cbegin(), filename.cend());
 
 		HRESULT hr = S_OK;

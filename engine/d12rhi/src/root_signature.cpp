@@ -41,6 +41,11 @@ namespace light::rhi
 						out_range.BaseShaderRegister = in_range.base_shader_register;
 						out_range.RegisterSpace = in_range.register_space;
 						out_range.OffsetInDescriptorsFromTableStart = offset;
+
+						if (in_range.is_volatile)
+						{
+							out_range.Flags |= D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+						}
 						
 						num_descriptors_per_table_[i] += out_range.NumDescriptors;
 						offset += out_range.NumDescriptors;
@@ -101,7 +106,7 @@ namespace light::rhi
 				flag |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 			}
 
-			//todo:RootSignature°æ±¾?
+			//todo:RootSignatureç‰ˆæœ¬?
 			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rs_desc{};
 			rs_desc.Init_1_1(root_parameters.size(), root_parameters.data(), 0, nullptr, flag);
 
@@ -139,7 +144,7 @@ namespace light::rhi
 
 	RootSignature::~RootSignature()
 	{
-		// ÊÍ·Å»º´æ
+		// é‡Šæ”¾ç¼“å­˜
 		device_->ReleaseRootSignature(this);
 	}
 }

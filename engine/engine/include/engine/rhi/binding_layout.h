@@ -15,6 +15,7 @@ namespace light::rhi
 			uint32_t num_descriptors = 1;
 			uint32_t base_shader_register = 0;
 			uint32_t register_space = 0;
+			bool is_volatile = false;	// 是否动态可变(比如设置的描述符数小于num_descriptors)
 		};
 		
 		struct DescriptorTable

@@ -40,21 +40,21 @@ namespace light::rhi
 			throw std::length_error("Number of descriptors exceeds the number of descriptors in the descriptor table.");
 		}
 
-		// ½«ÃèÊö·ûÔİ´æµ½DynamicDescriptorHeapµÄcpu¿É¼û¶Ñ,µÈ´ıÌá½»µ½gpu
+		// å°†æè¿°ç¬¦æš‚å­˜åˆ°DynamicDescriptorHeapçš„cpuå¯è§å †,ç­‰å¾…æäº¤åˆ°gpu
 		D3D12_CPU_DESCRIPTOR_HANDLE* dst_descriptor = (descriptor_table_cache.base_descriptor + offset);
 		for (uint32_t i = 0; i < num_descriptors; ++i)
 		{
 			dst_descriptor[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE(src_descriptors, descriptor_handle_increment_size_ * i);
 		}
 
-		// ÉèÖÃĞèÒª¸üĞÂµÄÃèÊö·û±íÑÚÂëÎ»
+		// è®¾ç½®éœ€è¦æ›´æ–°çš„æè¿°ç¬¦è¡¨æ©ç ä½
 		stale_descriptor_table_bit_mask_ |= (1 << parameter_index);
 	}
 
 	D3D12_GPU_DESCRIPTOR_HANDLE DynamicDescriptorHeap::CopyDescriptor(D12CommandList* command_list,
 		D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor)
 	{
-		// ÊÇ·ñĞèÒªĞÂµÄ¶Ñ
+		// æ˜¯å¦éœ€è¦æ–°çš„å †
 		if (!current_descriptor_heap_ || num_free_handles_ < 1)
 		{
 			current_descriptor_heap_ = RequestDescriptorHeap();
@@ -63,8 +63,8 @@ namespace light::rhi
 
 			command_list->SetDescriptorHeap(heap_type_, current_descriptor_heap_);
 
-			// current_descriptor_heap_¸üĞÂºóËùÃèÊö·û±í¶¼ĞèÒª¸üĞÂ
-			// ĞèÒª½«stale_descriptor_table_bit_mask_ÖÁÎªdescriptor_table_bit_mask_
+			// current_descriptor_heap_æ›´æ–°åæ‰€æè¿°ç¬¦è¡¨éƒ½éœ€è¦æ›´æ–°
+			// éœ€è¦å°†stale_descriptor_table_bit_mask_è‡³ä¸ºdescriptor_table_bit_mask_
 			stale_descriptor_table_bit_mask_ = descriptor_table_bit_mask_;
 		}
 
@@ -93,7 +93,7 @@ namespace light::rhi
 	{
 		assert(root_signature);
 
-		// root signatureÈç¹û¸Ä±ä£¬ËùÓĞµÄÃèÊö·û¶¼ÒªÖØĞÂ°ó¶¨
+		// root signatureå¦‚æœæ”¹å˜ï¼Œæ‰€æœ‰çš„æè¿°ç¬¦éƒ½è¦é‡æ–°ç»‘å®š
 		stale_descriptor_table_bit_mask_ = 0;
 
 		if(heap_type_ == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
@@ -119,7 +119,7 @@ namespace light::rhi
 
 			current_offset += num_descriptors;
 
-			// ½«µ±Ç°maskÉèÎª0,±£Ö¤Ñ­»·ÕıÈ·
+			// å°†å½“å‰maskè®¾ä¸º0,ä¿è¯å¾ªç¯æ­£ç¡®
 			descriptor_table_bit_mask ^= (1 << index);
 		}
 	}
@@ -188,7 +188,7 @@ namespace light::rhi
 	{
 		uint32_t num_descriptors = ComputeStaleDescriptorCount();
 
-		// ÊÇ·ñĞèÒªĞÂµÄ¶Ñ
+		// æ˜¯å¦éœ€è¦æ–°çš„å †
 		if(!current_descriptor_heap_ || num_free_handles_ < num_descriptors)
 		{
 			current_descriptor_heap_ = RequestDescriptorHeap();
@@ -197,8 +197,8 @@ namespace light::rhi
 
 			command_list->SetDescriptorHeap(heap_type_, current_descriptor_heap_);
 
-			// current_descriptor_heap_¸üĞÂºóËùÃèÊö·û±í¶¼ĞèÒª¸üĞÂ
-			// ĞèÒª½«stale_descirptor_table_bit_mask_ÖÁÎªdescriptor_table_bit_mask_
+			// current_descriptor_heap_æ›´æ–°åæ‰€æè¿°ç¬¦è¡¨éƒ½éœ€è¦æ›´æ–°
+			// éœ€è¦å°†stale_descirptor_table_bit_mask_è‡³ä¸ºdescriptor_table_bit_mask_
 			stale_descriptor_table_bit_mask_ = descriptor_table_bit_mask_;
 		}
 
@@ -221,13 +221,13 @@ namespace light::rhi
 				index,
 				current_gpu_descriptor_handle_);
 
-			// ÒÆ¶¯current handle
+			// ç§»åŠ¨current handle
 			current_cpu_descriptor_handle_.Offset(num_src_descriptors, descriptor_handle_increment_size_);
 			current_gpu_descriptor_handle_.Offset(num_src_descriptors, descriptor_handle_increment_size_);
 
 			num_free_handles_ -= num_src_descriptors;
 
-			// ÖØÖÃÌá½»µÄÃèÊö·û±íÑÚÂë£¬±£Ö¤Ñ­»·ÕıÈ·
+			// é‡ç½®æäº¤çš„æè¿°ç¬¦è¡¨æ©ç ï¼Œä¿è¯å¾ªç¯æ­£ç¡®
 			stale_descriptor_table_bit_mask_ ^= (1 << index);
 		}
 	}

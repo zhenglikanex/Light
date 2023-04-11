@@ -17,12 +17,12 @@ namespace light
 		if (type == rhi::ShaderType::kVertex)
 		{
 			entry_point = "VS";
-			target = "vs_5_0";
+			target = "vs_5_1";
 		}
 		else if(type == rhi::ShaderType::kPixel)
 		{
 			entry_point = "PS";
-			target = "ps_5_0";
+			target = "ps_5_1";
 		}
 
 		rhi::ShaderHandle shader = Application::Get().GetDevice()->CreateShader(type, file_path, entry_point, target);

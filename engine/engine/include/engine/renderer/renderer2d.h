@@ -13,14 +13,16 @@ namespace light
 	class Renderer2D
 	{
 	public:
-		constexpr static uint32_t kMaxBatchQuadCount = 100000;
+		constexpr static uint32_t kMaxBatchQuads = 100000;
+		constexpr static uint32_t kMaxBatchVertices = kMaxBatchQuads * 4;
+		constexpr static uint32_t kMaxBatchIndexes = kMaxBatchQuads * 6;
+
+		constexpr static uint32_t kMaxTextures = 32;
 
 		enum class ParameterIndex
 		{
 			kSceneData = 0,
-			kModelMatrix,
-			QuadMaterial,
-			kTexture,
+			kTextures,
 			kSampler
 		};
 
@@ -29,20 +31,28 @@ namespace light
 			glm::vec3 position;
 			glm::vec2 texcoord;
 			glm::vec4 color;
+			float tex_index;
+			float tiling_factor;
 		};
 
 		struct Data
 		{
+			
+
 			rhi::TextureHandle white_texture;
+			rhi::TextureHandle white_texture2;
 			rhi::BufferHandle vertex_buffer;
 			rhi::BufferHandle index_buffer;
 			rhi::GraphicsPipelineHandle texture_pso;
 			rhi::SamplerHandle point_sampler;
 
-			std::array<QuadVertex, kMaxBatchQuadCount * 4> vertices;
-			std::array<uint32_t, kMaxBatchQuadCount * 6> indices;
-
+			std::array<QuadVertex, kMaxBatchVertices> vertices;
+			std::array<uint32_t, kMaxBatchIndexes> indices;
+			
 			uint32_t batch_count;
+
+			std::array<rhi::TextureHandle, kMaxTextures> texture_slots;
+			uint32_t texture_slot_index;
 		};
 
 		struct SceneData

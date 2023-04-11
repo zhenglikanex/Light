@@ -4,6 +4,9 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "engine/profile/timer.h"
+#include "engine/log/log.h"
+
 namespace light
 {
 	Renderer2D::Data* Renderer2D::s_renderer_data = nullptr;
@@ -15,9 +18,11 @@ namespace light
 
 		std::vector<rhi::VertexAttributeDesc> vertex_attributes =
 		{
-			{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false},
-			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,12,false},
-			{ "COLOR",0,rhi::Format::RG32_FLOAT,0,20,false}
+			{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false },
+			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,12,false },
+			{ "COLOR",0,rhi::Format::RG32_FLOAT,0,20,false },
+			{ "COLOR",1,rhi::Format::R32_FLOAT,0,36,false },
+			{ "COLOR",2,rhi::Format::R32_FLOAT,0,40,false }
 		};
 
 		auto device = Application::Get().GetDevice();
@@ -37,6 +42,9 @@ namespace light
 		texture_data[0].data_size = sizeof(data);
 		texture_data[0].row_pitch = 4;
 		command_list->WriteTexture(s_renderer_data->white_texture, 0, 1, texture_data);
+
+		s_renderer_data->white_texture2 = device->CreateTexture(white_desc);
+		command_list->WriteTexture(s_renderer_data->white_texture2, 0, 1, texture_data);
 
 		rhi::BufferDesc vertex_desc;
 		vertex_desc.type = rhi::BufferType::kVertex;
@@ -74,12 +82,6 @@ namespace light
 		rhi::BindingParameter scene_data_param;
 		scene_data_param.InitAsConstantBufferView(0);
 
-		rhi::BindingParameter model_matrix_param;
-		model_matrix_param.InitAsConstants(sizeof(glm::mat4) / 4, 1);
-
-		rhi::BindingParameter color_param;
-		color_param.InitAsConstants(sizeof(QuadMaterial) / 4, 2);
-
 		rhi::BindingParameter::DescriptorRange sampler_range;
 		sampler_range.base_shader_register = 0;
 		sampler_range.num_descriptors = 1;
@@ -90,8 +92,9 @@ namespace light
 
 		rhi::BindingParameter::DescriptorRange tex_range;
 		tex_range.base_shader_register = 0;
-		tex_range.num_descriptors = 1;
+		tex_range.num_descriptors = kMaxTextures;
 		tex_range.range_type = rhi::DescriptorRangeType::kShaderResourceView;
+		tex_range.is_volatile = true;
 
 		rhi::BindingParameter tex_param;
 		tex_param.InitAsDescriptorTable(1, &tex_range);
@@ -99,13 +102,11 @@ namespace light
 		// create tex_pso
 		rhi::BindingLayout* tex_binding_layout = new rhi::BindingLayout(3);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::QuadMaterial), color_param);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kTexture), tex_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kTextures), tex_param);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSampler), sampler_param);
 
-		rhi::ShaderHandle texture_vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.hlsl", "VS", "vs_5_0");
-		rhi::ShaderHandle texture_pixel_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/texture.hlsl", "PS", "ps_5_0");
+		rhi::ShaderHandle texture_vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.hlsl", "VS", "vs_5_1");
+		rhi::ShaderHandle texture_pixel_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/texture.hlsl", "PS", "ps_5_1");
 
 		rhi::GraphicsPipelineDesc tex_pso_desc;
 		tex_pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
@@ -118,6 +119,9 @@ namespace light
 		rhi::SamplerDesc sampler_desc;
 		sampler_desc.filter = rhi::SamplerFilter::kMIN_MAG_MIP_POINT;
 		s_renderer_data->point_sampler = device->CreateSampler(sampler_desc);
+
+		uint32_t white_tex_slot = 0;
+		s_renderer_data->texture_slots[white_tex_slot] = s_renderer_data->white_texture;
 	}
 
 	void Renderer2D::Shutdown()
@@ -140,6 +144,7 @@ namespace light
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
 
 		s_renderer_data->batch_count = 0;
+		s_renderer_data->texture_slot_index = 1;
 	}
 
 	void Renderer2D::EndScene(rhi::CommandList* command_list)
@@ -149,17 +154,15 @@ namespace light
 
 	void Renderer2D::Flush(rhi::CommandList* command_list)
 	{
-		//command_list->WriteBuffer(s_renderer_data->vertex_buffer, (uint8_t*)s_renderer_data->vertices.data(), s_renderer_data->batch_count * 4 * sizeof(QuadVertex));
-
-		QuadMaterial mat;
-		mat.color = glm::vec4(1.0f);
-		mat.tiling_factor = 1.0f;
-
 		command_list->SetDynamicVertexBuffer(0, s_renderer_data->vertices.data(), s_renderer_data->batch_count * sizeof(QuadVertex), sizeof(QuadVertex));
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), glm::mat4(1.0f));
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
-		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, s_renderer_data->white_texture);
+		
+		for (uint32_t index = 0; index < s_renderer_data->texture_slot_index; ++index)
+		{
+			command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTextures), index, s_renderer_data->texture_slots[index]);
+		}
+				
 		command_list->DrawIndexed(s_renderer_data->batch_count * 6, 1, 0, 0, 0);
+		
 	}
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -171,21 +174,32 @@ namespace light
 	{
 		uint32_t index = s_renderer_data->batch_count;
 
-		s_renderer_data->vertices[index * 4 + 0].position = { position.x - size.x * 0.5, position.y - size.y * 0.5, 0.0f };
+		float white_tex_slot = 0;
+
+		s_renderer_data->vertices[index * 4 + 0].position = { position.x - size.x * 0.5, position.y - size.y * 0.5, position.z };
 		s_renderer_data->vertices[index * 4 + 0].texcoord = { 0.0f,1.0f };
 		s_renderer_data->vertices[index * 4 + 0].color = color;
+		s_renderer_data->vertices[index * 4 + 0].tex_index = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 0].tiling_factor = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 0].tiling_factor = 1;
 
-		s_renderer_data->vertices[index * 4 + 1].position = { position.x - size.x * 0.5, position.y + size.y * 0.5, 0.0f };
+		s_renderer_data->vertices[index * 4 + 1].position = { position.x - size.x * 0.5, position.y + size.y * 0.5, position.z };
 		s_renderer_data->vertices[index * 4 + 1].texcoord = { 0.0f, 0.0f };
 		s_renderer_data->vertices[index * 4 + 1].color = color;
+		s_renderer_data->vertices[index * 4 + 1].tex_index = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 1].tiling_factor = 1;
 
-		s_renderer_data->vertices[index * 4 + 2].position = { position.x + size.x * 0.5, position.y + size.y * 0.5, 0.0f };
+		s_renderer_data->vertices[index * 4 + 2].position = { position.x + size.x * 0.5, position.y + size.y * 0.5, position.z };
 		s_renderer_data->vertices[index * 4 + 2].texcoord = { 1.0f, 0.0f };
 		s_renderer_data->vertices[index * 4 + 2].color = color;
+		s_renderer_data->vertices[index * 4 + 2].tex_index = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 2].tiling_factor = 1;
 
-		s_renderer_data->vertices[index * 4 + 3].position = { position.x + size.x * 0.5, position.y - size.y * 0.5, 0.0f };
+		s_renderer_data->vertices[index * 4 + 3].position = { position.x + size.x * 0.5, position.y - size.y * 0.5, position.z };
 		s_renderer_data->vertices[index * 4 + 3].texcoord = { 1.0f, 1.0f };
 		s_renderer_data->vertices[index * 4 + 3].color = color;
+		s_renderer_data->vertices[index * 4 + 3].tex_index = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 3].tiling_factor = 1;
 
 		++s_renderer_data->batch_count;
 	}
@@ -197,7 +211,52 @@ namespace light
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
 	{
-		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+		uint32_t index = s_renderer_data->batch_count;
+
+		uint32_t tex_slot = 0;
+
+		for (uint32_t index = 0; index < s_renderer_data->texture_slot_index; ++index)
+		{
+			if (s_renderer_data->texture_slots[index].Get() == texture)
+			{
+				tex_slot = index;
+				break;
+			}
+		}
+
+		if (tex_slot == 0)
+		{
+			tex_slot = s_renderer_data->texture_slot_index++;
+			s_renderer_data->texture_slots[tex_slot] = texture;
+		}
+
+		s_renderer_data->vertices[index * 4 + 0].position = { position.x - size.x * 0.5, position.y - size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 0].texcoord = { 0.0f,1.0f };
+		s_renderer_data->vertices[index * 4 + 0].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 0].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 0].tiling_factor = tiling_factor;
+
+		s_renderer_data->vertices[index * 4 + 1].position = { position.x - size.x * 0.5, position.y + size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 1].texcoord = { 0.0f, 0.0f };
+		s_renderer_data->vertices[index * 4 + 1].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 1].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 1].tiling_factor = tiling_factor;
+
+		s_renderer_data->vertices[index * 4 + 2].position = { position.x + size.x * 0.5, position.y + size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 2].texcoord = { 1.0f, 0.0f };
+		s_renderer_data->vertices[index * 4 + 2].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 2].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 2].tiling_factor = tiling_factor;
+
+		s_renderer_data->vertices[index * 4 + 3].position = { position.x + size.x * 0.5, position.y - size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 3].texcoord = { 1.0f, 1.0f };
+		s_renderer_data->vertices[index * 4 + 3].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 3].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 3].tiling_factor = tiling_factor;
+
+		++s_renderer_data->batch_count;
+
+		/*glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
 		QuadMaterial mat;
 		mat.color = tint_color;
@@ -206,7 +265,7 @@ namespace light
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
 		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
 		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, texture);
-		command_list->DrawIndexed(s_renderer_data->index_buffer->GetDesc().size_in_bytes / s_renderer_data->index_buffer->GetDesc().stride, 1, 0, 0, 0);
+		command_list->DrawIndexed(s_renderer_data->index_buffer->GetDesc().size_in_bytes / s_renderer_data->index_buffer->GetDesc().stride, 1, 0, 0, 0);*/
 	}
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec2& position, float rotation, const glm::vec2& size, const glm::vec4& color)
@@ -224,9 +283,7 @@ namespace light
 		mat.color = color;
 		mat.tiling_factor = 1.0f;
 
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
-		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, s_renderer_data->white_texture);
+		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTextures), 0, s_renderer_data->white_texture);
 		command_list->DrawIndexed(s_renderer_data->index_buffer->GetDesc().size_in_bytes / s_renderer_data->index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}
 
@@ -245,9 +302,7 @@ namespace light
 		mat.color = tint_color;
 		mat.tiling_factor = tiling_factor;
 
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
-		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, texture);
+		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTextures), 0, texture);
 		command_list->DrawIndexed(s_renderer_data->index_buffer->GetDesc().size_in_bytes / s_renderer_data->index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}
 }

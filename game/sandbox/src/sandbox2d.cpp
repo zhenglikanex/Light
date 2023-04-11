@@ -51,7 +51,7 @@ void Sandbox2D::OnUpdate(const light::Timestep& ts)
 		PROFILE_SCOPE("Renderer Draw");
 		Renderer2D::BeginScene(command_list, camera_controller_.GetCamera());
 
-		//Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.1f), glm::vec2(3.0f), texture_,10);
+		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.1f), glm::vec2(3.0f), texture_,10);
 
 		//Renderer2D::DrawRotationQuad(command_list, glm::vec3(0.0f, 0.0f, 0.f),glm::radians(45.0),glm::vec2(1.0f), texture_);
 

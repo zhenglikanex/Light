@@ -39,14 +39,14 @@ namespace light::log
 #define LOG_ENGINE_DEBUG(...)
 #define	LOG_ENGINE_INFO(...) 
 #define	LOG_ENGINE_WARN(...)
-#define	LOG_ENGINE_ERR(...)
+#define	LOG_ENGINE_ERROR(...)
 #define	LOG_ENGINE_CRITICAL(...)
 
 #define	LOG_GAME_TRACE(...)
 #define LOG_GAME_DEBUG(...)
 #define	LOG_GAME_INFO(...) 
 #define	LOG_GAME_WARN(...)
-#define	LOG_GAME_ERR(...)
+#define	LOG_GAME_ERROR(...)
 #define	LOG_GAME_CRITICAL(...)
 	
 #endif
