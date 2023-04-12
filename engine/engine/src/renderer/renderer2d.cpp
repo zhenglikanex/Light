@@ -43,9 +43,6 @@ namespace light
 		texture_data[0].row_pitch = 4;
 		command_list->WriteTexture(s_renderer_data->white_texture, 0, 1, texture_data);
 
-		s_renderer_data->white_texture2 = device->CreateTexture(white_desc);
-		command_list->WriteTexture(s_renderer_data->white_texture2, 0, 1, texture_data);
-
 		rhi::BufferDesc vertex_desc;
 		vertex_desc.type = rhi::BufferType::kVertex;
 		vertex_desc.format = rhi::Format::RGB32_FLOAT;
@@ -364,5 +361,16 @@ namespace light
 		s_renderer_data->vertices[index * 4 + 3].tiling_factor = tiling_factor;
 
 		++s_renderer_data->batch_count;
+	}
+
+	void Renderer2D::ResetStats()
+	{
+		s_renderer_data->stats.draw_calls = 0;
+		s_renderer_data->stats.quad_count = 0;
+	}
+
+	Renderer2D::Statistics Renderer2D::GetStats()
+	{
+		return s_renderer_data->stats;
 	}
 }

@@ -47,25 +47,27 @@ void Sandbox2D::OnUpdate(const light::Timestep& ts)
 			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
 	}
 
+	Renderer2D::ResetStats();
+
 	{
 		PROFILE_SCOPE("Renderer Draw");
 		Renderer2D::BeginScene(command_list, camera_controller_.GetCamera());
 
 		static float rotation = 0;
-		
+		rotation += 10 * ts;
 
 		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.1f), glm::vec2(3.0f), texture_,10);
-		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, -0.2f), glm::vec2(1.5f), texture_, 30);
+		//Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, -0.2f), glm::vec2(1.5f), texture_, 30);
 
-		//Renderer2D::DrawRotationQuad(command_list, glm::vec3(2.0f, 0.0f, 0.f), rotation,glm::vec2(1.0f), texture_);
+		Renderer2D::DrawRotationQuad(command_list, glm::vec3(2.0f, 0.0f, 0.f), 0,glm::vec2(1.0f), texture_);
 
 		//Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
 
-		for (uint32_t i = 0; i < 400; ++i)
+		/*for (uint32_t i = 0; i < 3; ++i)
 		{
 			Renderer2D::DrawQuad(command_list, glm::vec2(-1.0f + 0.01 * i,0), glm::vec2(1.f), { 1,0,0.0,1.0 });
 		}
-		
+		*/
 		Renderer2D::EndScene(command_list);
 	}
 
@@ -83,6 +85,13 @@ void Sandbox2D::OnImGuiRender(const light::Timestep& ts)
 		std::string str = fmt::format("{} : {}ms", name, dt);
 		ImGui::Text(str.c_str());
 	}
+	
+	Renderer2D::Statistics stats = Renderer2D::GetStats();
+	ImGui::Text("draw call:%d", stats.draw_calls);
+	ImGui::Text("quad count:%d", stats.quad_count);
+	ImGui::Text("vertex count:%d", stats.GetVertexCount());
+	ImGui::Text("index count:%d", stats.GetIndexCount());
+
 	ImGui::End();
 	profile_results_.clear();
 }

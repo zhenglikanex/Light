@@ -9,3 +9,5 @@
 #else
 #define LIGHT_ASSET(cond,msg)
 #endif
+
+#define STATISTICS 1
