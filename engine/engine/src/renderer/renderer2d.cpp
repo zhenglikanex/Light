@@ -122,6 +122,11 @@ namespace light
 
 		uint32_t white_tex_slot = 0;
 		s_renderer_data->texture_slots[white_tex_slot] = s_renderer_data->white_texture;
+
+		s_renderer_data->quad_vertex_positions[0] = { -0.5f,-0.5f,0.0f,1.0f };
+		s_renderer_data->quad_vertex_positions[1] = { -0.5f,0.5f,0.0f,1.0f };
+		s_renderer_data->quad_vertex_positions[2] = { 0.5f,0.5f,0.0f,1.0f };
+		s_renderer_data->quad_vertex_positions[3] = { 0.5f,-0.5f,0.0f,1.0f };
 	}
 
 	void Renderer2D::Shutdown()
@@ -155,14 +160,14 @@ namespace light
 	void Renderer2D::Flush(rhi::CommandList* command_list)
 	{
 		command_list->SetDynamicVertexBuffer(0, s_renderer_data->vertices.data(), s_renderer_data->batch_count * sizeof(QuadVertex), sizeof(QuadVertex));
-		
+
 		for (uint32_t index = 0; index < s_renderer_data->texture_slot_index; ++index)
 		{
 			command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTextures), index, s_renderer_data->texture_slots[index]);
 		}
-				
+
 		command_list->DrawIndexed(s_renderer_data->batch_count * 6, 1, 0, 0, 0);
-		
+
 	}
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -174,31 +179,33 @@ namespace light
 	{
 		uint32_t index = s_renderer_data->batch_count;
 
-		float white_tex_slot = 0;
+		float white_texture_slot = 0;
 
-		s_renderer_data->vertices[index * 4 + 0].position = { position.x - size.x * 0.5, position.y - size.y * 0.5, position.z };
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f),glm::vec3(size,1.0f));
+
+		s_renderer_data->vertices[index * 4 + 0].position = transform * s_renderer_data->quad_vertex_positions[0];
 		s_renderer_data->vertices[index * 4 + 0].texcoord = { 0.0f,1.0f };
 		s_renderer_data->vertices[index * 4 + 0].color = color;
-		s_renderer_data->vertices[index * 4 + 0].tex_index = white_tex_slot;
-		s_renderer_data->vertices[index * 4 + 0].tiling_factor = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 0].texture_index = white_texture_slot;
+		s_renderer_data->vertices[index * 4 + 0].tiling_factor = white_texture_slot;
 		s_renderer_data->vertices[index * 4 + 0].tiling_factor = 1;
 
-		s_renderer_data->vertices[index * 4 + 1].position = { position.x - size.x * 0.5, position.y + size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 1].position = transform * s_renderer_data->quad_vertex_positions[1];
 		s_renderer_data->vertices[index * 4 + 1].texcoord = { 0.0f, 0.0f };
 		s_renderer_data->vertices[index * 4 + 1].color = color;
-		s_renderer_data->vertices[index * 4 + 1].tex_index = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 1].texture_index = white_texture_slot;
 		s_renderer_data->vertices[index * 4 + 1].tiling_factor = 1;
 
-		s_renderer_data->vertices[index * 4 + 2].position = { position.x + size.x * 0.5, position.y + size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 2].position = transform * s_renderer_data->quad_vertex_positions[2];
 		s_renderer_data->vertices[index * 4 + 2].texcoord = { 1.0f, 0.0f };
 		s_renderer_data->vertices[index * 4 + 2].color = color;
-		s_renderer_data->vertices[index * 4 + 2].tex_index = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 2].texture_index = white_texture_slot;
 		s_renderer_data->vertices[index * 4 + 2].tiling_factor = 1;
 
-		s_renderer_data->vertices[index * 4 + 3].position = { position.x + size.x * 0.5, position.y - size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 3].position = transform * s_renderer_data->quad_vertex_positions[3];
 		s_renderer_data->vertices[index * 4 + 3].texcoord = { 1.0f, 1.0f };
 		s_renderer_data->vertices[index * 4 + 3].color = color;
-		s_renderer_data->vertices[index * 4 + 3].tex_index = white_tex_slot;
+		s_renderer_data->vertices[index * 4 + 3].texture_index = white_texture_slot;
 		s_renderer_data->vertices[index * 4 + 3].tiling_factor = 1;
 
 		++s_renderer_data->batch_count;
@@ -213,59 +220,50 @@ namespace light
 	{
 		uint32_t index = s_renderer_data->batch_count;
 
-		uint32_t tex_slot = 0;
+		uint32_t texture_slot = 0;
 
 		for (uint32_t index = 0; index < s_renderer_data->texture_slot_index; ++index)
 		{
 			if (s_renderer_data->texture_slots[index].Get() == texture)
 			{
-				tex_slot = index;
+				texture_slot = index;
 				break;
 			}
 		}
 
-		if (tex_slot == 0)
+		if (texture_slot == 0)
 		{
-			tex_slot = s_renderer_data->texture_slot_index++;
-			s_renderer_data->texture_slots[tex_slot] = texture;
+			texture_slot = s_renderer_data->texture_slot_index++;
+			s_renderer_data->texture_slots[texture_slot] = texture;
 		}
 
-		s_renderer_data->vertices[index * 4 + 0].position = { position.x - size.x * 0.5, position.y - size.y * 0.5, position.z };
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+
+		s_renderer_data->vertices[index * 4 + 0].position = transform * s_renderer_data->quad_vertex_positions[0];
 		s_renderer_data->vertices[index * 4 + 0].texcoord = { 0.0f,1.0f };
 		s_renderer_data->vertices[index * 4 + 0].color = tint_color;
-		s_renderer_data->vertices[index * 4 + 0].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 0].texture_index = texture_slot;
 		s_renderer_data->vertices[index * 4 + 0].tiling_factor = tiling_factor;
 
-		s_renderer_data->vertices[index * 4 + 1].position = { position.x - size.x * 0.5, position.y + size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 1].position = transform * s_renderer_data->quad_vertex_positions[1];
 		s_renderer_data->vertices[index * 4 + 1].texcoord = { 0.0f, 0.0f };
 		s_renderer_data->vertices[index * 4 + 1].color = tint_color;
-		s_renderer_data->vertices[index * 4 + 1].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 1].texture_index = texture_slot;
 		s_renderer_data->vertices[index * 4 + 1].tiling_factor = tiling_factor;
 
-		s_renderer_data->vertices[index * 4 + 2].position = { position.x + size.x * 0.5, position.y + size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 2].position = transform * s_renderer_data->quad_vertex_positions[2];
 		s_renderer_data->vertices[index * 4 + 2].texcoord = { 1.0f, 0.0f };
 		s_renderer_data->vertices[index * 4 + 2].color = tint_color;
-		s_renderer_data->vertices[index * 4 + 2].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 2].texture_index = texture_slot;
 		s_renderer_data->vertices[index * 4 + 2].tiling_factor = tiling_factor;
 
-		s_renderer_data->vertices[index * 4 + 3].position = { position.x + size.x * 0.5, position.y - size.y * 0.5, position.z };
+		s_renderer_data->vertices[index * 4 + 3].position = transform * s_renderer_data->quad_vertex_positions[3];
 		s_renderer_data->vertices[index * 4 + 3].texcoord = { 1.0f, 1.0f };
 		s_renderer_data->vertices[index * 4 + 3].color = tint_color;
-		s_renderer_data->vertices[index * 4 + 3].tex_index = tex_slot;
+		s_renderer_data->vertices[index * 4 + 3].texture_index = texture_slot;
 		s_renderer_data->vertices[index * 4 + 3].tiling_factor = tiling_factor;
 
 		++s_renderer_data->batch_count;
-
-		/*glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
-
-		QuadMaterial mat;
-		mat.color = tint_color;
-		mat.tiling_factor = tiling_factor;
-
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::QuadMaterial), mat);
-		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTexture), 0, texture);
-		command_list->DrawIndexed(s_renderer_data->index_buffer->GetDesc().size_in_bytes / s_renderer_data->index_buffer->GetDesc().stride, 1, 0, 0, 0);*/
 	}
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec2& position, float rotation, const glm::vec2& size, const glm::vec4& color)
@@ -275,16 +273,40 @@ namespace light
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec3& position, float rotation, const glm::vec2& size, const glm::vec4& color)
 	{
-		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0, 0, 1.0))
+		uint32_t index = s_renderer_data->batch_count;
+
+		float white_texture_slot = 0;
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 0, 1.0))
 			* glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-		QuadMaterial mat;
-		mat.color = color;
-		mat.tiling_factor = 1.0f;
+		s_renderer_data->vertices[index * 4 + 0].position = transform * s_renderer_data->quad_vertex_positions[0];
+		s_renderer_data->vertices[index * 4 + 0].texcoord = { 0.0f,1.0f };
+		s_renderer_data->vertices[index * 4 + 0].color = color;
+		s_renderer_data->vertices[index * 4 + 0].texture_index = white_texture_slot;
+		s_renderer_data->vertices[index * 4 + 0].tiling_factor = white_texture_slot;
+		s_renderer_data->vertices[index * 4 + 0].tiling_factor = 1;
 
-		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTextures), 0, s_renderer_data->white_texture);
-		command_list->DrawIndexed(s_renderer_data->index_buffer->GetDesc().size_in_bytes / s_renderer_data->index_buffer->GetDesc().stride, 1, 0, 0, 0);
+		s_renderer_data->vertices[index * 4 + 1].position = transform * s_renderer_data->quad_vertex_positions[1];
+		s_renderer_data->vertices[index * 4 + 1].texcoord = { 0.0f, 0.0f };
+		s_renderer_data->vertices[index * 4 + 1].color = color;
+		s_renderer_data->vertices[index * 4 + 1].texture_index = white_texture_slot;
+		s_renderer_data->vertices[index * 4 + 1].tiling_factor = 1;
+
+		s_renderer_data->vertices[index * 4 + 2].position = transform * s_renderer_data->quad_vertex_positions[2];
+		s_renderer_data->vertices[index * 4 + 2].texcoord = { 1.0f, 0.0f };
+		s_renderer_data->vertices[index * 4 + 2].color = color;
+		s_renderer_data->vertices[index * 4 + 2].texture_index = white_texture_slot;
+		s_renderer_data->vertices[index * 4 + 2].tiling_factor = 1;
+
+		s_renderer_data->vertices[index * 4 + 3].position = transform * s_renderer_data->quad_vertex_positions[3];
+		s_renderer_data->vertices[index * 4 + 3].texcoord = { 1.0f, 1.0f };
+		s_renderer_data->vertices[index * 4 + 3].color = color;
+		s_renderer_data->vertices[index * 4 + 3].texture_index = white_texture_slot;
+		s_renderer_data->vertices[index * 4 + 3].tiling_factor = 1;
+
+		++s_renderer_data->batch_count;
 	}
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec2& position, float rotation, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
@@ -294,15 +316,53 @@ namespace light
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec3& position, float rotation, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
 	{
-		glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), rotation, glm::vec3(0, 0, 1.0))
+		uint32_t index = s_renderer_data->batch_count;
+
+		uint32_t texture_slot = 0;
+
+		for (uint32_t index = 0; index < s_renderer_data->texture_slot_index; ++index)
+		{
+			if (s_renderer_data->texture_slots[index].Get() == texture)
+			{
+				texture_slot = index;
+				break;
+			}
+		}
+
+		if (texture_slot == 0)
+		{
+			texture_slot = s_renderer_data->texture_slot_index++;
+			s_renderer_data->texture_slots[texture_slot] = texture;
+		}
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0, 0, 1.0))
 			* glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
 
-		QuadMaterial mat;
-		mat.color = tint_color;
-		mat.tiling_factor = tiling_factor;
+		s_renderer_data->vertices[index * 4 + 0].position = transform * s_renderer_data->quad_vertex_positions[0];
+		s_renderer_data->vertices[index * 4 + 0].texcoord = { 0.0f,1.0f };
+		s_renderer_data->vertices[index * 4 + 0].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 0].texture_index = texture_slot;
+		s_renderer_data->vertices[index * 4 + 0].tiling_factor = tiling_factor;
 
-		command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTextures), 0, texture);
-		command_list->DrawIndexed(s_renderer_data->index_buffer->GetDesc().size_in_bytes / s_renderer_data->index_buffer->GetDesc().stride, 1, 0, 0, 0);
+		s_renderer_data->vertices[index * 4 + 1].position = transform * s_renderer_data->quad_vertex_positions[1];
+		s_renderer_data->vertices[index * 4 + 1].texcoord = { 0.0f, 0.0f };
+		s_renderer_data->vertices[index * 4 + 1].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 1].texture_index = texture_slot;
+		s_renderer_data->vertices[index * 4 + 1].tiling_factor = tiling_factor;
+
+		s_renderer_data->vertices[index * 4 + 2].position = transform * s_renderer_data->quad_vertex_positions[2];
+		s_renderer_data->vertices[index * 4 + 2].texcoord = { 1.0f, 0.0f };
+		s_renderer_data->vertices[index * 4 + 2].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 2].texture_index = texture_slot;
+		s_renderer_data->vertices[index * 4 + 2].tiling_factor = tiling_factor;
+
+		s_renderer_data->vertices[index * 4 + 3].position = transform * s_renderer_data->quad_vertex_positions[3];
+		s_renderer_data->vertices[index * 4 + 3].texcoord = { 1.0f, 1.0f };
+		s_renderer_data->vertices[index * 4 + 3].color = tint_color;
+		s_renderer_data->vertices[index * 4 + 3].texture_index = texture_slot;
+		s_renderer_data->vertices[index * 4 + 3].tiling_factor = tiling_factor;
+
+		++s_renderer_data->batch_count;
 	}
 }

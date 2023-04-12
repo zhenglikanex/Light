@@ -31,14 +31,12 @@ namespace light
 			glm::vec3 position;
 			glm::vec2 texcoord;
 			glm::vec4 color;
-			float tex_index;
+			float texture_index;
 			float tiling_factor;
 		};
 
 		struct Data
 		{
-			
-
 			rhi::TextureHandle white_texture;
 			rhi::TextureHandle white_texture2;
 			rhi::BufferHandle vertex_buffer;
@@ -53,6 +51,9 @@ namespace light
 
 			std::array<rhi::TextureHandle, kMaxTextures> texture_slots;
 			uint32_t texture_slot_index;
+			
+			std::array<glm::vec4, 4> quad_vertex_positions;
+
 		};
 
 		struct SceneData
