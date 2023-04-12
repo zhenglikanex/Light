@@ -160,9 +160,19 @@ namespace light
 	void Application::OnWindowResized(const WindowResizedEvent& e)
 	{
 		minimized_ = e.width == 0 || e.height == 0;
+		if (minimized_)
+		{
+			return;
+		}
 
 		imgui_renderer_->Flush();
 		swap_chain_->Resize(e.width, e.height);
+
+		rhi::TextureDesc depth_desc;
+		depth_desc.format = rhi::Format::D24S8;
+		depth_desc.width = e.width;
+		depth_desc.height = e.height;
+		depth_texture_ = device_->CreateTexture(depth_desc);
 	}
 
 	void Application::OnWindowClosed(const WindowClosedEvent& e)

@@ -194,6 +194,7 @@ namespace light::rhi
 			current_descriptor_heap_ = RequestDescriptorHeap();
 			current_cpu_descriptor_handle_ = current_descriptor_heap_->GetCPUDescriptorHandleForHeapStart();
 			current_gpu_descriptor_handle_ = current_descriptor_heap_->GetGPUDescriptorHandleForHeapStart();
+			num_free_handles_ = heap_size_;
 
 			command_list->SetDescriptorHeap(heap_type_, current_descriptor_heap_);
 

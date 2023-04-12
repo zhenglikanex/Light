@@ -43,9 +43,6 @@ namespace light
 		texture_data[0].row_pitch = 4;
 		command_list->WriteTexture(s_renderer_data->white_texture, 0, 1, texture_data);
 
-		s_renderer_data->white_texture2 = device->CreateTexture(white_desc);
-		command_list->WriteTexture(s_renderer_data->white_texture2, 0, 1, texture_data);
-
 		rhi::BufferDesc vertex_desc;
 		vertex_desc.type = rhi::BufferType::kVertex;
 		vertex_desc.format = rhi::Format::RGB32_FLOAT;
@@ -144,11 +141,10 @@ namespace light
 		command_list->SetGraphicsPipeline(s_renderer_data->texture_pso);
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_renderer_data->point_sampler);
-		//command_list->SetVertexBuffer(0, s_renderer_data->vertex_buffer);
 		command_list->SetIndexBuffer(s_renderer_data->index_buffer);
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
 
-		s_renderer_data->batch_count = 0;
+		s_renderer_data->batch_quad_count = 0;
 		s_renderer_data->texture_slot_index = 1;
 	}
 
@@ -159,15 +155,31 @@ namespace light
 
 	void Renderer2D::Flush(rhi::CommandList* command_list)
 	{
-		command_list->SetDynamicVertexBuffer(0, s_renderer_data->vertices.data(), s_renderer_data->batch_count * sizeof(QuadVertex), sizeof(QuadVertex));
+		command_list->SetDynamicVertexBuffer(0, s_renderer_data->vertices.data(), s_renderer_data->batch_quad_count * sizeof(QuadVertex) * 4, sizeof(QuadVertex));
 
 		for (uint32_t index = 0; index < s_renderer_data->texture_slot_index; ++index)
 		{
 			command_list->SetShaderResourceView(static_cast<uint32_t>(ParameterIndex::kTextures), index, s_renderer_data->texture_slots[index]);
 		}
 
-		command_list->DrawIndexed(s_renderer_data->batch_count * 6, 1, 0, 0, 0);
+		command_list->DrawIndexed(s_renderer_data->batch_quad_count * 6, 1, 0, 0, 0);
 
+#ifdef STATISTICS
+		++s_renderer_data->stats.draw_calls;
+#endif
+
+		for (uint32_t index = 1; index < s_renderer_data->texture_slot_index; ++index)
+		{
+			s_renderer_data->texture_slots[index] = nullptr;
+		}
+	}
+
+	void Renderer2D::FlushAndReset(rhi::CommandList* command_list)
+	{
+		EndScene(command_list);
+
+		s_renderer_data->batch_quad_count = 0;
+		s_renderer_data->texture_slot_index = 1;
 	}
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -177,7 +189,12 @@ namespace light
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		uint32_t index = s_renderer_data->batch_count;
+		if (s_renderer_data->batch_quad_count >= kMaxBatchQuads)
+		{
+			FlushAndReset(command_list);
+		}
+
+		uint32_t index = s_renderer_data->batch_quad_count;
 
 		float white_texture_slot = 0;
 
@@ -208,7 +225,12 @@ namespace light
 		s_renderer_data->vertices[index * 4 + 3].texture_index = white_texture_slot;
 		s_renderer_data->vertices[index * 4 + 3].tiling_factor = 1;
 
-		++s_renderer_data->batch_count;
+		++s_renderer_data->batch_quad_count;
+
+#ifdef STATISTICS
+		++s_renderer_data->stats.quad_count;
+#endif
+
 	}
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
@@ -218,7 +240,12 @@ namespace light
 
 	void Renderer2D::DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
 	{
-		uint32_t index = s_renderer_data->batch_count;
+		if (s_renderer_data->batch_quad_count >= kMaxBatchQuads)
+		{
+			FlushAndReset(command_list);
+		}
+
+		uint32_t index = s_renderer_data->batch_quad_count;
 
 		uint32_t texture_slot = 0;
 
@@ -263,7 +290,11 @@ namespace light
 		s_renderer_data->vertices[index * 4 + 3].texture_index = texture_slot;
 		s_renderer_data->vertices[index * 4 + 3].tiling_factor = tiling_factor;
 
-		++s_renderer_data->batch_count;
+		++s_renderer_data->batch_quad_count;
+
+#ifdef STATISTICS
+		++s_renderer_data->stats.quad_count;
+#endif
 	}
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec2& position, float rotation, const glm::vec2& size, const glm::vec4& color)
@@ -273,7 +304,12 @@ namespace light
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec3& position, float rotation, const glm::vec2& size, const glm::vec4& color)
 	{
-		uint32_t index = s_renderer_data->batch_count;
+		if (s_renderer_data->batch_quad_count >= kMaxBatchQuads)
+		{
+			FlushAndReset(command_list);
+		}
+
+		uint32_t index = s_renderer_data->batch_quad_count;
 
 		float white_texture_slot = 0;
 
@@ -306,7 +342,11 @@ namespace light
 		s_renderer_data->vertices[index * 4 + 3].texture_index = white_texture_slot;
 		s_renderer_data->vertices[index * 4 + 3].tiling_factor = 1;
 
-		++s_renderer_data->batch_count;
+		++s_renderer_data->batch_quad_count;
+
+#ifdef STATISTICS
+		++s_renderer_data->stats.quad_count;
+#endif
 	}
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec2& position, float rotation, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
@@ -316,7 +356,12 @@ namespace light
 
 	void Renderer2D::DrawRotationQuad(rhi::CommandList* command_list, const glm::vec3& position, float rotation, const glm::vec2& size, rhi::Texture* texture, float tiling_factor, glm::vec4 tint_color)
 	{
-		uint32_t index = s_renderer_data->batch_count;
+		if (s_renderer_data->batch_quad_count >= kMaxBatchQuads)
+		{
+			FlushAndReset(command_list);
+		}
+
+		uint32_t index = s_renderer_data->batch_quad_count;
 
 		uint32_t texture_slot = 0;
 
@@ -363,6 +408,21 @@ namespace light
 		s_renderer_data->vertices[index * 4 + 3].texture_index = texture_slot;
 		s_renderer_data->vertices[index * 4 + 3].tiling_factor = tiling_factor;
 
-		++s_renderer_data->batch_count;
+		++s_renderer_data->batch_quad_count;
+
+#ifdef STATISTICS
+		++s_renderer_data->stats.quad_count;
+#endif
+	}
+
+	void Renderer2D::ResetStats()
+	{
+		s_renderer_data->stats.draw_calls = 0;
+		s_renderer_data->stats.quad_count = 0;
+	}
+
+	Renderer2D::Statistics Renderer2D::GetStats()
+	{
+		return s_renderer_data->stats;
 	}
 }
