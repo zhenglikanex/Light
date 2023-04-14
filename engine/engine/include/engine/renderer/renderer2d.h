@@ -14,7 +14,7 @@ namespace light
 	class Renderer2D
 	{
 	public:
-		constexpr static uint32_t kMaxBatchQuads = 100000;
+		constexpr static uint32_t kMaxBatchQuads = 10000;
 		constexpr static uint32_t kMaxBatchVertices = kMaxBatchQuads * 4;
 		constexpr static uint32_t kMaxBatchIndexes = kMaxBatchQuads * 6;
 

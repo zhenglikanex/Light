@@ -20,7 +20,7 @@ namespace light
 		{
 			{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false },
 			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,12,false },
-			{ "COLOR",0,rhi::Format::RG32_FLOAT,0,20,false },
+			{ "COLOR",0,rhi::Format::RGBA32_FLOAT,0,20,false },
 			{ "COLOR",1,rhi::Format::R32_FLOAT,0,36,false },
 			{ "COLOR",2,rhi::Format::R32_FLOAT,0,40,false }
 		};
@@ -110,6 +110,11 @@ namespace light
 		tex_pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(tex_binding_layout);
 		tex_pso_desc.vs = texture_vertex_shader;
 		tex_pso_desc.ps = texture_pixel_shader;
+		tex_pso_desc.blend_state.render_target[0].blend_enable = true;
+		tex_pso_desc.blend_state.render_target[0].src_blend = rhi::BlendFactor::kSrcAlpha;
+		tex_pso_desc.blend_state.render_target[0].dest_blend = rhi::BlendFactor::kInvSrcAlpha;
+
+		
 		tex_pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
 		s_renderer_data->texture_pso = device->CreateGraphicsPipeline(tex_pso_desc, render_target);
 
@@ -204,7 +209,6 @@ namespace light
 		s_renderer_data->vertices[index * 4 + 0].texcoord = { 0.0f,1.0f };
 		s_renderer_data->vertices[index * 4 + 0].color = color;
 		s_renderer_data->vertices[index * 4 + 0].texture_index = white_texture_slot;
-		s_renderer_data->vertices[index * 4 + 0].tiling_factor = white_texture_slot;
 		s_renderer_data->vertices[index * 4 + 0].tiling_factor = 1;
 
 		s_renderer_data->vertices[index * 4 + 1].position = transform * s_renderer_data->quad_vertex_positions[1];
