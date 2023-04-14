@@ -24,6 +24,8 @@ namespace light::rhi
 		virtual uint32_t GetWidth() = 0;
 
 		virtual uint32_t GetHeight() = 0;
+
+		virtual void SetVSync(bool vsync) = 0;
 	};
 
 	using SwapChainHandle = Handle<SwapChain>;

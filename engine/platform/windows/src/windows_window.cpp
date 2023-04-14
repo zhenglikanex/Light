@@ -20,7 +20,7 @@ namespace light
 
 	WindowsWindow::WindowsWindow(const WindowParams& params)
 		: Window(params)
-		  , window_(nullptr)
+		, window_(nullptr)
 	{
 		SetConsoleOutputCP(CP_UTF8);
 

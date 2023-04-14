@@ -25,7 +25,7 @@
 #include "engine/core/application.h"
 
 //profile
-#include "engine/profile/timer.h"
+#include "engine/profile/profile.h"
 
 #include "imgui.h"
 

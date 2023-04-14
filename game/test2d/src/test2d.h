@@ -2,10 +2,10 @@
 
 #include "engine/light.h"
 
-class Sandbox2D : public light::Layer
+class Test2D : public light::Layer
 {
 public:
-	Sandbox2D();
+	Test2D();
 
 	void OnAttach() override;
 	void OnDetach() override;

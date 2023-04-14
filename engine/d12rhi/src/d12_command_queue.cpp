@@ -112,7 +112,7 @@ namespace light::rhi
 	{
 		if(!IsFenceCompleted(fence_value))
 		{
-			//阻塞到queue设置fence完成
+			//闃诲鍒皅ueue璁剧疆fence瀹屾垚
 			HANDLE event = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
 			fence_->SetEventOnCompletion(fence_value, event);
@@ -142,7 +142,7 @@ namespace light::rhi
 	{
 		std::unique_lock<std::mutex> lock(ResourceStateTracker::s_global_mutex);
 
-		// 等待上传到fight_command_lists列表
+		// 绛夊緟涓婁紶鍒癴ight_command_lists鍒楄〃
 		std::vector<CommandListHandle> flight_command_lists;
 		flight_command_lists.reserve(num * 2);
 
@@ -174,7 +174,7 @@ namespace light::rhi
 
 		lock.unlock();
 
-		// 记录执行中的command_list
+		// 璁板綍鎵ц涓殑command_list
 		for(auto& command_list : flight_command_lists)
 		{
 			flight_command_lists_.Push(CommandListEntry{ fence_value,command_list });

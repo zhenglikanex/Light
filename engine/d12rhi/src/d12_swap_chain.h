@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Windows.h"
+#include <dxgi1_5.h>
+#include <dxgi1_2.h>
+#include <wrl.h>
+#include <Windows.h>
+
 #include "engine/rhi/swap_chain.h"
 
-#include <dxgi1_5.h>
 #include "d3dx12.h"
-
 #include "d12_texture.h"
 
 namespace light::rhi
@@ -29,6 +31,8 @@ namespace light::rhi
 		uint32_t GetWidth() override { return width_; }
 
 		uint32_t GetHeight() override { return height_; }
+
+		void SetVSync(bool vsync) override { vsync_ = vsync; }
 	private:
 		void UpdateRenderTargetViews();
 
@@ -41,5 +45,7 @@ namespace light::rhi
 		TextureHandle back_buffer_textures_[kBufferCount];
 		uint32_t current_back_buffer_index_;
 		uint64_t fence_values_[kBufferCount];
+		bool vsync_;
+		bool allow_tearing_;
 	};
 }

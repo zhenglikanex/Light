@@ -11,3 +11,4 @@
 #endif
 
 #define STATISTICS 1
+#define PROFILE 1

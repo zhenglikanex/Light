@@ -1,11 +1,8 @@
 #include "d12_swap_chain.h"
-
-#include <dxgi1_2.h>
-
 #include "d12_device.h"
 #include "d12_command_queue.h"
 
-#include <wrl.h>
+#include "engine/profile/profile.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -15,6 +12,8 @@ namespace light::rhi
 		: device_(device)
 		, hwnd_(hwnd)
 		, fence_values_{0}
+		, vsync_(false)
+		, allow_tearing_(false)
 	{
 		command_queue_ = device_->GetCommandQueue(CommandListType::kDirect);
 
@@ -26,10 +25,10 @@ namespace light::rhi
 		width_ = window_rect.right - window_rect.left;
 		height_ = window_rect.bottom - window_rect.top;
 
-		bool allow_tearing = false;
-		if (SUCCEEDED(device_->GetDxgiFactory()->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing, sizeof(bool))))
+		BOOL allow_tearing = FALSE;
+		if (SUCCEEDED(device_->GetDxgiFactory()->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing, sizeof(BOOL))))
 		{
-			allow_tearing = true;
+			allow_tearing_ = true;
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 desc{};
@@ -72,14 +71,17 @@ namespace light::rhi
 		command_list->TransitionBarrier(back_buffer_textures_[current_back_buffer_index_], ResourceStates::kPresent);
 		command_list->ExecuteCommandList();
 
-		ThrowIfFailed(dxgi_swap_chain_->Present(0, 0));
-
-		// ��¼��ǰ��ͬ����
+		// 是否开启垂直同步,WIN10以上中设置DXGI_PRESENT_ALLOW_TEARING才能打开垂直同步限制
+		// 需要查询是否支持DXGI_FEATURE_PRESENT_ALLOW_TEARING
+		UINT flags = allow_tearing_ && !vsync_ ? DXGI_PRESENT_ALLOW_TEARING : 0; 
+		ThrowIfFailed(dxgi_swap_chain_->Present(vsync_ ? 1 : 0, flags));
+		
+		// 记录当前的同步量
 		fence_values_[current_back_buffer_index_] = command_queue_->Signal();
 
 		current_back_buffer_index_ = dxgi_swap_chain_->GetCurrentBackBufferIndex();
 
-		// �ȴ���һ֡
+		// 等待上一帧
 		command_queue_->WaitForFenceValue(fence_values_[current_back_buffer_index_]);
 
 		return current_back_buffer_index_;
