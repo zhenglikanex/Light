@@ -30,9 +30,8 @@ namespace light::rhi
 
 	void UploadBuffer::Rest()
 	{
-		available_pages_ = std::move(page_pool_);
-
 		current_page_ = nullptr;
+		available_pages_ = page_pool_;
 
 		for(auto& page : available_pages_)
 		{
@@ -148,6 +147,4 @@ namespace light::rhi
 	{
 		offset_ = 0;
 	}
-
-	
 }

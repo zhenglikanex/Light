@@ -108,6 +108,7 @@ namespace light::rhi
 			out.BlendOp = static_cast<D3D12_BLEND_OP>(in.blend_op);
 			out.SrcBlendAlpha = static_cast<D3D12_BLEND>(in.src_blend_alpha);
 			out.DestBlendAlpha = static_cast<D3D12_BLEND>(in.dest_blend_alpha);
+			out.BlendOpAlpha = static_cast<D3D12_BLEND_OP>(in.blend_op_alpha);
 			out.LogicOp = D3D12_LOGIC_OP_NOOP;
 			out.RenderTargetWriteMask = static_cast<uint8_t>(in.render_target_write_mask);
 		}
