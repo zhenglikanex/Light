@@ -38,7 +38,7 @@ namespace light
 	{
 		running_ = true;
 
-		log::Init();
+		Log::Init();
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();

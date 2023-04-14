@@ -3,28 +3,37 @@
 #include <memory>
 
 #include "spdlog/spdlog.h"
+#include "spdlog/logger.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/fmt/ostr.h"
 #include "spdlog/stopwatch.h"
+#include "spdlog/async.h"
+#include "spdlog/async_logger.h"
+#include "spdlog/sinks/msvc_sink.h"
 
-namespace light::log
+namespace light
 {
-	using Stopwatch = spdlog::stopwatch;
+	class Log
+	{
+	public:
+		using Stopwatch = spdlog::stopwatch;
 
-	extern std::shared_ptr<spdlog::logger> g_engine_logger;
-	extern std::shared_ptr<spdlog::logger> g_game_logger;
-
-	extern void Init();
+		static void Init();
+		
+		static std::shared_ptr<spdlog::logger> g_engine_logger;
+		static std::shared_ptr<spdlog::logger> g_game_logger;
+	};
+	
 }
 
 #if DEBUG
 
-#define	LOG_ENGINE_TRACE(...) light::log::g_engine_logger->trace(__VA_ARGS__);
-#define LOG_ENGINE_DEBUG(...) light::log::g_engine_logger->debug(__VA_ARGS__);
-#define	LOG_ENGINE_INFO(...) light::log::g_engine_logger->info(__VA_ARGS__);
-#define	LOG_ENGINE_WARN(...) light::log::g_engine_logger->warn(__VA_ARGS__);
-#define	LOG_ENGINE_ERROR(...) light::log::g_engine_logger->error(__VA_ARGS__);
-#define	LOG_ENGINE_CRITICAL(...) light::log::g_engine_logger->critical(__VA_ARGS__);
+#define	LOG_ENGINE_TRACE(...) light::Log::g_engine_logger->trace(__VA_ARGS__);
+#define LOG_ENGINE_DEBUG(...) light::Log::g_engine_logger->debug(__VA_ARGS__);
+#define	LOG_ENGINE_INFO(...) light::Log::g_engine_logger->info(__VA_ARGS__);
+#define	LOG_ENGINE_WARN(...) light::Log::g_engine_logger->warn(__VA_ARGS__);
+#define	LOG_ENGINE_ERROR(...) light::Log::g_engine_logger->error(__VA_ARGS__);
+#define	LOG_ENGINE_CRITICAL(...) light::Log::g_engine_logger->critical(__VA_ARGS__);
 
 #define	LOG_GAME_TRACE(...) light::log::g_game_logger->trace(__VA_ARGS__);
 #define LOG_GAME_DEBUG(...) light::log::g_game_logger->debug(__VA_ARGS__);
