@@ -84,6 +84,8 @@ namespace light::rhi
 		// 等待上一帧
 		command_queue_->WaitForFenceValue(fence_values_[current_back_buffer_index_]);
 
+		device_->ReleaseStaleDescriptors();
+
 		return current_back_buffer_index_;
 	}
 

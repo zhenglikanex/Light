@@ -15,7 +15,7 @@ namespace light::rhi
 
 	UploadBuffer::Allocation UploadBuffer::Allocate(size_t bytes, size_t alignment)
 	{
-		if(bytes > page_size_ || true )
+		if(bytes > page_size_)
 		{
 			return AllocateLarge(bytes, alignment);
 		}
