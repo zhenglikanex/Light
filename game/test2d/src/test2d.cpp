@@ -57,17 +57,30 @@ void Test2D::OnUpdate(const light::Timestep& ts)
 		static float rotation = 0;
 		rotation += 10 * ts;
 
-		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.1f), glm::vec2(1.0f), glm::vec4(1.0f));
-		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, -0.2f), glm::vec2(1.5f), texture_, 30);
-
-		Renderer2D::DrawRotationQuad(command_list, glm::vec3(2.0f, 0.0f, 0.f), rotation,glm::vec2(1.0f), texture_);
-
-		Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
-
-		/*for (uint32_t i = 0; i < 100000; ++i)
+		for (float x = -5.0f; x < 5.0f; x += 0.1f)
 		{
-			Renderer2D::DrawQuad(command_list, glm::vec2(-1.0f + 0.01 * i,0), glm::vec2(1.f), { 1,0,0.0,1.0 });
-		}*/
+			for (float y = -5.0f; y < 5.0f; y += 0.1f)
+			{
+				Renderer2D::DrawQuad(command_list, glm::vec3(x, y, 0.1f), glm::vec2(0.085f), texture_);
+			}
+		}
+
+		for (float x = -5.0f; x < 5.0f; x += 0.1f)
+		{
+			for (float y = -5.0f; y < 5.0f; y += 0.1f)
+			{
+				Renderer2D::DrawQuad(command_list, glm::vec3(x, y, 0), glm::vec2(0.085f), { (x + 5.0f) / 10.0f,(y + 5.0f) / 10.0f,0.0,0.8f });
+			}
+		}
+
+		for (float x = -5.0f; x < 5.0f; x += 0.1f)
+		{
+			for (float y = -5.0f; y < 5.0f; y += 0.1f)
+			{
+				Renderer2D::DrawRotationQuad(command_list, glm::vec3(x, y, 0),rotation, glm::vec2(0.085f), { (x + 5.0f) / 10.0f,(y + 5.0f) / 10.0f,0.0,0.8f });
+			}
+		}
+
 		
 		Renderer2D::EndScene(command_list);
 	}
