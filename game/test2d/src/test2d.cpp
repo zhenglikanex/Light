@@ -81,7 +81,6 @@ void Test2D::OnUpdate(const light::Timestep& ts)
 			}
 		}
 
-		
 		Renderer2D::EndScene(command_list);
 	}
 

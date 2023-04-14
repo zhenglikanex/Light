@@ -1,5 +1,5 @@
 #include "sandbox2d.h"
-
+#include "random.h"
 #include "spdlog/fmt/fmt.h"
 
 using namespace light;
@@ -14,6 +14,7 @@ Sandbox2D::Sandbox2D()
 
 void Sandbox2D::OnAttach()
 {
+	Random::Init();
 	texture_ = texture_library_.LoadTexture("assets/textures/warchessMap_4.jpg");
 }
 
@@ -54,18 +55,38 @@ void Sandbox2D::OnUpdate(const light::Timestep& ts)
 		static float rotation = 0;
 		rotation += 10 * ts;
 
-		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.1f), glm::vec2(1.0f), glm::vec4(1.0f));
-		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, -0.2f), glm::vec2(1.5f), texture_, 30);
+		/*Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f), glm::vec4(1.0f));
+		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.5f), texture_, 30);
 
 		Renderer2D::DrawRotationQuad(command_list, glm::vec3(2.0f, 0.0f, 0.f), rotation,glm::vec2(1.0f), texture_);
 
-		Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
+		Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });*/
 
-		for (uint32_t i = 0; i < 3000; ++i)
+
+		if (Input::IsMouseButtonPressed(Input::MouseButton::BUTTON_LEFT))
 		{
-			Renderer2D::DrawQuad(command_list, glm::vec2(-1.0f + 0.01 * i,0), glm::vec2(1.f), { 1,0,0.0,1.0 });
+			ParticleProps props;
+			props.position = { ((Input::GetMouseX() - 400.0f) / 400.0f + camera_controller_.GetCamera().GetPosition().x) * 800.f / 450.f, -(Input::GetMouseY() - 225.0f) / 225.0f + camera_controller_.GetCamera().GetPosition().y };
+			props.size_begin = 0.1f;
+			props.size_end = 0.0f;
+			props.size_variation = 0.2f;
+			props.color_begin = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			props.color_end = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+			props.life_time = 2.0f;
+			props.velocity = glm::vec3(0.3f, 0.2f, 0.0f);
+			props.velocity_variation = glm::vec2(0.5,0.3);
+
+			for (uint32_t i = 0; i < 10; ++i)
+			{
+				props.color_begin = glm::vec4(Random::Float(), Random::Float(), Random::Float(), 1.0f);
+				props.color_end = glm::vec4(Random::Float(), Random::Float(), Random::Float(), 0.0f);
+				particle_system_.Emit(props);
+			}
 		}
-		
+
+		particle_system_.OnUpdate(ts);
+		particle_system_.OnRender(command_list);
+
 		Renderer2D::EndScene(command_list);
 	}
 

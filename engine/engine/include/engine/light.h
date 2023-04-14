@@ -32,5 +32,7 @@
 // math
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-
+#include "glm/gtc/constants.hpp"
+#include "glm/glm.hpp"
+#include "glm/ext/scalar_common.hpp"
 

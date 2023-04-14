@@ -31,4 +31,24 @@ namespace light
 	{
 		return Input::GetMouseButton(button) == Status::PRESS;
 	}
+
+	double Input::GetMouseX()
+	{
+		double x = 0;
+		double y = 0;
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow()->GetNativeWindow());
+		glfwGetCursorPos(window, &x, &y);
+
+		return x;
+	}
+
+	double Input::GetMouseY()
+	{
+		double x = 0;
+		double y = 0;
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow()->GetNativeWindow());
+		glfwGetCursorPos(window, &x, &y);
+
+		return y;
+	}
 }

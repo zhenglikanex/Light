@@ -161,5 +161,8 @@ namespace light
 
 		static bool IsKeyPressed(Key key);
 		static bool IsMouseButtonPressed(MouseButton button);
+
+		static double GetMouseX();
+		static double GetMouseY();
 	};
 }

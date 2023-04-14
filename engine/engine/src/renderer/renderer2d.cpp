@@ -48,7 +48,6 @@ namespace light
 		vertex_desc.format = rhi::Format::RGB32_FLOAT;
 		vertex_desc.size_in_bytes = s_renderer_data->vertices.size() * sizeof(QuadVertex);
 		vertex_desc.stride = sizeof(QuadVertex);
-		//vertex_desc.cpu_access = rhi::CpuAccess::kWrite;
 		s_renderer_data->vertex_buffer = device->CreateBuffer(vertex_desc);
 
 		uint32_t offset = 0;

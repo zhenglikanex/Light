@@ -2,6 +2,8 @@
 
 #include "engine/light.h"
 
+#include "particle_system.h"
+
 class Sandbox2D : public light::Layer
 {
 public:
@@ -23,4 +25,5 @@ private:
 	light::OrthographicCameraController camera_controller_;
 	glm::vec3 color_;
 	light::rhi::TextureHandle texture_;
+	ParticleSystem particle_system_;
 };
