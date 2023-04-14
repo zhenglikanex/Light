@@ -429,4 +429,15 @@ namespace light
 	{
 		return s_renderer_data->stats;
 	}
+
+	void Renderer2D::ResetStats()
+	{
+		s_renderer_data->stats.draw_calls = 0;
+		s_renderer_data->stats.quad_count = 0;
+	}
+
+	Renderer2D::Statistics Renderer2D::GetStats()
+	{
+		return s_renderer_data->stats;
+	}
 }
