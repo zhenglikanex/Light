@@ -10,10 +10,12 @@ namespace light::rhi
 
         auto* d3d_device = d12_device_->GetNative();
 
-        {
+        int num_descriptors = 1024;
+
+		{
             D3D12_DESCRIPTOR_HEAP_DESC desc = {};
             desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-            desc.NumDescriptors = 1;
+            desc.NumDescriptors = num_descriptors;
             desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             if (d3d_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&pd3d_srv_desc_heap_)) != S_OK)
                 return false;
@@ -37,7 +39,7 @@ namespace light::rhi
 		ImGui_ImplDX12_Init(d12_device_->GetNative(), kNumFramesInFlight, DXGI_FORMAT_R8G8B8A8_UNORM,
             pd3d_srv_desc_heap_,
             pd3d_srv_desc_heap_->GetCPUDescriptorHandleForHeapStart(),
-            pd3d_srv_desc_heap_->GetGPUDescriptorHandleForHeapStart());
+            pd3d_srv_desc_heap_->GetGPUDescriptorHandleForHeapStart(), num_descriptors);
 
         return true;
 	}

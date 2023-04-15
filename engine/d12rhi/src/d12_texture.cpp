@@ -311,4 +311,10 @@ namespace light::rhi
 
 		return handle;
 	}
+
+	void* D12Texture::GetTextureID()
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = GetSRV(Format::UNKNOWN, TextureDimension::kTexture2D, 0, 1, 0, 1);
+		return reinterpret_cast<void*>(handle.ptr);
+	}
 }

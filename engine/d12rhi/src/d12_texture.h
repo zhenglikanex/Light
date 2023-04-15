@@ -26,6 +26,8 @@ namespace light::rhi
 		D3D12_CPU_DESCRIPTOR_HANDLE GetSRV(Format format,TextureDimension dimension, uint32_t mip_level,uint32_t num_mip_levels, uint32_t array_slice, uint32_t num_array_slices);
 
 		ID3D12Resource* GetNative() { return resource_; }
+
+		void* GetTextureID() override;
 	private:
 
 		D12Device* device_;

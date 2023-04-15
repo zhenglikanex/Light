@@ -41,6 +41,8 @@
 //  2018-06-08: DirectX12: Use draw_data->DisplayPos and draw_data->DisplaySize to setup projection matrix and clipping rectangle (to ease support for future multi-viewport).
 //  2018-02-22: Merged into master with all Win32 code synchronized to other examples.
 
+#include <unordered_map>
+
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 
@@ -64,8 +66,9 @@ struct ImGui_ImplDX12_Data
     D3D12_GPU_DESCRIPTOR_HANDLE hFontSrvGpuDescHandle;
     ID3D12DescriptorHeap*       pd3dSrvDescHeap;
     UINT                        numFramesInFlight;
-
-    ImGui_ImplDX12_Data()       { memset((void*)this, 0, sizeof(*this)); }
+    UINT                        textureIndex;
+    std::unordered_map<UINT64, D3D12_GPU_DESCRIPTOR_HANDLE> texDescHandleMap;
+    UINT                        maxSrvDescNum;
 };
 
 // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
@@ -348,6 +351,34 @@ void ImGui_ImplDX12_RenderDrawData(ImDrawData* draw_data, ID3D12GraphicsCommandL
                 const D3D12_RECT r = { (LONG)clip_min.x, (LONG)clip_min.y, (LONG)clip_max.x, (LONG)clip_max.y };
                 D3D12_GPU_DESCRIPTOR_HANDLE texture_handle = {};
                 texture_handle.ptr = (UINT64)pcmd->GetTexID();
+
+                // 正确设置图片纹理
+                if(texture_handle.ptr != bd->hFontSrvGpuDescHandle.ptr)
+                {
+                    if(!bd->texDescHandleMap.contains(texture_handle.ptr))
+                    {
+                        assert(bd->textureIndex < bd->maxSrvDescNum && "out max texture!");
+
+                        UINT size = bd->pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * bd->textureIndex;
+
+                        D3D12_CPU_DESCRIPTOR_HANDLE dest_handle;
+                        dest_handle.ptr = bd->hFontSrvCpuDescHandle.ptr + size;
+
+                        D3D12_CPU_DESCRIPTOR_HANDLE src_handle;
+                        src_handle.ptr = texture_handle.ptr;
+
+                        bd->pd3dDevice->CopyDescriptorsSimple(1, dest_handle, src_handle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+                        D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle;
+                        gpu_handle.ptr = bd->hFontSrvGpuDescHandle.ptr + size;
+                        bd->texDescHandleMap[texture_handle.ptr] = gpu_handle;
+
+                        ++bd->textureIndex;
+                    }
+
+                    texture_handle = bd->texDescHandleMap[texture_handle.ptr];
+                }
+
                 ctx->SetGraphicsRootDescriptorTable(1, texture_handle);
                 ctx->RSSetScissorRects(1, &r);
                 ctx->DrawIndexedInstanced(pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0);
@@ -770,7 +801,7 @@ void    ImGui_ImplDX12_InvalidateDeviceObjects()
 }
 
 bool ImGui_ImplDX12_Init(ID3D12Device* device, int num_frames_in_flight, DXGI_FORMAT rtv_format, ID3D12DescriptorHeap* cbv_srv_heap,
-                         D3D12_CPU_DESCRIPTOR_HANDLE font_srv_cpu_desc_handle, D3D12_GPU_DESCRIPTOR_HANDLE font_srv_gpu_desc_handle)
+                         D3D12_CPU_DESCRIPTOR_HANDLE font_srv_cpu_desc_handle, D3D12_GPU_DESCRIPTOR_HANDLE font_srv_gpu_desc_handle, int max_srv_desc_num)
 {
     ImGuiIO& io = ImGui::GetIO();
     IM_ASSERT(io.BackendRendererUserData == nullptr && "Already initialized a renderer backend!");
@@ -790,7 +821,8 @@ bool ImGui_ImplDX12_Init(ID3D12Device* device, int num_frames_in_flight, DXGI_FO
     bd->hFontSrvGpuDescHandle = font_srv_gpu_desc_handle;
     bd->numFramesInFlight = num_frames_in_flight;
     bd->pd3dSrvDescHeap = cbv_srv_heap;
-
+    bd->textureIndex = 0;
+    bd->maxSrvDescNum = max_srv_desc_num;
     // Create a dummy ImGui_ImplDX12_ViewportData holder for the main viewport,
     // Since this is created and managed by the application, we will only use the ->Resources[] fields.
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
@@ -829,6 +861,9 @@ void ImGui_ImplDX12_NewFrame()
 {
     ImGui_ImplDX12_Data* bd = ImGui_ImplDX12_GetBackendData();
     IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplDX12_Init()?");
+
+    bd->textureIndex = 1;
+    bd->texDescHandleMap.clear();
 
     if (!bd->pPipelineState)
         ImGui_ImplDX12_CreateDeviceObjects();

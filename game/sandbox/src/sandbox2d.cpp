@@ -155,7 +155,7 @@ void Sandbox2D::OnImGuiRender(const light::Timestep& ts)
         {
 			if(ImGui::MenuItem("Close"))
 			{
-				
+				Application::Get().Close();
 			}
 
             ImGui::Separator();
@@ -178,10 +178,9 @@ void Sandbox2D::OnImGuiRender(const light::Timestep& ts)
 	ImGui::Text("quad count:%d", stats.quad_count);
 	ImGui::Text("vertex count:%d", stats.GetVertexCount());
 	ImGui::Text("index count:%d", stats.GetIndexCount());
+	ImGui::Image(texture_->GetTextureID(), ImVec2(100, 100));
 	ImGui::End();
 
-	static bool show = true;
-	ImGui::ShowDemoWindow(&show);
 }
 
 void Sandbox2D::OnEvent(const light::Event& e)

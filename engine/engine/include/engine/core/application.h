@@ -34,6 +34,8 @@ namespace light
 
 		void Run();
 
+		void Close();
+
 		void PushLayer(Layer* layer);
 
 		void PushOverlayLayer(Layer* layer);

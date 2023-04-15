@@ -67,7 +67,7 @@ namespace light
 		window_params.title = "Light";
 		window_params.width = 800;
 		window_params.height = 450;
-		window_params.vsync = false;
+		window_params.vsync = true;
 
 		window_ = std::unique_ptr<Window>(CreatePlatformWindow(window_params));
 		window_->SetEventCallback(std::bind(&Application::OnEvent, this, _1));
@@ -75,6 +75,7 @@ namespace light
 		device_ = rhi::DeviceHandle::Create(rhi::CreateD12Device(window_->GetHwnd()));
 
 		swap_chain_ = device_->CreateSwapChain();
+		swap_chain_->SetVSync(window_params.vsync);
 
 		rhi::TextureDesc depth_desc;
 		depth_desc.format = rhi::Format::D24S8;
@@ -133,6 +134,11 @@ namespace light
 
 			Profile::ClearProfileResult();
 		}	
+	}
+
+	void Application::Close()
+	{
+		running_ = false;
 	}
 
 	Window* Application::GetWindow()

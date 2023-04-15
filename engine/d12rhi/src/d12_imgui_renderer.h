@@ -70,7 +70,6 @@ namespace light::rhi
 		D12Device* d12_device_ = nullptr;
 		FrameContext frame_context_[kNumFramesInFlight] = {};
 		UINT frame_index_ = 0;
-		Handle<ID3D12DescriptorHeap> pd3d_rtv_desc_heap_ = nullptr;
 		Handle<ID3D12DescriptorHeap> pd3d_srv_desc_heap_ = nullptr;
 		Handle<ID3D12GraphicsCommandList> pd3d_command_list_ = nullptr;
 		Handle<ID3D12Fence> fence_ = nullptr;
