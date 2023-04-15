@@ -15,8 +15,8 @@ namespace light
 
 	void ImguiLayer::OnUpdate(const Timestep& ts)
 	{
-		static bool show_demo = true;
-		ImGui::ShowDemoWindow(&show_demo);
+		/*static bool show_demo = true;
+		ImGui::ShowDemoWindow(&show_demo);*/
 	}
 
 	void ImguiLayer::OnImGuiRender(const Timestep& ts)
