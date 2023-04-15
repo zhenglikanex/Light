@@ -4,7 +4,7 @@
 
 namespace light::rhi
 {
-	D12Texture::D12Texture(D12Device* device, const TextureDesc& desc)
+	D12Texture::D12Texture(D12Device* device, const TextureDesc& desc,const ClearValue* clear_value)
 		: Texture(desc)
 		, device_(device)
 		, resource_(nullptr)
@@ -12,25 +12,38 @@ namespace light::rhi
 		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 		auto res_desc = CD3DX12_RESOURCE_DESC::Tex2D(GetDxgiFormatMapping(desc.format).rtv_format, desc.width, desc.height, desc.array_size, desc.mip_levels);
 
-		auto& format_info = GetFormatInfo(desc.format);
+		if(desc.is_render_target)
+		{
+			res_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+		}
 
-		// todo:¼ÓÉÏclear_value
+		auto& format_info = GetFormatInfo(desc.format);
 		if (format_info.has_depth)
 		{
 			res_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-			D3D12_CLEAR_VALUE optClear;
-			optClear.Format = GetDxgiFormatMapping(desc.format).rtv_format;
-			optClear.DepthStencil.Depth = 1.0f;
-			optClear.DepthStencil.Stencil = 0;
-
-			device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, &optClear, IID_PPV_ARGS(&resource_));
 		}
-		else {
+
+		if(clear_value)
+		{
+			D3D12_CLEAR_VALUE d12_clear_value;
+			d12_clear_value.Format = GetDxgiFormatMapping(desc.format).rtv_format;
+
+			if(desc.is_render_target)
+			{
+				memcpy(d12_clear_value.Color, clear_value->color, sizeof(clear_value->color));
+			}
+			else
+			{
+				d12_clear_value.DepthStencil.Depth = clear_value->depth_stencil.depth;
+				d12_clear_value.DepthStencil.Stencil = clear_value->depth_stencil.stencil;
+			}
+
+			device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, &d12_clear_value, IID_PPV_ARGS(&resource_));
+		}
+		else
+		{
 			device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource_));
 		}
-
-		
 	}
 
 	D12Texture::D12Texture(D12Device* device, const TextureDesc& desc, ID3D12Resource* native)

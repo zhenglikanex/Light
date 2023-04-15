@@ -81,7 +81,10 @@ namespace light
 		depth_desc.format = rhi::Format::D24S8;
 		depth_desc.width = window_params.width;
 		depth_desc.height = window_params.height;
-		depth_texture_ = device_->CreateTexture(depth_desc);
+		rhi::ClearValue clear_value;
+		clear_value.depth_stencil.depth = 1.0f;
+		clear_value.depth_stencil.stencil = 0.0f;
+		depth_texture_ = device_->CreateTexture(depth_desc,&clear_value);
 
 		imgui_renderer_ = std::unique_ptr<rhi::ImGuiRenderer>(rhi::CreateImGuiRenderer());
 

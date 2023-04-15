@@ -31,7 +31,7 @@ namespace light::rhi
 
 		virtual ShaderHandle CreateShader(ShaderType type, std::string_view filename, std::string_view entry_point, std::string_view target) = 0;
 		virtual BufferHandle CreateBuffer(BufferDesc desc) = 0;
-		virtual TextureHandle CreateTexture(const TextureDesc& desc) = 0;
+		virtual TextureHandle CreateTexture(const TextureDesc& desc,const ClearValue* clear_value = nullptr) = 0;
 		virtual SamplerHandle CreateSampler(const SamplerDesc& desc) = 0;
 		virtual TextureHandle CreateTextureForNative(const TextureDesc& desc, void* resource) = 0;
 		virtual InputLayoutHandle CreateInputLayout(std::vector<VertexAttributeDesc> attributes) = 0;

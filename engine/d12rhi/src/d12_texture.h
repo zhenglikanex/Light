@@ -15,7 +15,7 @@ namespace light::rhi
 	class D12Texture final : public Texture
 	{
 	public:
-		D12Texture(D12Device* device, const TextureDesc& desc);
+		D12Texture(D12Device* device, const TextureDesc& desc,const ClearValue* clear_value);
 
 		D12Texture(D12Device* device, const TextureDesc& desc, ID3D12Resource* native);
 

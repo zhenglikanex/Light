@@ -6,16 +6,41 @@ using namespace light;
 using namespace light::rhi;
 
 Sandbox2D::Sandbox2D()
-	:camera_controller_(800.0f / 450.0f, false)
-{	
+	: camera_controller_(static_cast<float>(Application::Get().GetWindow()->GetWidth()) / static_cast<float>(Application::Get().GetWindow()->GetHeight()), false)
+{
 	shader_library_.Load("color", ShaderType::kVertex, "assets/shaders/flat_color.hlsl");
 	shader_library_.Load("color", ShaderType::kPixel, "assets/shaders/flat_color.hlsl");
+
 }
 
 void Sandbox2D::OnAttach()
 {
 	Random::Init();
 	texture_ = texture_library_.LoadTexture("assets/textures/warchessMap_4.jpg");
+
+	TextureDesc color_tex_desc;
+	color_tex_desc.width = Application::Get().GetWindow()->GetWidth();
+	color_tex_desc.height = Application::Get().GetWindow()->GetHeight();
+	color_tex_desc.format = rhi::Format::RGBA8_UNORM;
+	color_tex_desc.is_render_target = true;
+	rhi::ClearValue color_clear_value;
+	color_clear_value.color[0] = 0.0f;
+	color_clear_value.color[1] = 0.0f;
+	color_clear_value.color[2] = 0.0f;
+	color_clear_value.color[3] = 1.0f;
+	rt_color_texture_ = Application::Get().GetDevice()->CreateTexture(color_tex_desc,&color_clear_value);
+
+	TextureDesc depth_tex_desc;
+	depth_tex_desc.width = Application::Get().GetWindow()->GetWidth();
+	depth_tex_desc.height = Application::Get().GetWindow()->GetHeight();
+	depth_tex_desc.format = rhi::Format::D24S8;
+	rhi::ClearValue depth_clear_value;
+	depth_clear_value.depth_stencil.depth = 1.0f;
+	depth_clear_value.depth_stencil.stencil = 0.0f;
+	rt_depth_texture_ = Application::Get().GetDevice()->CreateTexture(depth_tex_desc,&depth_clear_value);
+
+	render_target_.AttachAttachment(AttachmentPoint::kColor0, rt_color_texture_);
+	render_target_.AttachAttachment(AttachmentPoint::kDepthStencil, rt_depth_texture_);
 }
 
 void Sandbox2D::OnDetach()
@@ -33,35 +58,31 @@ void Sandbox2D::OnUpdate(const light::Timestep& ts)
 	auto command_list = Application::Get().GetDevice()->GetCommandList(CommandListType::kDirect);
 	auto render_target = Application::Get().GetRenderTarget();
 
-	{
-		PROFILE_SCOPE("Renderer Prep");
-
-		command_list->SetRenderTarget(render_target);
-		command_list->SetViewport(render_target.GetViewport());
-		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
-
-		constexpr float clear_color[] = { 0.1, 0.1, 0.1, 1.0 };
-		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
-		command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
-			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
-	}
-
 	Renderer2D::ResetStats();
 
 	{
 		PROFILE_SCOPE("Renderer Draw");
+
+		command_list->SetRenderTarget(render_target_);
+		command_list->SetViewport(render_target_.GetViewport());
+		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+
+		constexpr float clear_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		command_list->ClearTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+		command_list->ClearDepthStencilTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
+			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
+
 		Renderer2D::BeginScene(command_list, camera_controller_.GetCamera());
 
 		static float rotation = 0;
 		rotation += 10 * ts;
 
-		/*Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f), glm::vec4(1.0f));
+		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f), glm::vec4(1.0f));
 		Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.5f), texture_, 30);
 
 		Renderer2D::DrawRotationQuad(command_list, glm::vec3(2.0f, 0.0f, 0.f), rotation,glm::vec2(1.0f), texture_);
 
-		Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });*/
-
+		Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
 
 		if (Input::IsMouseButtonPressed(Input::MouseButton::BUTTON_LEFT))
 		{
@@ -91,6 +112,19 @@ void Sandbox2D::OnUpdate(const light::Timestep& ts)
 	}
 
 	{
+		PROFILE_SCOPE("Renderer Prep");
+
+		command_list->SetRenderTarget(render_target);
+		command_list->SetViewport(render_target.GetViewport());
+		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+
+		constexpr float clear_color[] = { 0.1, 0.1, 0.1, 1.0 };
+		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+		command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
+			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
+	}
+
+	{
 		PROFILE_SCOPE("Renderer ExecuteCommandList");
 		command_list->ExecuteCommandList();
 	}
@@ -98,6 +132,9 @@ void Sandbox2D::OnUpdate(const light::Timestep& ts)
 
 void Sandbox2D::OnImGuiRender(const light::Timestep& ts)
 {
+	auto command_queue = Application::Get().GetDevice()->GetCommandQueue(CommandListType::kDirect);
+	command_queue->WaitForFenceValue(command_queue->Signal());
+
 	static bool show_dockspace = true;
     static bool opt_fullscreen = true;
     static bool opt_padding = false;
@@ -178,7 +215,7 @@ void Sandbox2D::OnImGuiRender(const light::Timestep& ts)
 	ImGui::Text("quad count:%d", stats.quad_count);
 	ImGui::Text("vertex count:%d", stats.GetVertexCount());
 	ImGui::Text("index count:%d", stats.GetIndexCount());
-	ImGui::Image(texture_->GetTextureID(), ImVec2(100, 100));
+	ImGui::Image(rt_color_texture_->GetTextureID(), ImVec2(100, 100));
 	ImGui::End();
 
 }

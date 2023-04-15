@@ -16,7 +16,7 @@ namespace light::rhi
 		uint32_t mip_levels = 1;
 		Format format = Format::UNKNOWN;
 		TextureDimension dimension = TextureDimension::kTexture2D;
-
+		bool is_render_target = false;
 		std::string debug_name;
 	};
 

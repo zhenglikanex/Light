@@ -59,6 +59,21 @@ namespace light::rhi
 		kConstant,
 	};
 
+	struct DepthStencilValue
+	{
+		float depth;
+		uint8_t stencil;
+	};
+
+	struct ClearValue
+	{
+		union
+		{
+			float color[4];
+			DepthStencilValue depth_stencil;
+		};
+	};
+
 	enum class TextureDimension : uint8_t
 	{
 		kUnknown,

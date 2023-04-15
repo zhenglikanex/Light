@@ -120,9 +120,9 @@ namespace light::rhi
 		return MakeHandle<D12Buffer>(this,desc);
 	}
 
-	TextureHandle D12Device::CreateTexture(const TextureDesc& desc)
+	TextureHandle D12Device::CreateTexture(const TextureDesc& desc,const ClearValue* clear_value)
 	{
-		return MakeHandle<D12Texture>(this, desc);
+		return MakeHandle<D12Texture>(this, desc,clear_value);
 	}
 
 	TextureHandle D12Device::CreateTextureForNative(const TextureDesc& desc, void* resource)

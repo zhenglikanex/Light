@@ -45,7 +45,7 @@ namespace light::rhi
 
 		BufferHandle CreateBuffer(BufferDesc desc) override;
 
-		TextureHandle CreateTexture(const TextureDesc& desc) override;
+		TextureHandle CreateTexture(const TextureDesc& desc,const ClearValue* clear_value = nullptr) override;
 
 		TextureHandle CreateTextureForNative(const TextureDesc& desc, void* resource) override;
 

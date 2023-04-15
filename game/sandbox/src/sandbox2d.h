@@ -25,5 +25,9 @@ private:
 	light::OrthographicCameraController camera_controller_;
 	glm::vec3 color_;
 	light::rhi::TextureHandle texture_;
+	light::rhi::TextureHandle rt_color_texture_;
+	light::rhi::TextureHandle rt_depth_texture_;
+	
 	ParticleSystem particle_system_;
+	light::rhi::RenderTarget render_target_;
 };
