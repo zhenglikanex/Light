@@ -25,7 +25,7 @@ namespace light
 	public:
 		static Application& Get();
 
-		Application();
+		Application(const std::string& name = "Light Engine");
 		virtual ~Application();
 
 		virtual void Init();
@@ -56,6 +56,7 @@ namespace light
 		void OnWindowResized(const WindowResizedEvent& e);
 		void OnWindowClosed(const WindowClosedEvent& e);
 
+		std::string name_;
 		bool running_;
 		bool minimized_;
 		std::unique_ptr<Window> window_;

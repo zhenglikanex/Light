@@ -13,9 +13,9 @@ namespace light
 	struct WindowParams
 	{
 		std::string_view title;
-		uint32_t width;
-		uint32_t height;
-		bool vsync;
+		uint32_t width = 1280;
+		uint32_t height = 720;
+		bool vsync = false;
 	};
 
 	class Window

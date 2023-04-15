@@ -20,8 +20,9 @@ namespace light
 		return *g_application;
 	}
 
-	Application::Application()
-		: running_(false)
+	Application::Application(const std::string& name)
+		: name_(name)
+		, running_(false)
 		, minimized_(false)
 		, timestep_(0)
 		, last_frame_clock_(std::chrono::high_resolution_clock::now())
@@ -64,9 +65,7 @@ namespace light
 		}
 
 		WindowParams window_params;
-		window_params.title = "Light";
-		window_params.width = 800;
-		window_params.height = 450;
+		window_params.title = name_;
 		window_params.vsync = true;
 
 		window_ = std::unique_ptr<Window>(CreatePlatformWindow(window_params));
