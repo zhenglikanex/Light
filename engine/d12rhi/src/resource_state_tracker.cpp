@@ -157,4 +157,13 @@ namespace light::rhi
 		std::unique_lock<std::mutex> lock(s_global_mutex);
 		s_global_resource_state_[resource].SetSubresourceState(D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, state);
 	}
+
+	void ResourceStateTracker::RemoveGlobalResourceState(ID3D12Resource* resource)
+	{
+		if (resource != nullptr)
+		{
+			std::lock_guard<std::mutex> lock(s_global_mutex);
+			s_global_resource_state_.erase(resource);
+		}
+	}
 }

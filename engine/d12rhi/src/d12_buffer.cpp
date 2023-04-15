@@ -1,6 +1,7 @@
 #include "d12_buffer.h"
 
 #include "d12_device.h"
+#include "resource_state_tracker.h"
 
 namespace light::rhi
 {
@@ -38,6 +39,11 @@ namespace light::rhi
 		// todo
 		//resource_->SetName( desc.debug_name.c_str());
 #endif
+	}
+
+	D12Buffer::~D12Buffer()
+	{
+		ResourceStateTracker::RemoveGlobalResourceState(resource_);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE D12Buffer::GetCBV()

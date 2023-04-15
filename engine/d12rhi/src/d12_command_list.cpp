@@ -477,6 +477,8 @@ namespace light::rhi
 			TrackResource(d12_depth_texture);
 		}
 
+		FlushResourceBarriers();
+
 		D3D12_CPU_DESCRIPTOR_HANDLE* dsv = depth_stencil_descriptor.ptr != 0 ? &depth_stencil_descriptor : nullptr;
 		d3d12_command_list_->OMSetRenderTargets(num_render_target, render_target_descriptors.data(), false, dsv);
 	}

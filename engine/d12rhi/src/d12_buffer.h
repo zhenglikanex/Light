@@ -16,6 +16,8 @@ namespace light::rhi
 	public:
 		D12Buffer(D12Device* device,const BufferDesc& desc);
 
+		~D12Buffer() override;
+
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCBV();
 		D3D12_CPU_DESCRIPTOR_HANDLE GetSBV(uint32_t offset, uint32_t byte_size);
 		D3D12_CPU_DESCRIPTOR_HANDLE GetUBV(uint32_t offset,uint32_t byte_size);

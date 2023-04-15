@@ -44,7 +44,9 @@ namespace light::rhi
 
 		void Reset();
 
-		void AddGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state);
+		static void AddGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state);
+
+		static void RemoveGlobalResourceState(ID3D12Resource* resource);
 	private:
 		struct ResourceState
 		{

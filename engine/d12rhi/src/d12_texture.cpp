@@ -1,6 +1,7 @@
 #include "d12_texture.h"
 #include "d12_convert.h"
 #include "d12_device.h"
+#include "resource_state_tracker.h"
 
 namespace light::rhi
 {
@@ -52,6 +53,11 @@ namespace light::rhi
 		, resource_(native)
 	{
 
+	}
+
+	D12Texture::~D12Texture()
+	{
+		ResourceStateTracker::RemoveGlobalResourceState(resource_);
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE D12Texture::GetRTV()

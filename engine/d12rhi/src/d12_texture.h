@@ -16,8 +16,9 @@ namespace light::rhi
 	{
 	public:
 		D12Texture(D12Device* device, const TextureDesc& desc,const ClearValue* clear_value);
-
 		D12Texture(D12Device* device, const TextureDesc& desc, ID3D12Resource* native);
+
+		~D12Texture() override;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRTV();
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRTV(Format format, uint32_t mip_level,uint32_t array_slice,uint32_t num_array_slices);
