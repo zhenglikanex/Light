@@ -14,6 +14,8 @@
 
 #include "engine/log/log.h"
 
+#include "engine/scene/scene.h"
+
 #include "engine/renderer/camera.h"
 #include "engine/renderer/renderer.h"
 #include "engine/renderer/renderer2d.h"

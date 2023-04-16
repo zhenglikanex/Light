@@ -122,7 +122,7 @@ public:
 		ImGui::End();
 	}
 
-	virtual void OnEvent(const Event& e) override
+	virtual void OnEvent(Event& e) override
 	{
 		camera_controller_.OnEvent(e);
 	}
