@@ -1,6 +1,7 @@
 target("Engine")
     set_kind("static")
     add_includedirs("include/",{ public = true })
+    add_includedirs("3rdparty/",{ public = true })
     add_packages("glm","imgui","spdlog","stb",{public = true})
     add_files("*/*.cpp")
     add_files("**/**.cpp")

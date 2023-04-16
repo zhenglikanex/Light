@@ -9,9 +9,9 @@
 #include "engine/event/event.h"
 #include "engine/event/windows_event.h"
 #include "engine/layer/layer_stack.h"
+#include "engine/layer/imgui_layer.h"
 
 #include "engine/rhi/device.h"
-#include "engine/renderer/renderer.h"
 #include "engine/rhi/imgui_renderer.h"
 
 #include "engine/platform/window/window.h"
@@ -50,8 +50,9 @@ namespace light
 
 		Timestep GetTimestep() const { return timestep_; }
 
+		ImguiLayer* GetImguiLayer() { return imgui_layer_; }
 	private:
-		void OnEvent(const Event& e);
+		void OnEvent(Event& e);
 
 		void OnWindowResized(const WindowResizedEvent& e);
 		void OnWindowClosed(const WindowClosedEvent& e);
@@ -65,6 +66,7 @@ namespace light
 		rhi::TextureHandle depth_texture_;
 		std::unique_ptr<rhi::ImGuiRenderer> imgui_renderer_;
 		LayerStack layer_stack_;
+		ImguiLayer* imgui_layer_;
 		Timestep timestep_;
 		std::chrono::high_resolution_clock::time_point last_frame_clock_;
 	};

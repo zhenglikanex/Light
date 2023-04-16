@@ -35,7 +35,7 @@ namespace light
 
 		virtual void SetVSync(bool vsync) = 0;
 
-		void SetEventCallback(const std::function<void(const Event&)>& callback) { event_callback_ = callback; }
+		void SetEventCallback(const std::function<void(Event&)>& callback) { event_callback_ = callback; }
 
 		uint32_t GetWidth() const { return width_; }
 		uint32_t GetHeight() const { return height_; }
@@ -46,7 +46,7 @@ namespace light
 		uint32_t width_;
 		uint32_t height_;
 		bool vsync_;
-		std::function<void(const Event&)> event_callback_;
+		std::function<void(Event&)> event_callback_;
 	};
 
 	extern Window* CreatePlatformWindow(const WindowParams& params);

@@ -15,6 +15,7 @@ namespace light
 
 		void OnUpdate(const Timestep& ts);
 		void OnEvent(const Event& e);
+		void OnResize(uint32_t width, uint32_t height);
 
 		const OrthographicCamera& GetCamera() const { return camera_; }
 	private:

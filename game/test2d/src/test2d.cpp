@@ -109,7 +109,7 @@ void Test2D::OnImGuiRender(const light::Timestep& ts)
 	ImGui::End();
 }
 
-void Test2D::OnEvent(const light::Event& e)
+void Test2D::OnEvent(light::Event& e)
 {
 	camera_controller_.OnEvent(e);
 }

@@ -16,7 +16,7 @@ namespace light
 		{
 			Application::Init();
 
-			PushOverlayLayer(new EditorLayer());
+			PushLayer(new EditorLayer());
 		}
 	private:
 

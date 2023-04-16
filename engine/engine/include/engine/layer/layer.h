@@ -21,6 +21,6 @@ namespace light
 		virtual void OnUpdate(const Timestep& ts) {};
 		virtual void OnImGuiRender(const Timestep& ts) {};
 
-		virtual void OnEvent(const Event& e) {};
+		virtual void OnEvent(Event& e) { };
 	};
 }

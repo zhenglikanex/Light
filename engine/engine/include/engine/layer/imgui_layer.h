@@ -12,7 +12,10 @@ namespace light
 		void OnDetach() override;
 		void OnUpdate(const Timestep& ts) override;
 		void OnImGuiRender(const Timestep& ts) override;
-		void OnEvent(const Event& e) override;
-	private:		
+		void OnEvent(Event& e) override;
+
+		void BlockEvent(bool block) { block_event_ = block; }
+	private:
+		bool block_event_ = false;
 	};
 }

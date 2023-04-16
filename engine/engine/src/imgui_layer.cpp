@@ -15,8 +15,7 @@ namespace light
 
 	void ImguiLayer::OnUpdate(const Timestep& ts)
 	{
-		/*static bool show_demo = true;
-		ImGui::ShowDemoWindow(&show_demo);*/
+		
 	}
 
 	void ImguiLayer::OnImGuiRender(const Timestep& ts)
@@ -24,9 +23,18 @@ namespace light
 
 	}
 
-	void ImguiLayer::OnEvent(const Event& e)
+	void ImguiLayer::OnEvent(Event& e)
 	{
-
+		if (block_event_)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			if(io.WantCaptureMouse)
+				e.handle |= e.IsCategory(EventCategory::kMouse);
+			if(io.WantCaptureKeyboard)
+				e.handle |= e.IsCategory(EventCategory::kKey);
+			//e.handle |= e.IsCategory(EventCategory::kMouse) && io.WantCaptureMouse;
+			//e.handle |= e.IsCategory(EventCategory::kKey) && io.WantCaptureKeyboard;
+		}
 	}
 }
 

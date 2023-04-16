@@ -94,7 +94,8 @@ namespace light
 
 		Renderer2D::Init();
 
-		layer_stack_.PushOverlayLayer(new ImguiLayer());
+		imgui_layer_ = new ImguiLayer();
+		layer_stack_.PushOverlayLayer(imgui_layer_);
 
 		last_frame_clock_ = std::chrono::high_resolution_clock::now();
 	}
@@ -155,13 +156,13 @@ namespace light
 		return render_target;
 	}
 
-	void Application::OnEvent(const Event& e)
+	void Application::OnEvent(Event& e)
 	{
 		layer_stack_.OnEvent(e);
 
 		EventDispatcher dispatcher(e);
 		
-		LOG_ENGINE_INFO(e);
+		//LOG_ENGINE_INFO(e);
 
 		dispatcher.Dispatch<WindowClosedEvent>(std::bind(&Application::OnWindowClosed,this,_1));
 		dispatcher.Dispatch<WindowResizedEvent>(std::bind(&Application::OnWindowResized, this, _1));

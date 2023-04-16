@@ -58,8 +58,14 @@ namespace light
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseScrolledEvent>(std::bind(&OrthographicCameraController::OnMouseScrolledEvent, this, std::placeholders::_1));
 		dispatcher.Dispatch<WindowResizedEvent>(std::bind(&OrthographicCameraController::OnWindowResizedEvent, this, std::placeholders::_1));
-		
 	}
+
+	void OrthographicCameraController::OnResize(uint32_t width, uint32_t height)
+	{
+		aspect_ratio_ = static_cast<float>(width) / static_cast<float>(height);
+		camera_.SetProjection(-aspect_ratio_ * zoom_level_, aspect_ratio_ * zoom_level_, -zoom_level_, zoom_level_);
+	}
+
 	void OrthographicCameraController::OnMouseScrolledEvent(const MouseScrolledEvent& e)
 	{
 		zoom_level_ += e.y * 0.25;
@@ -69,7 +75,6 @@ namespace light
 
 	void OrthographicCameraController::OnWindowResizedEvent(const WindowResizedEvent& e)
 	{
-		aspect_ratio_ = static_cast<float>(e.width) / static_cast<float>(e.height);
-		camera_.SetProjection(-aspect_ratio_ * zoom_level_, aspect_ratio_ * zoom_level_, -zoom_level_, zoom_level_);
+		OnResize(e.width, e.height);
 	}
 }

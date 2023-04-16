@@ -18,7 +18,7 @@ namespace light
 		void PushLayer(Layer* layer);
 		void PushOverlayLayer(Layer* layer);
 
-		void OnEvent(const Event& e);
+		void OnEvent(Event& e);
 
 		void OnUpdate(const Timestep& ts,bool minimized);
 

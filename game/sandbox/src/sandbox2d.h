@@ -15,7 +15,7 @@ public:
 	void OnUpdate(const light::Timestep& ts) override;
 	void OnImGuiRender(const light::Timestep& ts) override;
 
-	void OnEvent(const light::Event& e) override;
+	void OnEvent(light::Event& e) override;
 private:
 	light::ShaderLibrary shader_library_;
 	light::TextureLibrary texture_library_;

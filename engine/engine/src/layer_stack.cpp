@@ -1,6 +1,6 @@
 #include "engine/layer/layer_stack.h"
 
-#include "engine/rhi/render_target.h"
+#include "engine/log/log.h"
 
 namespace light
 {
@@ -37,12 +37,16 @@ namespace light
 		layer->OnAttach();
 	}
 
-	void LayerStack::OnEvent(const Event& e)
+	void LayerStack::OnEvent(Event& e)
 	{
 		{
 			auto it = overlay_layers_.rbegin();
 			while (it != overlay_layers_.rend())
 			{
+				if (e.handle)
+				{
+					return;
+				}
 				(*it)->OnEvent(e);
 				++it;
 			}
@@ -52,6 +56,10 @@ namespace light
 			auto it = layers_.rbegin();
 			while (it != layers_.rend())
 			{
+				if (e.handle)
+				{
+					return;
+				}
 				(*it)->OnEvent(e);
 				++it;
 			}

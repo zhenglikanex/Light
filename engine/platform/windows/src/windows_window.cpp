@@ -175,7 +175,7 @@ namespace light
 		vsync_ = vsync;
 	}
 
-	void WindowsWindow::OnEvent(const Event& event)
+	void WindowsWindow::OnEvent(Event& event)
 	{
 		if (event_callback_)
 		{

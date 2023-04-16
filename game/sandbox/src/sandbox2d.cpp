@@ -220,7 +220,7 @@ void Sandbox2D::OnImGuiRender(const light::Timestep& ts)
 
 }
 
-void Sandbox2D::OnEvent(const light::Event& e)
+void Sandbox2D::OnEvent(light::Event& e)
 {
 	camera_controller_.OnEvent(e);
 }

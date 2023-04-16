@@ -24,7 +24,7 @@ namespace light
 
 		void SetVSync(bool vsync);
 
-		void OnEvent(const Event& event);
+		void OnEvent(Event& event);
 	private:
 		GLFWwindow* window_;
 

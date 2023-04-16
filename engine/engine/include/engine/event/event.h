@@ -40,8 +40,15 @@ namespace light
 
 	struct Event
 	{
+		bool handle = false;
+
 		Event() = default;
 		virtual ~Event() = default;
+
+		bool IsCategory(EventCategory category) const
+		{
+			return static_cast<uint32_t>(GetCategory()) & static_cast<uint32_t>(category);
+		}
 
 		virtual EventType GetType() const = 0;
 
