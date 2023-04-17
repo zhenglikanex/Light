@@ -7,7 +7,7 @@ namespace light
 {
 	void ShaderLibrary::Load(std::string_view name, rhi::ShaderType type,std::string_view file_path)
 	{
-		LIGHT_ASSET(!Exist(std::string(name),type), "shader load failed,shader exist!");
+		LIGHT_ASSERT(!Exist(std::string(name),type), "shader load failed,shader exist!");
 
 		rhi::ShaderDesc desc;
 		desc.type = type;
@@ -33,7 +33,7 @@ namespace light
 	{
 		rhi::ShaderType type = shader->GetDesc().type;
 
-		LIGHT_ASSET(!Exist(std::string(name),type), "shader add failed,shader exist!");
+		LIGHT_ASSERT(!Exist(std::string(name),type), "shader add failed,shader exist!");
 
 		if (type == rhi::ShaderType::kVertex)
 		{
@@ -49,7 +49,7 @@ namespace light
 
 	rhi::Shader* ShaderLibrary::Get(const std::string& name, rhi::ShaderType type)
 	{
-		LIGHT_ASSET(Exist(name,type), "shader not found!");
+		LIGHT_ASSERT(Exist(name,type), "shader not found!");
 
 		if (type == rhi::ShaderType::kVertex)
 		{

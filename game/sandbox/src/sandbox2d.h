@@ -30,4 +30,6 @@ private:
 	
 	ParticleSystem particle_system_;
 	light::rhi::RenderTarget render_target_;
+	light::Ref<light::Scene> scene_;
+	light::Entity quad_entity_;
 };

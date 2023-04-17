@@ -84,6 +84,10 @@ namespace light
 		static void Flush(rhi::CommandList* command_list);
 		static void FlushAndReset(rhi::CommandList* command_list);
 
+		
+		static void DrawQuad(rhi::CommandList* command_list, const glm::mat4& transform, const glm::vec4& color);
+		static void DrawQuad(rhi::CommandList* command_list, const glm::mat4& transform, rhi::Texture* texture, float tiling_factor = 1.0f, glm::vec4 tint_color = glm::vec4(1.0f));
+
 		static void DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 		static void DrawQuad(rhi::CommandList* command_list, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
 		static void DrawQuad(rhi::CommandList* command_list, const glm::vec2& position, const glm::vec2& size, rhi::Texture* texture, float tiling_factor = 1.0f, glm::vec4 tint_color = glm::vec4(1.0f));

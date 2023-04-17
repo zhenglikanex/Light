@@ -50,5 +50,4 @@ namespace light::rhi
     inline bool operator ==(T a, uint32_t b) { return uint32_t(a) == b; } \
     inline bool operator !=(T a, uint32_t b) { return uint32_t(a) != b; }
 
-
 }
