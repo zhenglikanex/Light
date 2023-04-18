@@ -23,6 +23,18 @@ namespace light
 		RenderTargetResize({
 			Application::Get().GetWindow()->GetWidth() ,
 			Application::Get().GetWindow()->GetHeight()});
+
+		active_secne_ = MakeRef<Scene>();
+
+		quad_entity_ = active_secne_->CreateEntity("quad");
+		quad_entity_.AddComponent<SpriteRendererComponent>(glm::vec4(1, 1, 1, 1));
+		
+		//create camera
+		camera_entity_ = active_secne_->CreateEntity("camera");
+
+		// 计算横纵比
+		float aspect = Application::Get().GetWindow()->GetWidth() / Application::Get().GetWindow()->GetHeight();
+		auto& camera = camera_entity_.AddComponent<CameraComponent>(glm::orthoLH_ZO(-aspect, aspect,-1.0f,1.0f,-1.0f,1.0f));
 	}
 
 	void EditorLayer::OnDetach()
@@ -49,24 +61,12 @@ namespace light
 			command_list->SetViewport(render_target_.GetViewport());
 			command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
 
-			constexpr float clear_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			constexpr float clear_color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 			command_list->ClearTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
 			command_list->ClearDepthStencilTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
 				rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
 
-			Renderer2D::BeginScene(command_list, camera_controller_.GetCamera());
-
-			static float rotation = 0;
-			rotation += 10 * ts;
-
-			Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f), glm::vec4(1.0f));
-			Renderer2D::DrawQuad(command_list, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.5f), texture_, 30);
-
-			Renderer2D::DrawRotationQuad(command_list, glm::vec3(2.0f, 0.0f, 0.f), rotation, glm::vec2(1.0f), texture_);
-
-			Renderer2D::DrawQuad(command_list, glm::vec2(0.0f), glm::vec2(1.0f), { 1.0,1.0,0.5,1.0 });
-
-			Renderer2D::EndScene(command_list);
+			active_secne_->OnUpdate(ts, command_list);
 		}
 
 		{
@@ -90,8 +90,9 @@ namespace light
 
 	void EditorLayer::OnImGuiRender(const light::Timestep& ts)
 	{
-		auto command_queue = Application::Get().GetDevice()->GetCommandQueue(rhi::CommandListType::kDirect);
-		command_queue->WaitForFenceValue(command_queue->Signal());
+		auto commnad_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
+		commnad_list->TransitionBarrier(rt_color_texture_, rhi::ResourceStates::kPixelShaderResource);
+		commnad_list->ExecuteCommandList();
 
 		static bool show_dockspace = true;
 		static bool opt_fullscreen = true;
@@ -161,6 +162,17 @@ namespace light
 
 		ImGui::End();
 
+		ImGui::Begin("Settings");
+		
+		auto& sprite = quad_entity_.GetComponent<SpriteRendererComponent>();
+		ImGui::ColorEdit4("Quad Color", glm::value_ptr(sprite.color));
+
+		auto& camera_transform = camera_entity_.GetComponent<TransformComponent>().transform;
+		ImGui::DragFloat3("Camera Position", glm::value_ptr(camera_transform[3]), 0.1f);
+
+		ImGui::End();
+		
+
 		ImGui::Begin("Profile");
 		for (auto& [name, dt] : Profile::GetProfileResults())
 		{
@@ -189,10 +201,10 @@ namespace light
 			RenderTargetResize(viewport_size_);
 			camera_controller_.OnResize(viewport_size_.x, viewport_size_.y);
 		}
+
 		ImGui::Image(rt_color_texture_->GetTextureID(), viewport_panel_size);
 		ImGui::End();
 		ImGui::PopStyleVar();
-
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -202,6 +214,8 @@ namespace light
 
 	void EditorLayer::RenderTargetResize(const glm::vec2& size)
 	{
+		Application::Get().GetDevice()->Flush();
+
 		rhi::TextureDesc color_tex_desc;
 		color_tex_desc.width = size.x;
 		color_tex_desc.height = size.y;

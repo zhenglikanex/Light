@@ -56,10 +56,10 @@ namespace light
 			std::array<QuadVertex, kMaxBatchVertices> vertices;
 			std::array<uint32_t, kMaxBatchIndexes> indices;
 			
-			uint32_t batch_quad_count;
+			uint32_t batch_quad_count = 0;
 
 			std::array<rhi::TextureHandle, kMaxTextures> texture_slots;
-			uint32_t texture_slot_index;
+			uint32_t texture_slot_index = 1;
 			
 			std::array<glm::vec4, 4> quad_vertex_positions;
 
@@ -78,6 +78,7 @@ namespace light
 		static void Shutdown();
 
 		// 设置当前帧统一变量,如相机，光源，环境参数
+		static void BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(rhi::CommandList* command_list, const OrthographicCamera& camera);
 		static void EndScene(rhi::CommandList* command_list);
 

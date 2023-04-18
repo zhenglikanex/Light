@@ -27,5 +27,9 @@ namespace light
 		rhi::TextureHandle rt_depth_texture_;
 		rhi::RenderTarget render_target_;
 		glm::vec2 viewport_size_;
+		
+		Ref<Scene> active_secne_;
+		Entity quad_entity_;
+		Entity camera_entity_;
 	};
 }

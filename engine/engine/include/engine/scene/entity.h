@@ -15,10 +15,10 @@ namespace light
 		Entity() = default;
 
 		template<class T,class ... Args>
-		void AddComponent(Args&& ... args)
+		T& AddComponent(Args&& ... args)
 		{
 			LIGHT_ASSERT(!HasComponent<T>(), "Entity already has component!");
-			scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
+			return scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
 		}
 
 		template<class ... Ts>

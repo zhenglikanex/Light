@@ -4,6 +4,18 @@
 
 namespace light
 {
+	class Camera
+	{
+	public:
+		Camera(const glm::mat4& projection);
+
+		void SetProjection(const glm::mat4& projection) { projection_ = projection; }
+		const glm::mat4& GetProjection() const { return projection_; }
+
+	private:
+		glm::mat4 projection_;
+	};
+
 	class OrthographicCamera
 	{
 	public:

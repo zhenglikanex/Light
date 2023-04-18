@@ -4,6 +4,12 @@
 
 namespace light
 {
+	Camera::Camera(const glm::mat4& projection)
+		: projection_(projection)
+	{
+
+	}
+
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
 	{
 		projection_matrix_ = glm::orthoLH_ZO(left, right, bottom, top, -1.0f, 1.0f);
@@ -26,5 +32,7 @@ namespace light
 		view_matrix_ = glm::inverse(transform);
 		view_projection_matrx_ = projection_matrix_ * view_matrix_;
 	}
+
+	
 
 }

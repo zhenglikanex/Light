@@ -136,6 +136,22 @@ namespace light
 		s_renderer_data = nullptr;
 	}
 
+	void Renderer2D::BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform)
+	{
+		s_scene_data.projection_matrix = camera.GetProjection();
+		s_scene_data.view_matrix = glm::inverse(transform);
+		s_scene_data.view_projection_matrix = s_scene_data.projection_matrix * s_scene_data.view_matrix;
+
+		command_list->SetGraphicsPipeline(s_renderer_data->texture_pso);
+		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
+		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_renderer_data->point_sampler);
+		command_list->SetIndexBuffer(s_renderer_data->index_buffer);
+		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
+
+		s_renderer_data->batch_quad_count = 0;
+		s_renderer_data->texture_slot_index = 1;
+	}
+
 	void Renderer2D::BeginScene(rhi::CommandList* command_list, const OrthographicCamera& camera)
 	{
 		s_scene_data.projection_matrix = camera.GetProjectionMatrix();

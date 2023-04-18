@@ -1,5 +1,7 @@
 #include "light_pch.h"
 
+#include "engine/renderer/camera.h"
+
 #include "glm/glm.hpp"
 
 namespace light
@@ -39,6 +41,24 @@ namespace light
 		SpriteRendererComponent(const SpriteRendererComponent& other) = default;
 		SpriteRendererComponent(const glm::vec4& color)
 			: color(color)
+		{
+		}
+	};
+
+	struct CameraComponent
+	{
+		Camera camera;
+		bool primary = true;
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent& other) = default;
+		CameraComponent(const Camera& camera)
+			: camera(camera)
+		{
+		}
+
+		CameraComponent(const glm::mat4& projection)
+			: camera(projection)
 		{
 		}
 	};
