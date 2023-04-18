@@ -203,23 +203,28 @@ namespace light::rhi
 			stale_descriptor_table_bit_mask_ = descriptor_table_bit_mask_;
 		}
 
-		DWORD index = 0;
-		while(_BitScanForward(&index,stale_descriptor_table_bit_mask_))
+		DWORD root_param_index = 0;
+		while(_BitScanForward(&root_param_index,stale_descriptor_table_bit_mask_))
 		{
-			DescriptorTableCache& descriptor_table_cache = descriptor_table_cache_[index];
+			DescriptorTableCache& descriptor_table_cache = descriptor_table_cache_[root_param_index];
 
-			uint32_t num_src_descriptors = descriptor_table_cache_[index].num_descriptors;
-			D3D12_CPU_DESCRIPTOR_HANDLE* src_descritpor_range_start = descriptor_table_cache_[index].base_descriptor;
+			uint32_t num_src_descriptors = descriptor_table_cache.num_descriptors;
+			D3D12_CPU_DESCRIPTOR_HANDLE* src_descritpor_range_starts = descriptor_table_cache.base_descriptor;
 
-			device_->GetNative()->CopyDescriptorsSimple(
+			//CopyDescriptorsSimple只能从连续源描述符中复制
+			//CopyDescriptors可以进行稀疏复制
+			D3D12_CPU_DESCRIPTOR_HANDLE dest_descriptor_rnage_starts [] = { current_cpu_descriptor_handle_ };
+			UINT dest_descriptor_range_starts[] = { num_src_descriptors };
+			device_->GetNative()->CopyDescriptors(1, dest_descriptor_rnage_starts, dest_descriptor_range_starts, num_src_descriptors, src_descritpor_range_starts, nullptr, heap_type_);
+			/*device_->GetNative()->CopyDescriptorsSimple(
 				num_src_descriptors,
 				current_cpu_descriptor_handle_,
 				*src_descritpor_range_start,
-				heap_type_);
+				heap_type_);*/
 			
 			set_func(
 				command_list->GetD3D12GraphicsCommandList(),
-				index,
+				root_param_index,
 				current_gpu_descriptor_handle_);
 
 			// 移动current handle
@@ -229,7 +234,7 @@ namespace light::rhi
 			num_free_handles_ -= num_src_descriptors;
 
 			// 重置提交的描述符表掩码，保证循环正确
-			stale_descriptor_table_bit_mask_ ^= (1 << index);
+			stale_descriptor_table_bit_mask_ ^= (1 << root_param_index);
 		}
 	}
 }
