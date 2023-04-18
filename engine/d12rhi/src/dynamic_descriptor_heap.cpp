@@ -19,6 +19,7 @@ namespace light::rhi
 		descriptor_handle_increment_size_ = device_->GetDescriptorHandleIncrementSize(heap_type_);
 
 		cpu_descriptor_handles_.resize(heap_size_);
+		src_descritpor_range_starts_.reserve(heap_size_);
 	}
 
 	DynamicDescriptorHeap::~DynamicDescriptorHeap()
@@ -208,14 +209,24 @@ namespace light::rhi
 		{
 			DescriptorTableCache& descriptor_table_cache = descriptor_table_cache_[root_param_index];
 
-			uint32_t num_src_descriptors = descriptor_table_cache.num_descriptors;
-			D3D12_CPU_DESCRIPTOR_HANDLE* src_descritpor_range_starts = descriptor_table_cache.base_descriptor;
+			uint32_t num_src_descriptors = 0;
+
+			for (int i = 0; i < descriptor_table_cache.num_descriptors; ++i)
+			{
+				D3D12_CPU_DESCRIPTOR_HANDLE* descriptor = descriptor_table_cache.base_descriptor + i;
+				if (descriptor->ptr != 0)
+				{
+					++num_src_descriptors;
+					src_descritpor_range_starts_.push_back(*(descriptor_table_cache.base_descriptor + i));
+				}
+			}
 
 			//CopyDescriptorsSimple只能从连续源描述符中复制
 			//CopyDescriptors可以进行稀疏复制
 			D3D12_CPU_DESCRIPTOR_HANDLE dest_descriptor_rnage_starts [] = { current_cpu_descriptor_handle_ };
 			UINT dest_descriptor_range_starts[] = { num_src_descriptors };
-			device_->GetNative()->CopyDescriptors(1, dest_descriptor_rnage_starts, dest_descriptor_range_starts, num_src_descriptors, src_descritpor_range_starts, nullptr, heap_type_);
+
+			device_->GetNative()->CopyDescriptors(1, dest_descriptor_rnage_starts, dest_descriptor_range_starts, num_src_descriptors, src_descritpor_range_starts_.data(), nullptr, heap_type_);
 			/*device_->GetNative()->CopyDescriptorsSimple(
 				num_src_descriptors,
 				current_cpu_descriptor_handle_,
@@ -235,6 +246,7 @@ namespace light::rhi
 
 			// 重置提交的描述符表掩码，保证循环正确
 			stale_descriptor_table_bit_mask_ ^= (1 << root_param_index);
+			src_descritpor_range_starts_.clear();
 		}
 	}
 }

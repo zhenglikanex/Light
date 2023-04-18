@@ -76,6 +76,7 @@ namespace light::rhi
 
 		//�ݴ����е�cpu�ɼ���������
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> cpu_descriptor_handles_;
+		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> src_descritpor_range_starts_;
 
 		DescriptorTableCache descriptor_table_cache_[kMaxDescriptorTables];
 
