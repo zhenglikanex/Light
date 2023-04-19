@@ -22,8 +22,6 @@ namespace light::editor
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 		{
 			selected_entity_ = (uint32_t)e;
-			
-			
 		}
 		
 		if (node_open)
