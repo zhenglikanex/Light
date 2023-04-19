@@ -2,7 +2,9 @@
 
 #include "engine/light.h"
 
-namespace light
+#include "panel/scene_hierarchy_panel.h"
+
+namespace light::editor
 {
 	class EditorLayer : public Layer
 	{
@@ -28,7 +30,11 @@ namespace light
 		glm::vec2 viewport_size_;
 		
 		Ref<Scene> active_secne_;
+		SceneHierarchyPanel scene_hierarchy_panel_;
+
 		Entity quad_entity_;
 		Entity camera_entity_;
+
+		
 	};
 }

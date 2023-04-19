@@ -14,7 +14,6 @@ namespace light
 	class Scene : public RefCounter
 	{
 	public:
-
 		void OnUpdate(Timestep ts,rhi::CommandList* command_list);
 
 		Entity CreateEntity(std::string_view name = "Entity");
@@ -22,8 +21,11 @@ namespace light
 		void DestroyEntity(Entity entity);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
+
+		entt::registry& GetRegistry() { return registry_; }
 	private:
 		friend class Entity;
+
 		entt::registry registry_;
 	};
 }

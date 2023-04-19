@@ -5,7 +5,7 @@
 
 static bool block = false;
 
-namespace light
+namespace light::editor
 {
 	EditorLayer::EditorLayer()
 	{
@@ -21,6 +21,7 @@ namespace light
 		RenderTargetResize(viewport_size_);
 
 		active_secne_ = MakeRef<Scene>();
+		scene_hierarchy_panel_.SetScene(active_secne_);
 
 		quad_entity_ = active_secne_->CreateEntity("quad");
 		quad_entity_.AddComponent<SpriteRendererComponent>(glm::vec4(1, 1, 1, 1));
@@ -222,6 +223,8 @@ namespace light
 		ImGui::Image(rt_color_texture_->GetTextureID(), viewport_panel_size);
 		ImGui::End();
 		ImGui::PopStyleVar();
+
+		scene_hierarchy_panel_.OnImguiRender();
 	}
 
 	void EditorLayer::OnEvent(Event& e)

@@ -44,6 +44,7 @@ namespace light
 		bool IsVaild() const;
 
 		operator bool() const { return IsVaild(); }
+		operator uint32_t () const { return (uint32_t)entity_handle_; }
 	private:
 		entt::entity entity_handle_ = entt::null;
 		Scene* scene_ = nullptr;
