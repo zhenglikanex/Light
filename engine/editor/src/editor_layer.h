@@ -21,7 +21,6 @@ namespace light
 
 		ShaderLibrary shader_library_;
 		TextureLibrary texture_library_;
-		OrthographicCameraController camera_controller_;
 		rhi::TextureHandle texture_;
 		rhi::TextureHandle rt_color_texture_;
 		rhi::TextureHandle rt_depth_texture_;

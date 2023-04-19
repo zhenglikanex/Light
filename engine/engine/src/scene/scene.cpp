@@ -9,6 +9,17 @@ namespace light
 
 	void Scene::OnUpdate(Timestep ts, rhi::CommandList* command_list)
 	{
+		// update scripts
+		registry_.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
+			if (!nsc.script_instance)
+			{
+				nsc.script_instance = nsc.script_instance_constructor();
+				nsc.script_instance->entity = Entity(entity, this);
+				nsc.script_instance->OnCreate();
+			}
+			nsc.script_instance->OnUpdate(ts);
+		});
+
 		Camera* main_camera = nullptr;
 		glm::mat4* camera_transform = nullptr;
 
@@ -56,5 +67,19 @@ namespace light
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+	}
+
+	void Scene::SetViewportSize(uint32_t width, uint32_t height)
+	{
+		// set cameracomponent viewportsize
+		auto view = registry_.view<CameraComponent>();
+		for (auto e : view)
+		{
+			auto& camera = view.get<CameraComponent>(e);
+			if (!camera.aspect_ratio_fixed)
+			{
+				camera.camera.SetViewportSize(width, height);
+			}
+		}
 	}
 }

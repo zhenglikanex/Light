@@ -7,7 +7,9 @@ namespace light
 	class Camera
 	{
 	public:
+		Camera() = default;
 		Camera(const glm::mat4& projection);
+		virtual ~Camera() = default;
 
 		void SetProjection(const glm::mat4& projection) { projection_ = projection; }
 		const glm::mat4& GetProjection() const { return projection_; }

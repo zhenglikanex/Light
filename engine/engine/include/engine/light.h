@@ -16,7 +16,10 @@
 
 #include "engine/scene/scene.h"
 #include "engine/scene/entity.h"
+#include "engine/scene/scene_camera.h"
+#include "engine/scene/script.h"
 #include "engine/scene/components.h"
+
 
 #include "engine/renderer/camera.h"
 #include "engine/renderer/renderer.h"

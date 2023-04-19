@@ -1,6 +1,7 @@
 #include "light_pch.h"
 
-#include "engine/renderer/camera.h"
+#include "engine/scene/scene_camera.h"
+#include "engine/scene/script.h"
 
 #include "glm/glm.hpp"
 
@@ -47,19 +48,35 @@ namespace light
 
 	struct CameraComponent
 	{
-		Camera camera;
+		SceneCamera camera;
 		bool primary = true;
+		bool aspect_ratio_fixed = false;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& other) = default;
-		CameraComponent(const Camera& camera)
-			: camera(camera)
-		{
-		}
+	};
 
-		CameraComponent(const glm::mat4& projection)
-			: camera(projection)
+	struct NativeScriptComponent
+	{
+		Script* script_instance = nullptr;
+
+		using ScriptInstanceConstructor = Script * (*)();
+		using ScriptInstanceDestroy = void(*)(Script*);
+
+		ScriptInstanceConstructor script_instance_constructor = nullptr;	
+		ScriptInstanceDestroy script_instance_destroy = nullptr;
+
+		NativeScriptComponent() = default;
+		NativeScriptComponent(const NativeScriptComponent& other) = delete;
+		NativeScriptComponent(NativeScriptComponent&& other) = default;
+		NativeScriptComponent& operator=(const NativeScriptComponent& other) = delete;
+		NativeScriptComponent& operator=(NativeScriptComponent&& other) = default;
+
+		template<class T>
+		void Bind()
 		{
+			script_instance_constructor = []() { return (Script*)new T(); };
+			script_instance_destroy = [](Script* instance) { delete instance; };
 		}
 	};
 }

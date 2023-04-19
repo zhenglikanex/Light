@@ -21,9 +21,9 @@ namespace light
 
 		void DestroyEntity(Entity entity);
 
+		void SetViewportSize(uint32_t width, uint32_t height);
 	private:
 		friend class Entity;
-
 		entt::registry registry_;
 	};
 }

@@ -2,16 +2,13 @@
 #include "random.h"
 #include "spdlog/fmt/fmt.h"
 
+
 static bool block = false;
 
 namespace light
 {
 	EditorLayer::EditorLayer()
-		: camera_controller_(static_cast<float>(Application::Get().GetWindow()->GetWidth()) / static_cast<float>(Application::Get().GetWindow()->GetHeight()), false)
 	{
-		shader_library_.Load("color", rhi::ShaderType::kVertex, "assets/shaders/flat_color.hlsl");
-		shader_library_.Load("color", rhi::ShaderType::kPixel, "assets/shaders/flat_color.hlsl");
-
 		viewport_size_ = glm::vec2(0);
 	}
 
@@ -20,9 +17,8 @@ namespace light
 		Random::Init();
 		texture_ = texture_library_.LoadTexture("assets/textures/warchessMap_4.jpg");
 
-		RenderTargetResize({
-			Application::Get().GetWindow()->GetWidth() ,
-			Application::Get().GetWindow()->GetHeight()});
+		viewport_size_ = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
+		RenderTargetResize(viewport_size_);
 
 		active_secne_ = MakeRef<Scene>();
 
@@ -34,19 +30,41 @@ namespace light
 
 		// 计算横纵比
 		float aspect = Application::Get().GetWindow()->GetWidth() / Application::Get().GetWindow()->GetHeight();
-		auto& camera = camera_entity_.AddComponent<CameraComponent>(glm::orthoLH_ZO(-aspect, aspect,-1.0f,1.0f,-1.0f,1.0f));
+		auto& camera_component = camera_entity_.AddComponent<CameraComponent>();
+
+		class CameraController : public Script
+		{
+		public:
+			void OnUpdate(Timestep ts) override
+			{
+				auto& transform = entity.GetComponent<TransformComponent>();
+				float speed = 5.0f;
+				if (Input::IsKeyPressed(Input::Key::KEY_W))
+					transform.transform[3][1] += speed * ts;
+				if (Input::IsKeyPressed(Input::Key::KEY_S))
+					transform.transform[3][1] -= speed * ts;
+				if (Input::IsKeyPressed(Input::Key::KEY_A))
+					transform.transform[3][0] -= speed * ts;
+				if (Input::IsKeyPressed(Input::Key::KEY_D))
+					transform.transform[3][0] += speed * ts;
+			}
+		};
+
+		camera_entity_.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 	}
 
 	void EditorLayer::OnDetach()
 	{
-
+		
 	}
 
 	void EditorLayer::OnUpdate(const light::Timestep& ts)
 	{
+		if (viewport_size_.x != render_target_.GetWidth() || viewport_size_.y != render_target_.GetHeight())
 		{
-			PROFILE_SCOPE("CameraController OnUpdate");
-			camera_controller_.OnUpdate(ts);
+			RenderTargetResize(viewport_size_);
+			
+			active_secne_->SetViewportSize(render_target_.GetWidth(),render_target_.GetHeight());
 		}
 
 		auto command_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
@@ -198,9 +216,8 @@ namespace light
 		if(viewport_size_ != *reinterpret_cast<glm::vec2*>(&viewport_panel_size) && viewport_panel_size.x >= 1.0f && viewport_panel_size.y >= 1.0f)
 		{
 			viewport_size_ = *reinterpret_cast<glm::vec2*>(&viewport_panel_size);
-			RenderTargetResize(viewport_size_);
-			camera_controller_.OnResize(viewport_size_.x, viewport_size_.y);
 		}
+
 
 		ImGui::Image(rt_color_texture_->GetTextureID(), viewport_panel_size);
 		ImGui::End();
@@ -209,7 +226,7 @@ namespace light
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		camera_controller_.OnEvent(e);
+		
 	}
 
 	void EditorLayer::RenderTargetResize(const glm::vec2& size)
