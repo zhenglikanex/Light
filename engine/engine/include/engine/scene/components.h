@@ -1,5 +1,7 @@
+#pragma once
 #include "light_pch.h"
 
+#include "engine/core/reflection.h"
 #include "engine/scene/scene_camera.h"
 #include "engine/scene/script.h"
 
@@ -7,13 +9,33 @@
 
 
 
+namespace ns_3d
+{
+	class node
+	{
+	public:
+		node(std::string name, node* parent = nullptr);
+		virtual ~node() { }
+		void set_name(const std::string& name) { m_name = name; }
+		const std::string& get_name() const { return m_name; }
+		std::vector<node*> get_children() const { return m_children; }
+		void set_visible(bool visible, bool cascade = true) {  }
+		virtual void render() {  }
+	private:
+		node* m_parent;
+		std::string         m_name;
+		std::vector<node*>  m_children;
+		RTTR_ENABLE()
+	};
+}
 
 namespace light
 {
-	struct TagComponent
+	STRUCT() TagComponent
 	{
 		std::string tag;
 
+		TagComponent(std::string & name) { tag = name; }
 		TagComponent() = default;
 		TagComponent(const TagComponent& other) = default;
 		TagComponent(std::string_view tag)
@@ -23,7 +45,7 @@ namespace light
 		}
 	};
 
-	struct TransformComponent
+	STRUCT() TransformComponent
 	{
 		glm::mat4 transform = glm::mat4(1.0f);
 
@@ -37,7 +59,7 @@ namespace light
 		operator glm::mat4&() { return transform; }
 	};
 
-	struct SpriteRendererComponent
+	STRUCT() SpriteRendererComponent
 	{
 		glm::vec4 color = { 0.0f,0.0f,0.0f,1.0f };
 
@@ -49,7 +71,7 @@ namespace light
 		}
 	};
 
-	struct CameraComponent
+	STRUCT() CameraComponent
 	{
 		SceneCamera camera;
 		bool primary = true;
@@ -59,7 +81,7 @@ namespace light
 		CameraComponent(const CameraComponent& other) = default;
 	};
 
-	struct NativeScriptComponent
+	STRUCT() NativeScriptComponent
 	{
 		Script* script_instance = nullptr;
 

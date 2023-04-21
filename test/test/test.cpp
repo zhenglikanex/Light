@@ -1,19 +1,13 @@
 #include <typeindex>
 #include <iostream>
 
-#include "engine/event/key_event.h"
-#include "log/log.h"
-
-using namespace light;
+#include <rttr/registration.h>
+#include <rttr/type>
 
 int main()
 {
-	log::Init();
-
-	KeyPressedEvent e1;
-	e1.keycode = 1;
-
-	LOG_ENGINE_TRACE("{}",e1);
-
+	rttr::type t = rttr::type::get_by_name("std::vector<int>");
+	auto v = t.create();
+	std::cout << t.get_name().to_string() << std::endl;
 	return 0;
 }
