@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rttr/type"
 
 #ifdef __METAREFLECT__
 #define CLASS(...) class __attribute__((annotate("reflect-class;" #__VA_ARGS__)))

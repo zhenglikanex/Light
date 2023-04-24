@@ -7,8 +7,6 @@
 
 #include "glm/glm.hpp"
 
-
-
 namespace ns_3d
 {
 	class node
@@ -25,7 +23,6 @@ namespace ns_3d
 		node* m_parent;
 		std::string         m_name;
 		std::vector<node*>  m_children;
-		RTTR_ENABLE()
 	};
 }
 

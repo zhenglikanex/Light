@@ -1,5 +1,4 @@
 #include "engine/scene/components.h"
-#include "rttr/registration.h"
 
 //RTTR_REGISTRATION
 //{
