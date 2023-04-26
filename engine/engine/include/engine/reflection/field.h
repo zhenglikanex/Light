@@ -1,18 +1,22 @@
 #pragma once
 
-#include <any>
 #include <cstdint>
 #include <memory>
 #include <string_view>
 #include <string>
+#include <any>
+
+
+#include "engine/reflection/any.h"
 
 namespace light::meta
 {
+	
 	class FieldWapperBase
 	{
 	public:
-		virtual bool SetValue(std::any& instance,const std::any& value) = 0;
-		virtual std::any GetValue(std::any& instance) = 0;
+		virtual bool SetValue(Any& instance,const Any& value) = 0;
+		virtual Any GetValue(Any& instance) = 0;
 	};
 
 	template<typename ClassType,class FieldType>
@@ -23,15 +27,15 @@ namespace light::meta
 
 		FieldWapper(FiledTypePtr field_ptr) : field_ptr_(field_ptr) {}
 
-		bool SetValue(std::any& instance,const std::any& value) override
+		bool SetValue(Any& instance,const Any& value) override
 		{
-			std::any_cast<ClassType&>(instance).*field_ptr_ = std::any_cast<FieldType>(value);
+			instance.Cast<ClassType>().*field_ptr_ = value.Cast<FieldType>();
 			return true;
 		}
 
-		std::any GetValue(std::any& instance) override
+		Any GetValue(Any& instance) override
 		{
-			return std::make_any<FieldType>(std::any_cast<ClassType&>(instance).*field_ptr_);
+			return Any(instance.Cast<ClassType>().*field_ptr_);
 		}
 	private:
 		FiledTypePtr field_ptr_;
@@ -40,14 +44,42 @@ namespace light::meta
 	class Field
 	{
 	public:
-		Field(std::string_view name,std::unique_ptr<FieldWapperBase> field_wapper);
+		template<typename ... Propertys>
+		Field(std::string_view name, std::unique_ptr<FieldWapperBase> field_wapper, Propertys&& ... propertys)
+			: name_(name), field_wapper_(std::move(field_wapper))
+		{
+			if constexpr (sizeof...(Propertys) > 0)
+			{
+				(propertys_.emplace(typeid(Propertys).hash_code(), std::forward<Propertys>(propertys)),...);
+			}
+		}
 
-		bool SetValue(std::any& instance,const std::any& value) const;
-		std::any GetValue(std::any& instance) const;
+		bool SetValue(Any& instance,const Any& value) const;
+		Any GetValue(Any& instance) const;
 
 		std::string_view GetName() const { return name_; }
+
+		template<typename T>
+		bool HasProperty()
+		{
+			return propertys_.contains(typeid(T).hash_code());
+		}
+
+		template<typename T>
+		const T* GetProperty() const
+		{
+			auto it = propertys_.find(typeid(T).hash_code());
+			if (it != propertys_.end())
+			{
+				return &std::any_cast<const T&>(it->second);
+			}
+			return nullptr;
+		}
 	private:
+		friend class TypeData;
+
 		std::string name_;
 		std::unique_ptr<FieldWapperBase> field_wapper_;
+		std::unordered_map<size_t, std::any> propertys_;
 	};
 }

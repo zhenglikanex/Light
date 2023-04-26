@@ -2,8 +2,10 @@
 
 #include <any>
 #include <type_traits>
+#include <vector>
 
 #include "engine/core/core.h"
+#include "entt/entt.hpp"
 
 namespace light::meta
 {
@@ -22,16 +24,21 @@ namespace light::meta
 	template <class Ty>
 	inline constexpr bool kIsSmall = alignof(Ty) <= alignof(max_align_t) && std::is_nothrow_move_constructible_v<Ty> && sizeof(Ty) <= kAnySmallSpaceSize;
 
+	class Any;
+
 	struct SmallObjectFuncCollectionBase
 	{
 		using CopyFunc = void(*)(const void*, void*);
 		using MoveFunc = void(*)(void*, void*);
 		using DestroyFunc = void(*)(void*);
-
+		using VectorSizeFunc = size_t(*)(void*);
+		using GetElementFunc = Any(*)(void*, size_t);
 
 		CopyFunc copy_func;
 		MoveFunc move_func;
 		DestroyFunc destroy_func;
+		VectorSizeFunc vector_size_func = nullptr;
+		GetElementFunc get_element_func = nullptr;
 	};
 
 	template<typename T>
@@ -39,12 +46,12 @@ namespace light::meta
 	{
 		static void Copy(const void* src,void* dest)
 		{
-			new (dest) T(static_cast<T*>(src));
+			new (dest) T(*static_cast<const T*>(src));
 		}
 
 		static void Move(void* src,void* dest)
 		{
-			new (dest) T(std::move(static_cast<T*>(src)));
+			new (dest) T(std::move(*static_cast<T*>(src)));
 		}
 
 		static void Destroy(void* ptr)
@@ -60,16 +67,59 @@ namespace light::meta
 		}
 	};
 
+	template<typename ElementType>
+	struct SmallObjectFuncCollection<std::vector<ElementType>> : SmallObjectFuncCollectionBase
+	{
+		using T = std::vector<ElementType>;
+
+		static void Copy(const void* src, void* dest)
+		{
+			new (dest) T(*static_cast<const T*>(src));
+		}
+
+		static void Move(void* src, void* dest)
+		{
+			new (dest) T(std::move(*static_cast<T*>(src)));
+		}
+
+		static void Destroy(void* ptr)
+		{
+			static_cast<T*>(ptr)->~T();
+		}
+
+		static size_t GetVectorSize(void* ptr)
+		{
+			return static_cast<T*>(ptr)->size();
+		}
+
+		static Any GetElement(void* ptr, size_t index)
+		{
+			return Any(std::ref(static_cast<T*>(ptr)[index]));
+		}
+
+		SmallObjectFuncCollection()
+		{
+			copy_func = &Copy;
+			move_func = &Move;
+			destroy_func = &Destroy;
+			vector_size_func = &GetVectorSize;
+			get_element_func = &GetElement;
+		}
+	};
+
 	struct BigObjectFuncCollectionBase
 	{
 		using CopyFunc = void*(*)(const void*);
-		using MoveFunc = void(*)(void*, void*);
+		using MoveFunc = void*(*)(void*);
 		using DestroyFunc = void(*)(void*);
+		using VectorSizeFunc = size_t(*)(void*);
+		using GetElementFunc = Any(*)(void*, size_t);
 
-
-		CopyFunc copy_func;
-		MoveFunc move_func;
-		DestroyFunc destroy_func;
+		CopyFunc copy_func = nullptr;
+		MoveFunc move_func = nullptr;
+		DestroyFunc destroy_func = nullptr;
+		VectorSizeFunc vector_size_func = nullptr;
+		GetElementFunc get_element_func = nullptr;
 	};
 
 	template<typename T>
@@ -77,12 +127,12 @@ namespace light::meta
 	{
 		static void* Copy(const void* src)
 		{
-			return new T(*static_cast<T*>(src));
+			return new T(*static_cast<const T*>(src));
 		}
 
-		static void Move(void* src, void* dest)
+		static void* Move(void* src)
 		{
-			new (dest) T(std::move(static_cast<T*>(src)));
+			return new T(std::move(*static_cast<T*>(src)));
 		}
 
 		static void Destroy(void* ptr)
@@ -96,6 +146,47 @@ namespace light::meta
 			copy_func = &Copy;
 			move_func = &Move;
 			destroy_func = &Destroy;
+		}
+	};
+
+	template<typename ElementType>
+	struct BigObjectFuncCollection<std::vector<ElementType>> : BigObjectFuncCollectionBase
+	{
+		using T = std::vector<ElementType>;
+
+		static void* Copy(const void* src)
+		{
+			return new T(*static_cast<const T*>(src));
+		}
+
+		static void* Move(void* src)
+		{
+			return new T(std::move(*static_cast<T*>(src)));
+		}
+
+		static void Destroy(void* ptr)
+		{
+			T* v = static_cast<T*>(ptr);
+			delete v;
+		}
+
+		static size_t GetVectorSize(void* ptr)
+		{
+			return static_cast<T*>(ptr)->size();
+		}
+
+		static Any GetElement(void* ptr, size_t index)
+		{
+			return Any(std::ref(static_cast<T*>(ptr)[index]));
+		}
+
+		BigObjectFuncCollection()
+		{
+			copy_func = &Copy;
+			move_func = &Move;
+			destroy_func = &Destroy;
+			vector_size_func = &GetVectorSize;
+			get_element_func = &GetElement;
 		}
 	};
 
@@ -113,36 +204,37 @@ namespace light::meta
 		Any()
 		{
 			data_.object_type = AnyValueObjectType::kInvalid;
+			data_.is_ref = false;
+			data_.is_vector = false;
 		}
 
-		template<typename Value>
+		template<typename Value,typename = std::enable_if_t<!std::is_same_v<std::decay_t<Value>,Any>>>
 		Any(Value&& value)
 		{
 			Ctor<std::decay_t<Value>>(std::forward<Value>(value));
+			data_.is_ref = false;
+			data_.is_vector = false;
+		}
+
+		template<typename Value>
+		Any(std::reference_wrapper<Value> value)
+		{
+			Ctor<std::reference_wrapper<Value>>(value);
+			data_.is_ref = true;
+			data_.is_vector = false;
+		}
+		
+		template<typename Value>
+		Any(std::vector<Value>& value)
+		{
+			Ctor<std::reference_wrapper<Value>>(value);
+			data_.is_ref = false;
+			data_.is_vector = true;
 		}
 
 		Any(const Any& other)
 		{
-			if (!other.IsValid())
-			{
-				return;
-			}
-
-			data_.object_type = other.data_.object_type;
-			if (data_.object_type == AnyValueObjectType::kTrivial)
-			{
-				memcpy(data_.trivial_object_data.data, other.data_.trivial_object_data.data, sizeof(data_.trivial_object_data.data));
-			}
-			else if (data_.object_type == AnyValueObjectType::kSmall)
-			{
-				data_.small_object_data.object_func_collection = other.data_.small_object_data.object_func_collection;
-				data_.small_object_data.object_func_collection->copy_func(other.data_.small_object_data.data, data_.small_object_data.data);
-			}
-			else if (data_.object_type == AnyValueObjectType::kBig)
-			{
-				data_.big_object_data.object_func_collection = other.data_.big_object_data.object_func_collection;
-				data_.big_object_data.ptr = data_.big_object_data.object_func_collection->copy_func(other.data_.big_object_data.ptr);
-			}
+			Copy(other);
 		}
 
 		Any(Any&& other) noexcept
@@ -157,8 +249,8 @@ namespace light::meta
 				return *this;
 			}
 
-			// Any& operator=(Any&& other) noexcept
-			*this = Any{ other };
+			Reset();
+			Copy(other);
 
 			return *this;
 		}
@@ -175,28 +267,62 @@ namespace light::meta
 			return *this;
 		}
 
+		~Any()
+		{
+			Reset();
+		}
+
 		template<typename Value>
-		Value Cast()
+		std::decay_t<Value>& Cast()
 		{
 			LIGHT_ASSERT(IsValid(), "Invalid Any");
+			LIGHT_ASSERT(IsArray(), "");
 
 			if (data_.object_type == AnyValueObjectType::kTrivial)
 			{
-				return *reinterpret_cast<Value*>(data_.trivial_object_data.data);
+				if (data_.is_ref)
+				{
+					return *reinterpret_cast<std::reference_wrapper<std::decay_t<Value>>*>(data_.trivial_object_data.data);
+				}
+				else
+				{
+					return *reinterpret_cast<std::decay_t<Value>*>(data_.trivial_object_data.data);
+				}
 			}
 			else if (data_.object_type == AnyValueObjectType::kSmall)
 			{
-				return *reinterpret_cast<Value*>(data_.small_object_data.data);
+				return *reinterpret_cast<std::decay_t<Value>*>(data_.small_object_data.data);
 			}
 			else
 			{
-				return *static_cast<Value*>(data_.big_object_data.ptr);
+				return *static_cast<std::decay_t<Value>*>(data_.big_object_data.ptr);
 			}
+		}
+
+		template<typename Value>
+		std::decay_t<Value>& Cast() const
+		{
+			return const_cast<Any*>(this)->Cast<Value>();
+		}
+
+		size_t GetSize() const
+		{
+			LIGHT_ASSERT()
+		}
+
+		const Any& GetElement(size_t index)
+		{
+
 		}
 
 		bool IsValid() const
 		{
 			return data_.object_type != AnyValueObjectType::kInvalid;
+		}
+
+		bool IsVector() const 
+		{
+			return data_.is_vector;
 		}
 
 		void Reset()
@@ -213,12 +339,15 @@ namespace light::meta
 				}
 
 				data_.object_type = AnyValueObjectType::kInvalid;
+				data_.is_ref = false;
 			}
 		}
 	private:
 		template<typename Value, typename ... Args>
 		void Ctor(Args&& ... args)
 		{
+			data_.is_const = std::is_const_v<Value>;
+
 			if constexpr (kIsTrivial<Value>)
 			{
 				data_.object_type = AnyValueObjectType::kTrivial;
@@ -234,7 +363,33 @@ namespace light::meta
 			{
 				data_.object_type = AnyValueObjectType::kBig;
 				data_.big_object_data.ptr = new Value(std::forward<Args>(args)...);
-				data_.big_object_data.object_func_collection = &kSmallObjectFuncCollection<Value>;
+				data_.big_object_data.object_func_collection = &kBigObjectFuncCollection<Value>;
+			}
+		}
+
+		void Copy(const Any& other)
+		{
+			if (!other.IsValid())
+			{
+				return;
+			}
+
+			data_.object_type = other.data_.object_type;
+			data_.is_ref = other.data_.is_ref;
+
+			if (data_.object_type == AnyValueObjectType::kTrivial)
+			{
+				memcpy(data_.trivial_object_data.data, other.data_.trivial_object_data.data, sizeof(data_.trivial_object_data.data));
+			}
+			else if (data_.object_type == AnyValueObjectType::kSmall)
+			{
+				data_.small_object_data.object_func_collection = other.data_.small_object_data.object_func_collection;
+				data_.small_object_data.object_func_collection->copy_func(other.data_.small_object_data.data, data_.small_object_data.data);
+			}
+			else if (data_.object_type == AnyValueObjectType::kBig)
+			{
+				data_.big_object_data.object_func_collection = other.data_.big_object_data.object_func_collection;
+				data_.big_object_data.ptr = data_.big_object_data.object_func_collection->copy_func(other.data_.big_object_data.ptr);
 			}
 		}
 
@@ -246,6 +401,7 @@ namespace light::meta
 			}
 
 			data_.object_type = other.data_.object_type;
+			data_.is_ref = other.data_.is_ref;
 			if (data_.object_type == AnyValueObjectType::kTrivial)
 			{
 				memcpy(data_.trivial_object_data.data, other.data_.trivial_object_data.data, sizeof(data_.trivial_object_data.data));
@@ -258,8 +414,11 @@ namespace light::meta
 			else if (data_.object_type == AnyValueObjectType::kBig)
 			{
 				data_.big_object_data.object_func_collection = other.data_.big_object_data.object_func_collection;
-				data_.big_object_data.object_func_collection->move_func(other.data_.big_object_data.ptr, data_.big_object_data.ptr);
+				data_.big_object_data.ptr = data_.big_object_data.object_func_collection->move_func(other.data_.big_object_data.ptr);
 			}
+
+			other.data_.object_type = AnyValueObjectType::kInvalid;
+			other.data_.is_ref = false;
 		}
 
 		struct TrivialObjectData
@@ -289,9 +448,10 @@ namespace light::meta
 			};
 
 			AnyValueObjectType object_type;
+			bool is_ref;
+			bool is_vector;
 		};
 
 		Data data_;
-
 	};
 }

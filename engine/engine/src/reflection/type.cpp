@@ -1,21 +1,33 @@
 #include "engine/reflection/type.h"
+#include "engine/reflection/field.h"
+#include "engine/reflection/method.h"
+#include "engine/reflection/registry.h"
 
 namespace light::meta
 {
-	TypeData::TypeData()
+	Type light::meta::Type::Get(std::string_view name)
 	{
-
+		return Registry::Get().GetType(name);
 	}
 
-	const Field& TypeData::GetField(std::string_view name) const
+	std::string_view light::meta::Type::GetName() const
 	{
-		auto it = std::find_if(fields_.begin(), fields_.end(), [name](const Field& field) { return field.GetName() == name; });
-		if (it != fields_.end())
-		{
-			return *it;
-		}
+		return data_->GetName();
+	}
 
-		static Field null_field("",nullptr);
-		return null_field;
+	const Field& Type::GetField(std::string_view name) const
+	{
+		return data_->GetField(name);
+	}
+
+	const Method& Type::GeMethod(std::string_view name) const
+	{
+		return data_->GetMethod(name);
+	}
+
+	Type::Type(const TypeData* data)
+		: data_(data)
+	{
+		
 	}
 }
