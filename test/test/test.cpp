@@ -5,6 +5,7 @@
 #include "engine/reflection/type.h"
 #include "engine/reflection/any.h"
 #include "engine/reflection/registry.h"
+#include "engine/reflection/method_invoke.h"
 
 using namespace light;
 using namespace meta;
@@ -193,32 +194,25 @@ struct Tooptip
 	std::string tip;
 };
 
-void Print(Any any)
-{
-	Type type = any.GetType();
-	for (auto field type.GetFields())
-	{
-		if (field.GetType().IsArray())
-		{
-			Print(field.GetValueRef())
-		}
-		else {
-			std::cout << field.name << field.value << std::endl;
-		}
-	}
-}
+//void Print(Any any)
+//{
+//	Type type = any.GetType();
+//	for (auto field type.GetFields())
+//	{
+//		if (field.GetType().IsArray())
+//		{
+//			Print(field.GetValueRef())
+//		}
+//		else {
+//			std::cout << field.name << field.value << std::endl;
+//		}
+//	}
+//}
 
 int main()
 {
 	
-
-	if (v.isvector)
-	{
-		for (auto child : v)
-		{
-			 child.GetType()
-		}
-	}
+	
 
 	Test t;
 	TypeData& data = Registry::Get().AddTypeData<Test>("Test");

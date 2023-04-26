@@ -17,17 +17,17 @@ namespace light::meta
 		~TypeData() = default;
 
 		template<typename ClassType, typename FieldType,
-			typename FieldTypePtr = typename FieldWapper<ClassType, FieldType>::FieldTypePtr,
-			typename ... Propertys>
-		void AddField(std::string_view name, FieldTypePtr ptr,Propertys&& ... propertys)
+			typename FieldTypePtr = typename FieldWrapper<ClassType, FieldType>::FieldTypePtr,
+			typename ... Properties>
+		void AddField(std::string_view name, FieldTypePtr ptr, Properties&& ... properties)
 		{
-			fields_.emplace_back(name, std::make_unique<FieldWapper<ClassType, FieldType>>(ptr),std::forward<Propertys>(propertys)...);
+			fields_.emplace_back(name, std::make_unique<FieldWrapper<ClassType, FieldType>>(ptr),std::forward<Properties>(properties)...);
 		}
 
-		template<typename ClassType,typename RetunrType,typename ... Args>
-		void AddMethod(std::string_view name, RetunrType(ClassType::* method)(Args...))
+		template<typename ClassType,typename ReturnType,typename ... Args>
+		void AddMethod(std::string_view name, ReturnType(ClassType::* method)(Args...))
 		{
-			methods_.emplace(name, Method(name,std::make_unique<MethodInvoke<ClassType,RetunrType,Args...>>(method)));
+			methods_.emplace(name, Method(name,std::make_unique<MethodInvoke<ClassType, ReturnType,Args...>>(method)));
 		}
 
 		std::string_view GetName() const { return name_; }

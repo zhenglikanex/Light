@@ -1,8 +1,6 @@
 #pragma once
 
-#include <string>
 #include <string_view>
-#include <unordered_map>
 
 namespace light::meta
 {
@@ -13,20 +11,35 @@ namespace light::meta
 	class Type
 	{
 	public:
-		static Type Get(std::string_view name);
+		template<typename T>
+		static Type Get()
+		{
+			return Type(typeid(T).hash_code());
+		}
+
+		template<typename T>
+		static Type Get(std::vector<T>)
+		{
+			return Type(typeid(T).hash_code(),true);
+		}
 
 		Type() = default;
+		explicit Type(const std::string& name, bool is_vector = false);
+		explicit Type(size_t type_id, bool is_vector = false);
 
-		bool IsVaild() const { return data_ != nullptr; }
+		bool IsValid() const { return data_ != nullptr; }
+
+		bool IsArray() const { return is_vector_; }
 
 		std::string_view GetName() const;
 
 		const Field& GetField(std::string_view name) const;
+
 		const Method& GeMethod(std::string_view name) const;		
 	private:
 		friend class Registry;
 
-		Type(const TypeData* data);
-		const TypeData* data_ = nullptr;
+		const TypeData* data_;
+		bool is_vector_ = false;
 	};
 }

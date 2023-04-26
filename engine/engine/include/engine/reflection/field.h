@@ -1,56 +1,26 @@
 #pragma once
 
-#include <cstdint>
 #include <memory>
 #include <string_view>
 #include <string>
 #include <any>
 
-
-#include "engine/reflection/any.h"
+#include "engine/reflection/field_wrapper.h"
 
 namespace light::meta
 {
-	
-	class FieldWapperBase
-	{
-	public:
-		virtual bool SetValue(Any& instance,const Any& value) = 0;
-		virtual Any GetValue(Any& instance) = 0;
-	};
-
-	template<typename ClassType,class FieldType>
-	class FieldWapper : public FieldWapperBase
-	{
-	public:
-		using FiledTypePtr = FieldType ClassType::*;
-
-		FieldWapper(FiledTypePtr field_ptr) : field_ptr_(field_ptr) {}
-
-		bool SetValue(Any& instance,const Any& value) override
-		{
-			instance.Cast<ClassType>().*field_ptr_ = value.Cast<FieldType>();
-			return true;
-		}
-
-		Any GetValue(Any& instance) override
-		{
-			return Any(instance.Cast<ClassType>().*field_ptr_);
-		}
-	private:
-		FiledTypePtr field_ptr_;
-	};
+	class Any;
 
 	class Field
 	{
 	public:
-		template<typename ... Propertys>
-		Field(std::string_view name, std::unique_ptr<FieldWapperBase> field_wapper, Propertys&& ... propertys)
-			: name_(name), field_wapper_(std::move(field_wapper))
+		template<typename ... Properties>
+		Field(std::string_view name, std::unique_ptr<FieldWrapperBase> field_wrapper, Properties&& ... properties)
+			: name_(name), field_wrapper_(std::move(field_wrapper))
 		{
-			if constexpr (sizeof...(Propertys) > 0)
+			if constexpr (sizeof...(Properties) > 0)
 			{
-				(propertys_.emplace(typeid(Propertys).hash_code(), std::forward<Propertys>(propertys)),...);
+				(properties_.emplace(typeid(Properties).hash_code(), std::forward<Properties>(properties)),...);
 			}
 		}
 
@@ -62,14 +32,14 @@ namespace light::meta
 		template<typename T>
 		bool HasProperty()
 		{
-			return propertys_.contains(typeid(T).hash_code());
+			return properties_.contains(typeid(T).hash_code());
 		}
 
 		template<typename T>
 		const T* GetProperty() const
 		{
-			auto it = propertys_.find(typeid(T).hash_code());
-			if (it != propertys_.end())
+			auto it = properties_.find(typeid(T).hash_code());
+			if (it != properties_.end())
 			{
 				return &std::any_cast<const T&>(it->second);
 			}
@@ -79,7 +49,7 @@ namespace light::meta
 		friend class TypeData;
 
 		std::string name_;
-		std::unique_ptr<FieldWapperBase> field_wapper_;
-		std::unordered_map<size_t, std::any> propertys_;
+		std::unique_ptr<FieldWrapperBase> field_wrapper_;
+		std::unordered_map<size_t, std::any> properties_;
 	};
 }

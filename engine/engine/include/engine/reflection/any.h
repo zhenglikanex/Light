@@ -3,9 +3,10 @@
 #include <any>
 #include <type_traits>
 #include <vector>
+#include <memory>
 
 #include "engine/core/core.h"
-#include "entt/entt.hpp"
+#include "engine/reflection/type.h"
 
 namespace light::meta
 {
@@ -31,7 +32,7 @@ namespace light::meta
 		using CopyFunc = void(*)(const void*, void*);
 		using MoveFunc = void(*)(void*, void*);
 		using DestroyFunc = void(*)(void*);
-		using VectorSizeFunc = size_t(*)(void*);
+		using VectorSizeFunc = size_t(*)(const void*);
 		using GetElementFunc = Any(*)(void*, size_t);
 
 		CopyFunc copy_func;
@@ -87,15 +88,12 @@ namespace light::meta
 			static_cast<T*>(ptr)->~T();
 		}
 
-		static size_t GetVectorSize(void* ptr)
+		static size_t GetVectorSize(const void* ptr)
 		{
-			return static_cast<T*>(ptr)->size();
+			return static_cast<const T*>(ptr)->size();
 		}
 
-		static Any GetElement(void* ptr, size_t index)
-		{
-			return Any(std::ref(static_cast<T*>(ptr)[index]));
-		}
+		static Any GetElement(void* ptr, size_t index);
 
 		SmallObjectFuncCollection()
 		{
@@ -112,7 +110,7 @@ namespace light::meta
 		using CopyFunc = void*(*)(const void*);
 		using MoveFunc = void*(*)(void*);
 		using DestroyFunc = void(*)(void*);
-		using VectorSizeFunc = size_t(*)(void*);
+		using VectorSizeFunc = size_t(*)(const void*);
 		using GetElementFunc = Any(*)(void*, size_t);
 
 		CopyFunc copy_func = nullptr;
@@ -170,15 +168,12 @@ namespace light::meta
 			delete v;
 		}
 
-		static size_t GetVectorSize(void* ptr)
+		static size_t GetVectorSize(const void* ptr)
 		{
-			return static_cast<T*>(ptr)->size();
+			return static_cast<const T*>(ptr)->size();
 		}
 
-		static Any GetElement(void* ptr, size_t index)
-		{
-			return Any(std::ref(static_cast<T*>(ptr)[index]));
-		}
+		static Any GetElement(void* ptr, size_t index);
 
 		BigObjectFuncCollection()
 		{
@@ -205,7 +200,6 @@ namespace light::meta
 		{
 			data_.object_type = AnyValueObjectType::kInvalid;
 			data_.is_ref = false;
-			data_.is_vector = false;
 		}
 
 		template<typename Value,typename = std::enable_if_t<!std::is_same_v<std::decay_t<Value>,Any>>>
@@ -213,7 +207,7 @@ namespace light::meta
 		{
 			Ctor<std::decay_t<Value>>(std::forward<Value>(value));
 			data_.is_ref = false;
-			data_.is_vector = false;
+			data_.type = Type::Get<std::decay_t<Value>>();
 		}
 
 		template<typename Value>
@@ -221,7 +215,7 @@ namespace light::meta
 		{
 			Ctor<std::reference_wrapper<Value>>(value);
 			data_.is_ref = true;
-			data_.is_vector = false;
+			data_.type = Type::Get<Value>();
 		}
 		
 		template<typename Value>
@@ -229,7 +223,7 @@ namespace light::meta
 		{
 			Ctor<std::reference_wrapper<Value>>(value);
 			data_.is_ref = false;
-			data_.is_vector = true;
+			data_.type = Type::Get<std::vector<Value>>();
 		}
 
 		Any(const Any& other)
@@ -276,7 +270,6 @@ namespace light::meta
 		std::decay_t<Value>& Cast()
 		{
 			LIGHT_ASSERT(IsValid(), "Invalid Any");
-			LIGHT_ASSERT(IsArray(), "");
 
 			if (data_.object_type == AnyValueObjectType::kTrivial)
 			{
@@ -307,22 +300,35 @@ namespace light::meta
 
 		size_t GetSize() const
 		{
-			LIGHT_ASSERT()
+			LIGHT_ASSERT(data_.type.IsArray(), "any is not array");
+
+			if (data_.object_type == AnyValueObjectType::kSmall)
+			{
+				return data_.small_object_data.object_func_collection->vector_size_func(data_.small_object_data.data);
+			}
+			else
+			{
+				return data_.big_object_data.object_func_collection->vector_size_func(data_.big_object_data.ptr);
+			}
 		}
 
-		const Any& GetElement(size_t index)
+		Any GetElement(size_t index)
 		{
+			LIGHT_ASSERT(data_.type.IsArray(), "any is not array");
 
+			if (data_.object_type == AnyValueObjectType::kSmall)
+			{
+				return data_.small_object_data.object_func_collection->get_element_func(data_.small_object_data.data,index);
+			}
+			else
+			{
+				return data_.big_object_data.object_func_collection->get_element_func(data_.big_object_data.ptr,index);
+			}
 		}
 
 		bool IsValid() const
 		{
 			return data_.object_type != AnyValueObjectType::kInvalid;
-		}
-
-		bool IsVector() const 
-		{
-			return data_.is_vector;
 		}
 
 		void Reset()
@@ -346,8 +352,6 @@ namespace light::meta
 		template<typename Value, typename ... Args>
 		void Ctor(Args&& ... args)
 		{
-			data_.is_const = std::is_const_v<Value>;
-
 			if constexpr (kIsTrivial<Value>)
 			{
 				data_.object_type = AnyValueObjectType::kTrivial;
@@ -448,10 +452,22 @@ namespace light::meta
 			};
 
 			AnyValueObjectType object_type;
+			Type type;
 			bool is_ref;
-			bool is_vector;
 		};
 
 		Data data_;
 	};
+
+	template <typename ElementType>
+	Any SmallObjectFuncCollection<std::vector<ElementType>>::GetElement(void* ptr, size_t index)
+	{
+		return Any(std::ref(static_cast<T*>(ptr)[index]));
+	}
+
+	template <typename ElementType>
+	Any BigObjectFuncCollection<std::vector<ElementType>>::GetElement(void* ptr, size_t index)
+	{
+		return Any(std::ref(static_cast<T*>(ptr)[index]));
+	}
 }
