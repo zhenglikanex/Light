@@ -1,26 +1,31 @@
 #pragma once
 
 #include <string_view>
+#include <unordered_map>
+#include <vector>
+
+#include "engine/reflection/type_traits.h"
 
 namespace light::meta
 {
 	class Field;
 	class Method;
 	class TypeData;
+	class Enum;
 
 	class Type
 	{
 	public:
 		template<typename T>
-		static Type Get()
+		static Type Get() requires (!details::IsVector<T>::value)
 		{
 			return Type(typeid(T).hash_code());
 		}
 
 		template<typename T>
-		static Type Get(std::vector<T>)
+		static Type Get() requires (details::IsVector<T>::value)
 		{
-			return Type(typeid(T).hash_code(),true);
+			return Type(typeid(typename T::value_type).hash_code(),true);
 		}
 
 		Type() = default;
@@ -31,15 +36,26 @@ namespace light::meta
 
 		bool IsArray() const { return is_vector_; }
 
-		std::string_view GetName() const;
+		bool IsEnum() const;
+
+		std::string GetName() const;
 
 		const Field& GetField(std::string_view name) const;
 
-		const Method& GeMethod(std::string_view name) const;		
+		const Method& GeMethod(std::string_view name) const;
+
+		const std::vector<Field>& GetFields() const;
+
+		const std::unordered_map<std::string,Method>& GetMethods() const;
+
+		const std::vector<Enum>& GetEnumValues() const;
+
+		bool operator==(const Type& other) const { return data_ == other.data_ && is_vector_ == other.is_vector_; }
+		bool operator!=(const Type& other) const { return !(*this == other); }
 	private:
 		friend class Registry;
 
-		const TypeData* data_;
+		const TypeData* data_ = nullptr;
 		bool is_vector_ = false;
 	};
 }

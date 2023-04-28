@@ -33,6 +33,7 @@ struct Test
 	int a = 0;
 	int b = 2;
 	int c = 3;
+	std::vector<int> d = { 1,3,5 };
 };
 
 template<typename ClassType, class FieldType>
@@ -209,28 +210,72 @@ struct Tooptip
 //	}
 //}
 
+enum class  TestEnum
+{
+	kOne = -1,
+	kTwo
+};
+
 int main()
 {
-	
-	
+	{
+		TypeData& data = Registry::Get().AddTypeData<TestEnum>("TestEnum");
+		data.AddEnum("kOne", static_cast<int64_t>(TestEnum::kOne));
+		data.AddEnum("kTwo", static_cast<int64_t>(TestEnum::kTwo));
 
+		Any any = TestEnum::kOne;
+		std::cout << any.GetType().GetName() << std::endl;
+
+		if (any.GetType().IsEnum())
+		{
+			for (auto& value : any.GetType().GetEnumValues())
+			{
+				std::cout << value.GetName() << value.GetValue() << std::endl;
+			}
+		}
+	}
+	
 	Test t;
 	TypeData& data = Registry::Get().AddTypeData<Test>("Test");
 	data.AddField<Test, int>("a", &Test::a, Range{ 0,100 }, Tooptip{ "this is a" });
+	data.AddField<Test, std::vector<int>>("d", &Test::d);
 	data.AddMethod<Test>("Print", &Test::Print);
 	data.AddMethod<Test>("TestReturn", &Test::TestReturn);
 	data.AddMethod<Test>("TestReturnRef", &Test::TestReturnRef);
 	
+
 	int aaa = 10;
 	
 	constexpr bool vvvv = std::is_const_v<std::remove_reference_t<const int&>>;
 
 	auto& f = data.GetField("a");
 	
+	
 	std::cout << "range max" << f.GetProperty<Range>()->max << std::endl;
 	std::cout << "range max" << f.GetProperty<Tooptip>()->tip << std::endl;
 
 	Any instance = t;
+
+	const Field& d_field = data.GetField("d");
+	if (d_field.GetType().IsArray())
+	{
+		Any value = d_field.GetValue(instance);
+		std::cout << value.GetType().GetName() << std::endl;
+		std::cout << "size:" << value.GetSize() << std::endl;
+		for (size_t i = 0; i < value.GetSize(); ++i)
+		{
+			Any v = value.GetElement(i);
+			v.Cast<int>() += 30;
+		}
+
+		for (size_t i = 0; i < value.GetSize(); ++i)
+		{
+			Any v = value.GetElement(i);
+			std::cout << v.Cast<int>() << std::endl;
+		}
+	}
+
+
 	int param = 10;
 	f.SetValue(instance,param);
 	Any v = f.GetValue(instance);

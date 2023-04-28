@@ -19,13 +19,28 @@ namespace light::meta
 	{
 	}
 
-	std::string_view Type::GetName() const
+	bool Type::IsEnum() const
 	{
+		if (!IsValid())
+		{
+			return false;
+		}
+
+		return data_->IsEnum();
+	}
+
+	std::string Type::GetName() const
+	{
+		if (!IsValid())
+		{
+			return "unknown type";
+		}
+
 		if(is_vector_)
 		{
 			return std::format("std::vector<{}>", data_->GetName());
 		}
-		return data_->GetName();
+		return std::string(data_->GetName());
 	}
 
 	const Field& Type::GetField(std::string_view name) const
@@ -36,5 +51,20 @@ namespace light::meta
 	const Method& Type::GeMethod(std::string_view name) const
 	{
 		return data_->GetMethod(name);
+	}
+
+	const std::vector<Field>& Type::GetFields() const
+	{
+		return data_->GetFields();
+	}
+
+	const std::unordered_map<std::string, Method>& Type::GetMethods() const
+	{
+		return data_->GetMethods();
+	}
+
+	const std::vector<Enum>& Type::GetEnumValues() const
+	{
+		return data_->GetEnumValues();
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/reflection/any.h"
+#include "engine/reflection/type_traits.h"
 
 namespace light::meta
 {
@@ -28,7 +29,14 @@ namespace light::meta
 
 		Any GetValue(Any& instance) override
 		{
-			return Any(instance.Cast<ClassType>().*field_ptr_);
+			if constexpr (details::IsVector<FieldType>::value)
+			{
+				return Any(std::ref(instance.Cast<ClassType>().*field_ptr_));
+			}
+			else
+			{
+				return Any(instance.Cast<ClassType>().*field_ptr_);
+			}
 		}
 	private:
 		FiledTypePtr field_ptr_;
