@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/project/llvm-project-llvmorg-16.0.2/build/Debug/bin/test/build",
+  "command": "C:\\PROGRA~1\\MICROS~2\\2022\\ENTERP~1\\VC\\Tools\\MSVC\\1435~1.322\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP -std:c++17 /FoCMakeFiles\\Test.dir\\main.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\project\\llvm-project-llvmorg-16.0.2\\build\\Debug\\bin\\test\\main.cpp",
+  "file": "C:\\project\\llvm-project-llvmorg-16.0.2\\build\\Debug\\bin\\test\\main.cpp",
+  "output": "CMakeFiles\\Test.dir\\main.cpp.obj"
+}
+]
