@@ -51,9 +51,9 @@ namespace light
 		Timestep GetTimestep() const { return timestep_; }
 
 		ImguiLayer* GetImguiLayer() { return imgui_layer_; }
-	private:
-		void OnEvent(Event& e);
 
+		void OnEvent(Event& e);
+	private:
 		void OnWindowResized(const WindowResizedEvent& e);
 		void OnWindowClosed(const WindowClosedEvent& e);
 

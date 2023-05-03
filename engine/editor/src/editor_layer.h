@@ -3,6 +3,7 @@
 #include "engine/light.h"
 
 #include "panel/scene_hierarchy_panel.h"
+#include "panel/property_panel.h"
 
 namespace light::editor
 {
@@ -31,10 +32,9 @@ namespace light::editor
 		
 		Ref<Scene> active_secne_;
 		SceneHierarchyPanel scene_hierarchy_panel_;
+		PropertyPanel property_panel_;
 
 		Entity quad_entity_;
 		Entity camera_entity_;
-
-		
 	};
 }

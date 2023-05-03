@@ -1,38 +1,19 @@
 #pragma once
 #include "light_pch.h"
 
-#include "engine/core/reflection.h"
+#include "engine/reflection/meta.h"
 #include "engine/scene/scene_camera.h"
 #include "engine/scene/script.h"
 
 #include "glm/glm.hpp"
-
-namespace ns_3d
-{
-	class node
-	{
-	public:
-		node(std::string name, node* parent = nullptr);
-		virtual ~node() { }
-		void set_name(const std::string& name) { m_name = name; }
-		const std::string& get_name() const { return m_name; }
-		std::vector<node*> get_children() const { return m_children; }
-		void set_visible(bool visible, bool cascade = true) {  }
-		virtual void render() {  }
-	private:
-		node* m_parent;
-		std::string         m_name;
-		std::vector<node*>  m_children;
-	};
-}
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace light
 {
-	STRUCT() TagComponent
+	struct META() TagComponent
 	{
 		std::string tag;
 
-		TagComponent(std::string & name) { tag = name; }
 		TagComponent() = default;
 		TagComponent(const TagComponent& other) = default;
 		TagComponent(std::string_view tag)
@@ -42,21 +23,32 @@ namespace light
 		}
 	};
 
-	STRUCT() TransformComponent
+	struct META() TransformComponent
 	{
-		glm::mat4 transform = glm::mat4(1.0f);
+		glm::vec3 position = glm::vec3(0);
+		glm::vec3 rotation = glm::vec3(0);
+		glm::vec3 scale = glm::vec3(1);
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) = default;
-		TransformComponent(const glm::mat4& transform)
-			: transform(transform)
+		TransformComponent(const glm::vec3& position,const glm::vec3& rotation,glm::vec3& scale)
+			: position(position), rotation(rotation), scale(scale)
 		{
+			
 		}
 
-		operator glm::mat4&() { return transform; }
+		glm::mat4 GetTransform() const
+		{
+			glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), { 1.0f,0.0f,0.0f })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), { 0.0f,1.0f,0.0f })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), { 0.0f,0.0f,1.0f });
+
+			return glm::translate(glm::mat4(1.0f), position) * rotate * glm::scale(glm::mat4(1.0f), scale);
+		}
+		
 	};
 
-	STRUCT() SpriteRendererComponent
+	struct META() SpriteRendererComponent
 	{
 		glm::vec4 color = { 0.0f,0.0f,0.0f,1.0f };
 
@@ -68,7 +60,7 @@ namespace light
 		}
 	};
 
-	STRUCT() CameraComponent
+	struct META() CameraComponent
 	{
 		SceneCamera camera;
 		bool primary = true;
@@ -78,7 +70,7 @@ namespace light
 		CameraComponent(const CameraComponent& other) = default;
 	};
 
-	STRUCT() NativeScriptComponent
+	struct NativeScriptComponent
 	{
 		Script* script_instance = nullptr;
 

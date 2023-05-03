@@ -28,6 +28,7 @@ namespace light
 		kWindowsResized,
 		kWindowsClosed,
 		kWindowsMoved,
+		kSelectEntity,
 	};
 
 	enum class EventCategory
@@ -35,7 +36,8 @@ namespace light
 		kNone		= 0,
 		kKey		= 1 << 0,
 		kMouse		= 1 << 1,
-		kWindows	= 1 << 2
+		kWindows	= 1 << 2,
+		kEditor		= 1 << 3
 	};
 
 	struct Event

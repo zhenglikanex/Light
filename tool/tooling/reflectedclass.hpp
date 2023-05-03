@@ -8,6 +8,33 @@
 
 #include "utils.hpp"
 #include "annotations.hpp"
+#include <format>
+
+class ReflectedEnum {
+public:
+  ReflectedEnum(const std::string &name) : m_enumName(name) {}
+
+  void AddValue(const std::string& value) {
+    m_enumValues.push_back(value); 
+  }
+
+   void Generate(ASTContext *ctx, raw_ostream &os) {
+    os << "{\n";
+    os << std::format(
+        "TypeData &data = Registry::Get().AddTypeData<{}>(\"{}\");\n",
+        m_enumName, m_enumName);
+
+    for (auto& value : m_enumValues) {
+      os << std::format("data.AddEnum(\"{}\", static_cast<int64_t>({}::{}));\n",
+                        value,m_enumName, value);
+    }
+    os << "}\n";
+  }
+
+private:
+  std::string m_enumName;
+  std::vector<std::string> m_enumValues;
+};
 
 
 class ReflectedClass
@@ -29,8 +56,7 @@ public:
         m_fields.push_back(field);
     }
 
-    void
-    AddFunction(FunctionDecl const *function)
+    void AddFunction(CXXMethodDecl const *function)
     {
         m_functions.push_back(function);
     }
@@ -90,7 +116,7 @@ private:
     bool
     HasFunctionOfName(char const *name)
     {
-        SmallString<64> str;
+        /*SmallString<64> str;
         return std::any_of(
             m_functions.begin(),
             m_functions.end(),
@@ -99,13 +125,14 @@ private:
                 raw_svector_ostream fos(str);
                 v->printName(fos);
                 return str == name;
-            });
+            });*/
+        return false;
     }
 
 private:
     CXXRecordDecl const * const m_record;
     std::vector<FieldDecl const *> m_fields;
-    std::vector<FunctionDecl const *> m_functions;
+    std::vector<CXXMethodDecl const *> m_functions;
 };
 
 #endif /* METAREFLECT_REFLECTED_CLASS_HPP */

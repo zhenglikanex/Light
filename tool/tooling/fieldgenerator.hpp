@@ -28,23 +28,18 @@ struct FieldGenerator
     raw_svector_ostream fieldNameOs{fieldName};
     raw_svector_ostream TypeNameOs{typeName};
     StringRef const type;
-    std::string const fieldPrefix;
 
     explicit
     FieldGenerator(
         ASTContext *context,
-        StringRef const &parentType,
-        StringRef const &prefix)
+        StringRef const &parentType)
         : ctx(context)
         , type(parentType)
-        , fieldPrefix(prefix)
     {}
 
     void
     Generate(
-        unsigned i,
-        FieldDecl const *field,
-        PropertyAnnotations &annotations,
+        FieldDecl const *field, StringRef attr,
         raw_ostream &os)
     {
         fieldName.clear();
@@ -53,27 +48,15 @@ struct FieldGenerator
         field->printName(fieldNameOs);
         GetRealTypeName(ctx, field->getType(), TypeNameOs);
 
-        auto prefix = [&]() -> raw_ostream & {
-            return os << fieldPrefix << "[" << i << "]";
-        };
-
-        bool isSerializable = annotations.IsSerializable(ctx, field);
-        unsigned serializedWidth = annotations.width;
-
-        os << "\n/* Field " << (i + 1) << " */\n";
-        if (type != typeName)
-            /* prefix() << ".m_type = TypeResolver<" << typeName << ">::Get();\n"; */
-            prefix() << ".m_type = GetType<" << typeName << ">();\n";
-        else
-            prefix() << ".m_type = nullptr;\n";
-        prefix() << ".m_flags = " << annotations.Flags() << ";\n";
-        if (isSerializable && serializedWidth > 0)
-            prefix() << ".m_serializedWidth = " << serializedWidth << ";\n";
-        else
-            prefix() << ".m_serializedWidth = sizeof(" << typeName << ") * 8;\n";
-        prefix() << ".m_offset = offsetof(" << type << ", " << fieldName << ");\n";
-        prefix() << ".m_qualifier = " << GenerateQualifier(ctx, field->getType()) << ";\n";
-        prefix() << ".m_name = \"" << fieldName << "\";\n";
+        if(attr.size() > 0) {
+          os << std::format("data.AddField<{}, {}>(\"{}\", &{}::{},{});\n", std::string(type),
+                      std::string(typeName), std::string(fieldName),std::string(type), std::string(fieldName),std::string(attr));
+        } else {
+          os << std::format("data.AddField<{}, {}>(\"{}\", &{}::{});\n",
+                            std::string(type), std::string(typeName),
+                            std::string(fieldName), std::string(type),
+                            std::string(fieldName));
+        }
     }
 };
 

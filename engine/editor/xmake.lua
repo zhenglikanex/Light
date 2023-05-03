@@ -8,5 +8,6 @@ target("LightEditor")
     end
     add_deps("D12RHI")
     set_group("engine")
+    add_deps("ReflectionGenerated")
     add_ldflags("/subsystem:console")
     add_cxflags("/utf-8")

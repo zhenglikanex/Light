@@ -2,11 +2,15 @@
 
 #include "glm/glm.hpp"
 
+#include "engine/reflection/meta.h"
+
 namespace light
 {
 	class Camera
 	{
 	public:
+		FRIEND_META();
+
 		Camera() = default;
 		Camera(const glm::mat4& projection);
 		virtual ~Camera() = default;

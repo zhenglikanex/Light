@@ -35,6 +35,8 @@ namespace light::meta
 
 		Any GetValue(Any& instance) const;
 
+		Any GetRefValue(Any& instance) const;
+
 		std::string_view GetName() const { return name_; }
 
 		Type GetType() const { return type_; }

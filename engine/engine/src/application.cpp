@@ -6,6 +6,7 @@
 #include "engine/renderer/camera.h"
 #include "engine/layer/imgui_layer.h"
 #include "engine/profile/profile.h"
+#include "engine/reflection/meta.h"
 
 #include "imgui.h"
 
@@ -39,6 +40,41 @@ namespace light
 	{
 		running_ = true;
 
+
+		{
+			{
+				meta::TypeData& data = meta::Registry::Get().AddTypeData<glm::vec4>("glm::vec4");
+				data.AddField<glm::vec4, float>("x", &glm::vec4::x);
+				data.AddField<glm::vec4, float>("y", &glm::vec4::y);
+				data.AddField<glm::vec4, float>("z", &glm::vec4::z);
+				data.AddField<glm::vec4, float>("w", &glm::vec4::w);
+			}
+
+			{
+				meta::TypeData& data = meta::Registry::Get().AddTypeData<glm::vec3>("glm::vec3");
+				data.AddField<glm::vec3, float>("x", &glm::vec3::x);
+				data.AddField<glm::vec3, float>("y", &glm::vec3::y);
+				data.AddField<glm::vec3, float>("z", &glm::vec3::z);
+			}
+
+			{
+				meta::TypeData& data = meta::Registry::Get().AddTypeData<glm::vec2>("glm::vec2");
+				data.AddField<glm::vec2, float>("x", &glm::vec2::x);
+				data.AddField<glm::vec2, float>("y", &glm::vec2::y);
+			}
+
+			{
+				meta::TypeData& data = meta::Registry::Get().AddTypeData<glm::mat4>("glm::mat4");
+			}
+
+			{
+				meta::TypeData& data = meta::Registry::Get().AddTypeData<glm::mat3>("glm::mat3");
+			}
+		}
+
+		RegisterTypesGenerated();
+
+
 		Log::Init();
 
 		// Setup Dear ImGui context
@@ -63,6 +99,8 @@ namespace light
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
+
+		io.Fonts->AddFontFromFileTTF("assets/fonts/font.ttf", 16.0f);
 
 		WindowParams window_params;
 		window_params.title = name_;

@@ -31,6 +31,8 @@
 
 #include "engine/core/application.h"
 
+#include "engine/reflection/meta.h"
+
 //profile
 #include "engine/profile/profile.h"
 

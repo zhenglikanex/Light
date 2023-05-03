@@ -1,5 +1,5 @@
-option("build_test")
-    set_showmenu(true)
+option("TestOption")
+    
 option_end()
 
 set_languages("c++20")
@@ -64,6 +64,47 @@ includes("engine")
 includes("game")
 includes("test")
 
+rule("parser_meta")
+    set_kind("project")
+    before_build(function (opt)
+        -- imports
+        import("core.project.config")
+        import("core.project.depend")
+        import("core.project.project")
+        import("core.base.task")
+        
+        -- run only once for all xmake process in vs
+        local tmpfile = path.join(config.buildir(), ".gens", "rules", "plugin.compile_commands.autoupdate")
+        local dependfile = tmpfile .. ".d"
+        local lockfile = io.openlock(tmpfile .. ".lock")
+        if lockfile:trylock() then
+            local outputdir
+            local sourcefiles = {}
+            for _, target in pairs(project.targets()) do
+                
+                table.join2(sourcefiles, target:sourcefiles(), target:headerfiles())
+                local extraconf = target:extraconf("rules", "plugin.compile_commands.autoupdate")
+                if extraconf and extraconf.outputdir then
+                    outputdir = extraconf.outputdir
+                end
+            end
+            table.sort(sourcefiles)
+            depend.on_changed(function ()
+                -- we use task instead of os.exec("xmake") to avoid the project lock
+                local filename = "compile_commands.json"
+                local filepath = outputdir and path.join(outputdir, filename) or filename
+                task.run("project", {kind = "compile_commands", outputdir = outputdir})
+                print("compile_commands.json updated!")
+            end, {dependfile = dependfile,
+                  files = project.allfiles(),
+                  values = sourcefiles})
+            lockfile:close()
+        end
+        os.exec("tool/metareflect.exe C:/Project/Light/engine/engine/include/engine/scene/components.h C:/Project/Light/engine/engine/include/engine/scene/scene_camera.h -p C:/Project/Light/compile_commands.json")
+    end)
+rule_end()
+
+add_rules("parser_meta",{outputdir="."})
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --

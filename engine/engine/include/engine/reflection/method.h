@@ -16,10 +16,12 @@ namespace light::meta
 		template<class ...Args>
 		Any Invoke(Any& instance, Args&& ... args) const
 		{
-			return invokable_->Invoke(instance, std::tuple<Args...>{ args... });
+			return invokable_->Invoke(instance, MethodInvokeArgs{ Any(args)... });
 		}
-		
+
 		std::string_view GetName() const { return name_; }
+
+		bool IsValid() const { return !name_.empty(); }
 	private:
 		std::string name_;
 		std::unique_ptr<MethodInvokeBase> invokable_;

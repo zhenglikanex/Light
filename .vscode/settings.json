@@ -2,5 +2,6 @@
     "files.associations": {
         "*.lua": "xmake",
         "glm.hpp": "c"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Project/Light/deps/DirectXTex"
 }

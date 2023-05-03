@@ -229,21 +229,22 @@ namespace light::meta
 		{
 			data_.object_type = AnyValueObjectType::kInvalid;
 			data_.is_ref = false;
+			data_.is_vector = false;
 		}
 
 		template<typename Value>
 		Any(Value&& value) requires (!std::is_same_v<std::decay_t<Value>, Any>)
 		{
-			data_.type = Type::Get<std::decay_t<Value>>();
+			
 			Ctor<std::decay_t<Value>>(std::forward<Value>(value));
+			data_.type_id = typeid(std::decay_t<Value>).hash_code();
 			data_.is_ref = false;
+			data_.is_vector = false;
 		}
 		
 		template<typename Value>
 		Any(std::reference_wrapper<Value> value)
 		{
-			data_.type = Type::Get<std::decay_t<Value>>();
-			
 			if constexpr (details::IsVector<Value>::value)
 			{
 				CtorVectorRef<Value>(value);
@@ -252,16 +253,18 @@ namespace light::meta
 			{
 				Ctor<std::reference_wrapper<Value>>(value);
 			}
-			
+			data_.type_id = typeid(std::decay_t<Value>).hash_code();
 			data_.is_ref = true;
+			data_.is_vector = false;
 		}
 		
 		template<typename Value>
 		Any(const std::vector<Value>& value)
 		{
 			Ctor<std::vector<Value>>(value);
+			data_.type_id = typeid(Value).hash_code();
 			data_.is_ref = false;
-			data_.type = Type::Get<std::vector<Value>>();
+			data_.is_vector = true;
 		}
 
 		Any(const Any& other)
@@ -306,7 +309,7 @@ namespace light::meta
 
 		Type GetType() const
 		{
-			return data_.type;
+			return Type(data_.type_id, data_.is_vector);
 		}
 
 		template<typename Value>
@@ -343,7 +346,7 @@ namespace light::meta
 
 		size_t GetSize() const
 		{
-			LIGHT_ASSERT(data_.type.IsArray(), "any is not array");
+			LIGHT_ASSERT(GetType().IsArray(), "any is not array");
 
 			if (data_.is_ref)
 			{
@@ -364,7 +367,7 @@ namespace light::meta
 
 		Any GetElement(size_t index)
 		{
-			LIGHT_ASSERT(data_.type.IsArray(), "any is not array");
+			LIGHT_ASSERT(GetType().IsArray(), "any is not array");
 
 			if (data_.is_ref)
 			{
@@ -402,13 +405,17 @@ namespace light::meta
 				}
 
 				data_.object_type = AnyValueObjectType::kInvalid;
+				data_.type_id = typeid(void).hash_code();
 				data_.is_ref = false;
+				data_.is_vector = false;
 			}
 		}
 	private:
 		template<typename Value, typename ... Args>
 		void Ctor(Args&& ... args)
 		{
+			memset(data_.trivial_object_data.data, 0, sizeof(data_.trivial_object_data.data));
+
 			if constexpr (kIsTrivial<Value>)
 			{
 				data_.object_type = AnyValueObjectType::kTrivial;
@@ -431,6 +438,8 @@ namespace light::meta
 		template<typename Value>
 		void CtorVectorRef(std::reference_wrapper<Value> value) requires(details::IsVector<Value>::value)
 		{
+			memset(data_.trivial_object_data.data, 0, sizeof(data_.trivial_object_data.data));
+
 			data_.object_type = AnyValueObjectType::kTrivial;
 			new(data_.vector_ref_data.data) Value(value);
 			data_.vector_ref_data.object_func_collection = &kVectorRefFuncCollection<Value>;
@@ -444,7 +453,10 @@ namespace light::meta
 			}
 
 			data_.object_type = other.data_.object_type;
+			data_.type_id = other.data_.type_id;
 			data_.is_ref = other.data_.is_ref;
+			data_.is_vector = other.data_.is_vector;
+			
 
 			if (data_.object_type == AnyValueObjectType::kTrivial)
 			{
@@ -470,7 +482,10 @@ namespace light::meta
 			}
 
 			data_.object_type = other.data_.object_type;
+			data_.type_id = other.data_.type_id;
 			data_.is_ref = other.data_.is_ref;
+			data_.is_vector = other.data_.is_vector;
+
 			if (data_.object_type == AnyValueObjectType::kTrivial)
 			{
 				memcpy(data_.trivial_object_data.data, other.data_.trivial_object_data.data, sizeof(data_.trivial_object_data.data));
@@ -487,7 +502,9 @@ namespace light::meta
 			}
 
 			other.data_.object_type = AnyValueObjectType::kInvalid;
+			other.data_.type_id = typeid(void).hash_code();
 			other.data_.is_ref = false;
+			other.data_.is_vector = false;
 		}
 
 		struct TrivialObjectData
@@ -524,8 +541,9 @@ namespace light::meta
 			};
 
 			AnyValueObjectType object_type;
-			Type type;
+			size_t type_id;
 			bool is_ref;
+			bool is_vector;
 		};
 
 		Data data_;

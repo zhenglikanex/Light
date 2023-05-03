@@ -19,7 +19,7 @@ struct Test
 		b + 20;
 	}
 
-	int TestReturn(int a,int b)
+	int TestReturn(int a,int b) const
 	{
 		return 1000;
 	}
@@ -218,6 +218,13 @@ enum class  TestEnum
 
 int main()
 {
+	{
+		std::string str = "camera";
+		Any str_any(str);
+
+		std::string& cast_str = str_any.Cast<std::string>();
+	}
+
 	{
 		TypeData& data = Registry::Get().AddTypeData<TestEnum>("TestEnum");
 		data.AddEnum("kOne", static_cast<int64_t>(TestEnum::kOne));

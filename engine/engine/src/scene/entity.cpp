@@ -11,7 +11,7 @@ namespace light
 		
 	}
 
-	bool Entity::IsVaild() const
+	bool Entity::IsValid() const
 	{
 		return entity_handle_ != entt::null && scene_ != nullptr && scene_->registry_.valid(entity_handle_);
 	}

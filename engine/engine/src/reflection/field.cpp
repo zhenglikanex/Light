@@ -12,4 +12,9 @@ namespace light::meta
 	{
 		return field_wrapper_->GetValue(instance);
 	}
+
+	Any Field::GetRefValue(Any& instance) const
+	{
+		return field_wrapper_->GetRefValue(instance);
+	}
 }

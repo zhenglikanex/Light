@@ -41,10 +41,14 @@ namespace light
 			scene_->registry_.remove<T>(entity_handle_);
 		}
 
-		bool IsVaild() const;
+		bool IsValid() const;
 
-		operator bool() const { return IsVaild(); }
+		bool operator==(const Entity& other) const { return scene_ == other.scene_ && entity_handle_ == other.entity_handle_; }
+		bool operator!=(const Entity& other) const { return !(*this == other); }
+
+		operator bool() const { return IsValid(); }
 		operator uint32_t () const { return (uint32_t)entity_handle_; }
+		operator entt::entity() const { return entity_handle_; }
 	private:
 		entt::entity entity_handle_ = entt::null;
 		Scene* scene_ = nullptr;

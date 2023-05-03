@@ -2,7 +2,6 @@
 #include "random.h"
 #include "spdlog/fmt/fmt.h"
 
-
 static bool block = false;
 
 namespace light::editor
@@ -41,13 +40,13 @@ namespace light::editor
 				auto& transform = entity.GetComponent<TransformComponent>();
 				float speed = 5.0f;
 				if (Input::IsKeyPressed(Input::Key::KEY_W))
-					transform.transform[3][1] += speed * ts;
+					transform.position.y += speed * ts;
 				if (Input::IsKeyPressed(Input::Key::KEY_S))
-					transform.transform[3][1] -= speed * ts;
+					transform.position.y -= speed * ts;
 				if (Input::IsKeyPressed(Input::Key::KEY_A))
-					transform.transform[3][0] -= speed * ts;
+					transform.position.x -= speed * ts;
 				if (Input::IsKeyPressed(Input::Key::KEY_D))
-					transform.transform[3][0] += speed * ts;
+					transform.position.x += speed * ts;
 			}
 		};
 
@@ -182,12 +181,7 @@ namespace light::editor
 		ImGui::End();
 
 		ImGui::Begin("Settings");
-		
-		auto& sprite = quad_entity_.GetComponent<SpriteRendererComponent>();
-		ImGui::ColorEdit4("Quad Color", glm::value_ptr(sprite.color));
 
-		auto& camera_transform = camera_entity_.GetComponent<TransformComponent>().transform;
-		ImGui::DragFloat3("Camera Position", glm::value_ptr(camera_transform[3]), 0.1f);
 
 		ImGui::End();
 		
@@ -225,11 +219,12 @@ namespace light::editor
 		ImGui::PopStyleVar();
 
 		scene_hierarchy_panel_.OnImguiRender();
+		property_panel_.OnImguiRender();
 	}
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		
+		property_panel_.OnEvent(e);
 	}
 
 	void EditorLayer::RenderTargetResize(const glm::vec2& size)

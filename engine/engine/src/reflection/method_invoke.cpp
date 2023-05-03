@@ -2,7 +2,7 @@
 
 namespace light::meta
 {
-	Any MethodInvokeBase::Invoke(Any& instance, const std::any& args)
+	Any MethodInvokeBase::Invoke(Any& instance, const MethodInvokeArgs& args)
 	{
 		return invoke_impl_(this, instance, args);
 	}

@@ -8,6 +8,7 @@
 
 #include "utils.hpp"
 #include "annotations.hpp"
+#include <format>
 
 /* ========================================================================= */
 /* Function Generator                                                        */
@@ -33,30 +34,22 @@ struct FunctionGenerator
     {}
 
     void
-    Generate(
-        unsigned i,
-        FunctionDecl const *func,
-        FunctionAnnotations &annotations,
+    Generate(CXXMethodDecl const *func,
         raw_ostream &os)
     {
         funcName.clear();
         func->printName(funcNameOs);
-
-        os << "\n/* Function " << (i + 1) << "*/\n";
-        GenerateReturnType(i, func, annotations, os);
-        GenerateArguments(i, func, annotations, os);
-        if (func->isCXXClassMember())
-            annotations.memberFunc = true;
-
-        auto prefix = [&]() -> raw_ostream & {
-            return os << fieldPrefix << "[" << i << "]";
-        };
-        prefix() << ".m_returnType = &functionRet" << i << ";\n";
-        prefix() << ".m_parameters = &functionParameters" << i << "[0];\n";
-        prefix() << ".m_parametersEnd = &functionParameters" << i << "[" << func->getNumParams() << "];\n";
-        prefix() << ".m_flags = " << annotations.Flags() << ";\n";
-        prefix() << ".m_name = \"" << funcName << "\";\n";
-        /* prefix() << ".m_pointer = */
+        
+       StringRef noNamespaceType = type.substr(type.rfind(':') + 1);
+        if (func->isCXXClassMember() && !funcName.equals(noNamespaceType) &&
+           funcName.find('~') == StringRef::npos &&
+           funcName.find("operator") == StringRef::npos &&
+           !func->isTemplated() && func->getAccess() == AS_public) {
+      
+          os << std::format("data.AddMethod<{}>(\"{}\", &{}::{});\n",
+                            std::string(type), std::string(funcName),
+                            std::string(type), std::string(funcName));
+        }
     }
 
     void

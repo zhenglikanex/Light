@@ -16,6 +16,6 @@ namespace light::editor
 		void DrawEntityNode(Entity e);
 	private:
 		Scene* scene_ = nullptr;
-		uint64_t selected_entity_ = 0;
+		Entity selected_entity_ = {};
 	};
 }

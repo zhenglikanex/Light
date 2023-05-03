@@ -42,7 +42,7 @@ namespace light::meta
 
 		const Field& GetField(std::string_view name) const;
 
-		const Method& GeMethod(std::string_view name) const;
+		const Method& GetMethod(std::string_view name) const;
 
 		const std::vector<Field>& GetFields() const;
 

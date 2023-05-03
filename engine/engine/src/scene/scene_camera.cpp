@@ -21,6 +21,7 @@ namespace light
 		perspective_vertical_fov_ = fov;
 		perspective_near_clip_ = near;
 		perspective_far_clip_ = far;
+
 		RecalculateProjection();
 	}
 
@@ -33,18 +34,51 @@ namespace light
 		RecalculateProjection();
 	}
 
-	void light::SceneCamera::SetProjectionType(ProjectionType type)
+	void SceneCamera::SetPerspectiveVerticalFov(float perspective_vertical_fov)
 	{
+		perspective_vertical_fov_ = perspective_vertical_fov;
 
+		RecalculateProjection();
+	}
+
+	void SceneCamera::SetPerspectiveNearClip(float perspective_near_clip)
+	{
+		perspective_near_clip_ = perspective_near_clip;
+
+		RecalculateProjection();
+	}
+
+	void SceneCamera::SetPerspectiveFarClip(float perspective_far_clip)
+	{
+		perspective_far_clip_ = perspective_far_clip;
+
+		RecalculateProjection();
+	}
+
+	void SceneCamera::SetProjectionType(ProjectionType type)
+	{
+		if(type != projection_type_)
+		{
+			projection_type_ = type;
+
+			RecalculateProjection();
+		}
 	}
 
 	void SceneCamera::RecalculateProjection()
 	{
-		float left = -orthographic_size_ * 0.5f * aspect_ratio_;
-		float right = orthographic_size_ * 0.5f * aspect_ratio_;
-		float top = orthographic_size_ * 0.5f;
-		float bottom = -orthographic_size_ * 0.5f;
+		if(projection_type_ == ProjectionType::kPerspective)
+		{
+			SetProjection(glm::perspectiveLH_ZO(perspective_vertical_fov_, aspect_ratio_, perspective_near_clip_, perspective_far_clip_));
+		}
+		else if(projection_type_ == ProjectionType::kOrthographic)
+		{
+			float left = -orthographic_size_ * 0.5f * aspect_ratio_;
+			float right = orthographic_size_ * 0.5f * aspect_ratio_;
+			float top = orthographic_size_ * 0.5f;
+			float bottom = -orthographic_size_ * 0.5f;
 
-		SetProjection(glm::orthoLH_ZO(left, right, bottom, top, orthographic_near_clip_, orthographic_far_clip_));
+			SetProjection(glm::orthoLH_ZO(left, right, bottom, top, orthographic_near_clip_, orthographic_far_clip_));
+		}
 	}
 }

@@ -21,7 +21,7 @@ namespace light
 		});
 
 		Camera* main_camera = nullptr;
-		glm::mat4* camera_transform = nullptr;
+		glm::mat4 camera_transform;
 
 		{
 			auto view = registry_.view<TransformComponent,CameraComponent>();
@@ -32,7 +32,7 @@ namespace light
 				if (camera.primary)
 				{
 					main_camera = &camera.camera;
-					camera_transform = &transform.transform;
+					camera_transform = transform.GetTransform();
 					break;
 				}
 			}
@@ -41,13 +41,13 @@ namespace light
 		{
 			if (main_camera)
 			{
-				Renderer2D::BeginScene(command_list, *main_camera, *camera_transform);
+				Renderer2D::BeginScene(command_list, *main_camera, camera_transform);
 
 				auto group = registry_.group<TransformComponent>(entt::get<SpriteRendererComponent>);
 				for (entt::entity e : group)
 				{
 					const auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(e);
-					Renderer2D::DrawQuad(command_list, transform, sprite.color);
+					Renderer2D::DrawQuad(command_list, transform.GetTransform(), sprite.color);
 				}
 
 				Renderer2D::EndScene(command_list);
@@ -67,6 +67,7 @@ namespace light
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		registry_.destroy(entity);
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)

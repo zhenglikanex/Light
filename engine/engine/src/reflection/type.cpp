@@ -48,7 +48,7 @@ namespace light::meta
 		return data_->GetField(name);
 	}
 
-	const Method& Type::GeMethod(std::string_view name) const
+	const Method& Type::GetMethod(std::string_view name) const
 	{
 		return data_->GetMethod(name);
 	}
