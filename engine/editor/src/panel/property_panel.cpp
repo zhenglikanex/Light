@@ -33,13 +33,14 @@ namespace light::editor
 				{
 					if (!type.HasComponent(select_entity_))
 					{
-						std::string_view name = type.GetName();
-						size_t index = name.find_last_of(':');
+						std::string name = type.GetName();
+						std::string_view name_view = name;
+						size_t index = name_view.find_last_of(':');
 						if (index != std::string_view::npos)
 						{
-							name = name.substr(index + 1);
+							name_view = name_view.substr(index + 1);
 						}
-						if (ImGui::MenuItem(name.data()))
+						if (ImGui::MenuItem(name_view.data()))
 						{
 							type.AddComponent(select_entity_);
 							ImGui::CloseCurrentPopup();
