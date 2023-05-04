@@ -26,6 +26,7 @@ namespace light::meta
 	inline constexpr bool kIsSmall = alignof(Ty) <= alignof(max_align_t) && std::is_nothrow_move_constructible_v<Ty> && sizeof(Ty) <= kAnySmallSpaceSize;
 
 	class Any;
+	class Type;
 
 	struct VectorRefFuncCollectionBase
 	{
@@ -307,10 +308,7 @@ namespace light::meta
 			Reset();
 		}
 
-		Type GetType() const
-		{
-			return Type(data_.type_id, data_.is_vector);
-		}
+		Type GetType() const;
 
 		template<typename Value>
 		std::decay_t<Value>& Cast()
@@ -344,47 +342,9 @@ namespace light::meta
 			return const_cast<Any*>(this)->Cast<Value>();
 		}
 
-		size_t GetSize() const
-		{
-			LIGHT_ASSERT(GetType().IsArray(), "any is not array");
+		size_t GetSize() const;
 
-			if (data_.is_ref)
-			{
-				return data_.vector_ref_data.object_func_collection->vector_size_func(data_.vector_ref_data.data);
-			}
-			else
-			{
-				if (data_.object_type == AnyValueObjectType::kSmall)
-				{
-					return data_.small_object_data.object_func_collection->vector_size_func(data_.small_object_data.data);
-				}
-				else
-				{
-					return data_.big_object_data.object_func_collection->vector_size_func(data_.big_object_data.ptr);
-				}
-			}
-		}
-
-		Any GetElement(size_t index)
-		{
-			LIGHT_ASSERT(GetType().IsArray(), "any is not array");
-
-			if (data_.is_ref)
-			{
-				return data_.vector_ref_data.object_func_collection->get_element_func(data_.vector_ref_data.data, index);
-			}
-			else 
-			{
-				if (data_.object_type == AnyValueObjectType::kSmall)
-				{
-					return data_.small_object_data.object_func_collection->get_element_func(data_.small_object_data.data, index);
-				}
-				else
-				{
-					return data_.big_object_data.object_func_collection->get_element_func(data_.big_object_data.ptr, index);
-				}
-			}
-		}
+		Any GetElement(size_t index);
 
 		bool IsValid() const
 		{

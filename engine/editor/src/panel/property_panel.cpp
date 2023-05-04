@@ -1,5 +1,6 @@
 #include "property_panel.h"
 #include "engine/scene/components.h"
+#include "engine/reflection/meta.h"
 #include "engine/reflection/attribute.h"
 #include "imgui_internal.h"
 
@@ -11,35 +12,13 @@ namespace light::editor
 
 		if(select_entity_)
 		{
+			std::vector<meta::Type> types = meta::Registry::Get().FindSubTypes<Component>();
+
+			for (auto& type : types)
 			{
-				auto& comp = select_entity_.GetComponent<TagComponent>();
-				DrawComponentProperty(std::ref(comp));
-			}
-			
-			{
-				if(select_entity_.HasComponent<SpriteRendererComponent>())
+				if (type.HasComponent(select_entity_))
 				{
-					auto& comp = select_entity_.GetComponent<SpriteRendererComponent>();
-
-					DrawComponentProperty(std::ref(comp));
-				}
-			}
-
-			{
-				if (select_entity_.HasComponent<TransformComponent>())
-				{
-					auto& comp = select_entity_.GetComponent<TransformComponent>();
-
-					DrawComponentProperty(std::ref(comp));
-				}
-			}
-
-			{
-				if (select_entity_.HasComponent<CameraComponent>())
-				{
-					auto& comp = select_entity_.GetComponent<CameraComponent>();
-
-					DrawComponentProperty(std::ref(comp));
+					DrawComponentProperty(type.GetComponent(select_entity_));
 				}
 			}
 
@@ -50,10 +29,24 @@ namespace light::editor
 
 			if(ImGui::BeginPopup("AddComponent"))
 			{
-				if(ImGui::MenuItem("TransformComponent"))
+				for (auto& type : types)
 				{
-					//if(select_entity_.HasComponent<Tra>())
+					if (!type.HasComponent(select_entity_))
+					{
+						std::string_view name = type.GetName();
+						size_t index = name.find_last_of(':');
+						if (index != std::string_view::npos)
+						{
+							name = name.substr(index + 1);
+						}
+						if (ImGui::MenuItem(name.data()))
+						{
+							type.AddComponent(select_entity_);
+							ImGui::CloseCurrentPopup();
+						}
+					}
 				}
+
 				ImGui::EndPopup();
 			}
 		}
@@ -86,6 +79,15 @@ namespace light::editor
 		{
 			DrawTypeProperty(instance);
 			ImGui::TreePop();
+		}
+
+		if (ImGui::BeginPopupContextItem(instance.GetType().GetName().data()))
+		{
+			if (ImGui::MenuItem("Remove Component"))
+			{
+				instance.GetType().RemoveComponent(select_entity_);
+			}
+			ImGui::EndPopup();
 		}
 	}
 

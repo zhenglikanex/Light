@@ -17,9 +17,9 @@ namespace light::meta
 		using RemoveComponentFunc = void(*)(Entity);
 
 		TypeData(std::string_view name,bool is_enum);
-		TypeData(const TypeData&) = default;
+		TypeData(const TypeData&) = delete;
 		TypeData(TypeData&&) = default;
-		TypeData& operator=(const TypeData&) = default;
+		TypeData& operator=(const TypeData&) = delete;
 		TypeData& operator=(TypeData&&) = default;
 
 		~TypeData() = default;
@@ -46,9 +46,13 @@ namespace light::meta
 
 		void AddEnum(std::string_view name, int64_t value);
 
+		void AddBaseType(std::string_view name);
+
 		std::string_view GetName() const { return name_; }
 
 		bool IsEnum() const { return is_enum_; }
+
+		bool IsSubTypeOf(std::string_view name);
 
 		const Field& GetField(std::string_view name) const;
 
@@ -64,12 +68,14 @@ namespace light::meta
 
 	private:
 		friend class Registry;
+		friend class Type;
 
 		std::string name_;
 		bool is_enum_ = false;
 		std::vector<Field> fields_;
 		std::unordered_map<std::string, Method> methods_;
 		std::vector<Enum> enum_values_;
+		std::vector<std::string> base_types_;
 
 		HasComponentFunc has_component_func_ = nullptr;
 		GetComponentFunc get_component_func_ = nullptr;

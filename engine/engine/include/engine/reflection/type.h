@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "engine/reflection/type_traits.h"
+#include "engine/scene/entity.h"
 
 namespace light::meta
 {
@@ -12,6 +13,7 @@ namespace light::meta
 	class Method;
 	class TypeData;
 	class Enum;
+	class Any;
 
 	class Type
 	{
@@ -28,9 +30,18 @@ namespace light::meta
 			return Type(typeid(typename T::value_type).hash_code(),true);
 		}
 
+
 		Type() = default;
 		explicit Type(const std::string& name, bool is_vector = false);
 		explicit Type(size_t type_id, bool is_vector = false);
+
+		Any AddComponent(Entity e) const;
+
+		Any GetComponent(Entity e) const;
+
+		bool HasComponent(Entity e) const;
+
+		void RemoveComponent(Entity e) const;
 
 		bool IsValid() const { return data_ != nullptr; }
 

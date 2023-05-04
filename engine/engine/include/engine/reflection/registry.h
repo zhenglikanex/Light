@@ -1,6 +1,8 @@
 #pragma once
 
 #include "engine/reflection/type_data.h"
+#include "engine/reflection/any.h"
+#include "engine/reflection/type.h"
 
 namespace light::meta
 {
@@ -24,17 +26,31 @@ namespace light::meta
 
 			type_data.get_component_func_ = [](Entity entity)
 			{
-				return Any(std::ref(entity.GetComponent<T>()));
+				if constexpr (std::is_empty_v<T>)
+				{
+					return Any();
+				}
+				else
+				{
+					return Any(std::ref(entity.GetComponent<T>()));
+				}
 			};
 
 			type_data.add_component_func_ = [](Entity entity)
 			{
-				entity.AddComponent<T>();
+				if constexpr (std::is_empty_v<T>)
+				{
+					return Any();
+				}
+				else
+				{
+					return Any(std::ref(entity.AddComponent<T>()));
+				}
 			};
 
 			type_data.remove_component_func_ = [](Entity entity)
 			{
-								entity.RemoveComponent<T>();
+				entity.RemoveComponent<T>();
 			};
 
 			return type_data;
@@ -43,6 +59,28 @@ namespace light::meta
 		const TypeData* GetTypeData(const std::string& name) const;
 
 		const TypeData* GetTypeData(size_t type_id) const;
+
+		// 查找所有T类型的子类
+		template<typename T>
+		std::vector<Type> FindSubTypes()
+		{
+			const TypeData* target_type_data = GetTypeData(typeid(T).hash_code());
+			if (target_type_data == nullptr)
+			{
+				return {};
+			}
+
+			std::vector<Type> types;
+
+			for (auto& [name, type_data] : type_datas_)
+			{
+				if (type_data.IsSubTypeOf(target_type_data->GetName()))
+				{
+					types.emplace_back(name,false);
+				}
+			}
+			return types;
+		}
 	private:
 		static Registry* instance_;
 

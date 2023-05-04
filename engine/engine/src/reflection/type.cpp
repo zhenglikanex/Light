@@ -1,9 +1,11 @@
 #include <format>
 
+#include "engine/core/core.h"
 #include "engine/reflection/type.h"
 #include "engine/reflection/field.h"
 #include "engine/reflection/method.h"
 #include "engine/reflection/registry.h"
+#include "engine/reflection/any.h"
 
 namespace light::meta
 {
@@ -17,6 +19,30 @@ namespace light::meta
 		: data_(Registry::Get().GetTypeData(type_id))
 		, is_vector_(is_vector)
 	{
+	}
+
+	Any Type::AddComponent(Entity e) const
+	{
+		LIGHT_ASSERT(IsValid(), "is unkown type!");
+		return data_->add_component_func_(e);
+	}
+
+	Any Type::GetComponent(Entity e) const
+	{
+		LIGHT_ASSERT(IsValid(), "is unkown type!");
+		return data_->get_component_func_(e);
+	}
+
+	bool Type::HasComponent(Entity e) const
+	{
+		LIGHT_ASSERT(IsValid(), "is unkown type!");
+		return data_->has_component_func_(e);
+	}
+
+	void Type::RemoveComponent(Entity e) const
+	{
+		LIGHT_ASSERT(IsValid(), "is unkown type!");
+		data_->remove_component_func_(e);
 	}
 
 	bool Type::IsEnum() const

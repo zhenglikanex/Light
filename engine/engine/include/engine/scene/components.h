@@ -10,7 +10,12 @@
 
 namespace light
 {
-	struct META() TagComponent
+	struct META() Component
+	{
+		
+	};
+
+	struct META() TagComponent : public Component
 	{
 		std::string tag;
 
@@ -23,7 +28,7 @@ namespace light
 		}
 	};
 
-	struct META() TransformComponent
+	struct META() TransformComponent : public Component
 	{
 		glm::vec3 position = glm::vec3(0);
 		glm::vec3 rotation = glm::vec3(0);
@@ -48,7 +53,7 @@ namespace light
 		
 	};
 
-	struct META() SpriteRendererComponent
+	struct META() SpriteRendererComponent : public Component
 	{
 		glm::vec4 color = { 0.0f,0.0f,0.0f,1.0f };
 
@@ -60,7 +65,7 @@ namespace light
 		}
 	};
 
-	struct META() CameraComponent
+	struct META() CameraComponent : public Component
 	{
 		SceneCamera camera;
 		bool primary = true;
@@ -70,7 +75,7 @@ namespace light
 		CameraComponent(const CameraComponent& other) = default;
 	};
 
-	struct NativeScriptComponent
+	struct NativeScriptComponent : public Component
 	{
 		Script* script_instance = nullptr;
 

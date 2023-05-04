@@ -13,6 +13,7 @@ data.AddEnum("kOrthographic", static_cast<int64_t>(light::SceneCamera::Projectio
 }
 {
 TypeData &data = Registry::Get().AddTypeData<light::SceneCamera>("light::SceneCamera");
+data.AddBaseType("light::Camera");
 data.AddField<light::SceneCamera, glm::mat<4, 4, float>>("projection_", &light::SceneCamera::projection_);
 data.AddField<light::SceneCamera, light::SceneCamera::ProjectionType>("projection_type_", &light::SceneCamera::projection_type_);
 data.AddField<light::SceneCamera, float>("perspective_vertical_fov_", &light::SceneCamera::perspective_vertical_fov_,meta::attribute::EditorCondition{ "projection_type_", (uint64_t)SceneCamera::ProjectionType::kPerspective });

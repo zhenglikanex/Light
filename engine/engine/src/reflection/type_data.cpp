@@ -17,6 +17,16 @@ namespace light::meta
 		enum_values_.emplace_back(name, value);
 	}
 
+	void TypeData::AddBaseType(std::string_view name)
+	{
+		base_types_.emplace_back(name);
+	}
+
+	bool TypeData::IsSubTypeOf(std::string_view name)
+	{
+		return std::ranges::find(base_types_,name) != base_types_.end();
+	}
+
 	const Field& TypeData::GetField(std::string_view name) const
 	{
 		auto it = std::ranges::find_if(fields_, [name](const Field& field) { return field.GetName() == name; });

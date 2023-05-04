@@ -16,6 +16,7 @@ void ReflectedClass::Generate(ASTContext *ctx, raw_ostream &os) {
   SmallString<64> str;
   SmallString<64> type;
   raw_svector_ostream stos(type);
+  
   m_record->printQualifiedName(stos);
 
   SmallVector<PropertyAnnotations, 8> propertyAnnotations;
@@ -33,6 +34,14 @@ void ReflectedClass::Generate(ASTContext *ctx, raw_ostream &os) {
      << std::format("TypeData &data = Registry::Get().AddTypeData<{}>(\"{}\");\n",
                     std::string(type),std::string( type));
 
+  SmallString<64> baseType;
+  raw_svector_ostream baseOs(baseType);
+  for (auto& base : m_record->bases())
+  {
+    base.getType().getTypePtr()->getAsCXXRecordDecl()->printQualifiedName(
+        baseOs);
+    os << std::format("data.AddBaseType(\"{}\");\n", std::string(baseType));
+  }
 
   /* Generate PROPERTY annotations. */
   FieldGenerator fieldGenerator(ctx, type);

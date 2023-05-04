@@ -15,7 +15,7 @@ namespace light
 		Entity() = default;
 
 		template<class T,class ... Args>
-		T& AddComponent(Args&& ... args)
+		decltype(auto) AddComponent(Args&& ... args)
 		{
 			LIGHT_ASSERT(!HasComponent<T>(), "Entity already has component!");
 			return scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
@@ -28,7 +28,7 @@ namespace light
 		}
 
 		template<class T>
-		T& GetComponent() const
+		decltype(auto) GetComponent() const
 		{
 			LIGHT_ASSERT(HasComponent<T>(), "Entity does not have component!");
 			return scene_->registry_.get<T>(entity_handle_);
