@@ -2,8 +2,6 @@
 #include "random.h"
 #include "spdlog/fmt/fmt.h"
 
-static bool block = false;
-
 namespace light::editor
 {
 	EditorLayer::EditorLayer()
@@ -167,6 +165,22 @@ namespace light::editor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("Save"))
+				{
+					SceneSerializer serializer(active_secne_);
+					serializer.SerializeText("assets/scene.txt");
+				}
+
+				if (ImGui::MenuItem("Load"))
+				{
+					Ref<Scene> scene = MakeRef<Scene>();
+					SceneSerializer serializer(scene);
+					serializer.DeserializeText("assets/scene.txt");
+
+					active_secne_ = scene;
+					scene_hierarchy_panel_.SetScene(active_secne_);
+				}
+
 				if (ImGui::MenuItem("Close"))
 				{
 					Application::Get().Close();
@@ -204,7 +218,6 @@ namespace light::editor
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0,0 });
 		ImGui::Begin("Viewport");
 		
-		block = !ImGui::IsWindowFocused() || !ImGui::IsWindowHovered();
 		Application::Get().GetImguiLayer()->BlockEvent(!ImGui::IsWindowFocused() || !ImGui::IsWindowHovered());
 
 		ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
@@ -212,7 +225,6 @@ namespace light::editor
 		{
 			viewport_size_ = *reinterpret_cast<glm::vec2*>(&viewport_panel_size);
 		}
-
 
 		ImGui::Image(rt_color_texture_->GetTextureID(), viewport_panel_size);
 		ImGui::End();

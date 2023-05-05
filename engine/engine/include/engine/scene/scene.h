@@ -18,9 +18,13 @@ namespace light
 
 		Entity CreateEntity(std::string_view name = "Entity");
 
+		Entity CreateEmptyEntity();
+
 		void DestroyEntity(Entity entity);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
+
+		void Each(const std::function<void(Entity)>& func);
 
 		entt::registry& GetRegistry() { return registry_; }
 	private:

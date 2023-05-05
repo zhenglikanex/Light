@@ -18,9 +18,10 @@ namespace light::meta
 		Field() = default;
 
 		template<typename ... Properties>
-		Field(std::string_view name,Type type,std::unique_ptr<FieldWrapperBase> field_wrapper, Properties&& ... properties)
+		Field(std::string_view name,size_t type_id,bool is_vector,std::unique_ptr<FieldWrapperBase> field_wrapper, Properties&& ... properties)
 			: name_(name)
-			, type_(type)
+			, type_id_(type_id)
+			, is_vector_(is_vector)
 			, field_wrapper_(std::move(field_wrapper))
 		{
 			if constexpr (sizeof...(Properties) > 0)
@@ -29,7 +30,7 @@ namespace light::meta
 			}
 		}
 
-		bool IsValid() const { return type_.IsValid(); }
+		bool IsValid() const { return GetType().IsValid(); }
 
 		bool SetValue(Any& instance,const Any& value) const;
 
@@ -39,7 +40,7 @@ namespace light::meta
 
 		std::string_view GetName() const { return name_; }
 
-		Type GetType() const { return type_; }
+		Type GetType() const { return Type(type_id_,is_vector_); }
 
 		template<typename T>
 		bool HasProperty()
@@ -60,7 +61,8 @@ namespace light::meta
 	private:
 		friend class TypeData;
 		std::string name_;
-		Type type_;
+		size_t type_id_;
+		bool is_vector_;
 		std::unique_ptr<FieldWrapperBase> field_wrapper_;
 		std::unordered_map<size_t, std::any> properties_;
 	};

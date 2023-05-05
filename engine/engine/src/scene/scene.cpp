@@ -65,6 +65,12 @@ namespace light
 		return entity;
 	}
 
+	Entity Scene::CreateEmptyEntity()
+	{
+		Entity entity(registry_.create(), this);
+		return entity;
+	}
+
 	void Scene::DestroyEntity(Entity entity)
 	{
 		registry_.destroy(entity);
@@ -82,5 +88,12 @@ namespace light
 				camera.camera.SetViewportSize(width, height);
 			}
 		}
+	}
+
+	void Scene::Each(const std::function<void(Entity)>& func)
+	{
+		registry_.each([this,&func](entt::entity e) {
+			func(Entity{ e,this });
+			});
 	}
 }

@@ -52,6 +52,5 @@ namespace light::meta
 
 		return nullptr;
 	}
-
 }
 

@@ -13,7 +13,7 @@
 #endif
 
 #if DEBUG
-#define LIGHT_ASSERT(cond,msg) if(!(cond)) { LOG_ENGINE_ERROR("Assert Failed:{}",msg); LIGHT_DEBUG_BREAK(); }  
+#define LIGHT_ASSERT(cond,msg) if(!(cond)) { LOG_ENGINE_ERROR("{} {} Assert Failed:{}",__FILE__,__LINE__,msg); LIGHT_DEBUG_BREAK(); }  
 #else
 #define LIGHT_ASSERT(cond,msg)
 #endif

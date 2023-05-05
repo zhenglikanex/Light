@@ -29,7 +29,7 @@ namespace light::meta
 			typename ... Properties>
 		void AddField(std::string_view name, FieldTypePtr ptr, Properties&& ... properties)
 		{
-			fields_.emplace_back(name,Type::Get<FieldType>(),std::make_unique<FieldWrapper<ClassType, FieldType>>(ptr),std::forward<Properties>(properties)...);
+			fields_.emplace_back(name,typeid(FieldType).hash_code(),details::IsVector<FieldType>::value,std::make_unique<FieldWrapper<ClassType, FieldType>>(ptr), std::forward<Properties>(properties)...);
 		}
 
 		template<typename ClassType,typename ReturnType,typename ... Args>

@@ -34,7 +34,7 @@ package("rttr")
 package_end()
 
 add_requires("imgui docking",{debug = true})
-add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex")
+add_requires("glm","tinygltf","spdlog","glfw","stb","nlohmann_json","DirectXTex","yaml-cpp")
 
 if is_os("windows") then 
     add_defines("WINDOWS","LIGHT_PLATFORM_WINDOWS")
