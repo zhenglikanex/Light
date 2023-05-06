@@ -1,6 +1,7 @@
 #include "editor_layer.h"
 #include "random.h"
-#include "spdlog/fmt/fmt.h"
+
+#include "engine/utils/platform_utils.h"
 
 namespace light::editor
 {
@@ -20,16 +21,6 @@ namespace light::editor
 		active_secne_ = MakeRef<Scene>();
 		scene_hierarchy_panel_.SetScene(active_secne_);
 
-		quad_entity_ = active_secne_->CreateEntity("quad");
-		quad_entity_.AddComponent<SpriteRendererComponent>(glm::vec4(1, 1, 1, 1));
-		
-		//create camera
-		camera_entity_ = active_secne_->CreateEntity("camera");
-
-		// 计算横纵比
-		float aspect = Application::Get().GetWindow()->GetWidth() / Application::Get().GetWindow()->GetHeight();
-		auto& camera_component = camera_entity_.AddComponent<CameraComponent>();
-
 		class CameraController : public Script
 		{
 		public:
@@ -47,8 +38,6 @@ namespace light::editor
 					transform.position.x += speed * ts;
 			}
 		};
-
-		camera_entity_.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 	}
 
 	void EditorLayer::OnDetach()
@@ -165,20 +154,36 @@ namespace light::editor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Save"))
+				if (ImGui::MenuItem("New", "Ctrl+N"))
 				{
-					SceneSerializer serializer(active_secne_);
-					serializer.SerializeText("assets/scene.txt");
+					active_secne_ = MakeRef<Scene>();
+					active_secne_->SetViewportSize(render_target_.GetWidth(), render_target_.GetHeight());
+					scene_hierarchy_panel_.SetScene(active_secne_);
 				}
 
-				if (ImGui::MenuItem("Load"))
+				if (ImGui::MenuItem("Open...","Ctrl+O"))
 				{
-					Ref<Scene> scene = MakeRef<Scene>();
-					SceneSerializer serializer(scene);
-					serializer.DeserializeText("assets/scene.txt");
+					std::string filepath = FileDialogs::OpenFile("Light Scene(*.scene)\0*.scene\0");
+					if (!filepath.empty())
+					{
+						Ref<Scene> scene = MakeRef<Scene>();
+						SceneSerializer serializer(scene);
+						serializer.DeserializeText(filepath);
 
-					active_secne_ = scene;
-					scene_hierarchy_panel_.SetScene(active_secne_);
+						active_secne_ = scene;
+						active_secne_->SetViewportSize(render_target_.GetWidth(), render_target_.GetHeight());
+						scene_hierarchy_panel_.SetScene(active_secne_);
+					}
+				}
+
+				if (ImGui::MenuItem("Save As...","Ctrl+Shift+S"))
+				{
+					std::string filepath = FileDialogs::SaveFile("Light Scene (*.scene)\0*.scene\0");
+					if (!filepath.empty())
+					{
+						SceneSerializer serializer(active_secne_);
+						serializer.SerializeText(filepath);
+					}
 				}
 
 				if (ImGui::MenuItem("Close"))
@@ -203,7 +208,7 @@ namespace light::editor
 		ImGui::Begin("Profile");
 		for (auto& [name, dt] : Profile::GetProfileResults())
 		{
-			std::string str = fmt::format("{} : {}ms", name, dt);
+			std::string str = std::format("{} : {}ms", name, dt);
 			ImGui::Text(str.c_str());
 		}
 

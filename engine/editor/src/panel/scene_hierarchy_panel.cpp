@@ -3,6 +3,13 @@
 
 namespace light::editor
 {
+	void SceneHierarchyPanel::SetScene(Scene* scene)
+	{
+		scene_ = scene;
+
+		SelecteEntity(Entity::kNull);
+	}
+
 	void SceneHierarchyPanel::OnImguiRender()
 	{
 		ImGui::Begin("SceneHierarchy");
@@ -65,8 +72,17 @@ namespace light::editor
 			scene_->DestroyEntity(e);
 			if(e == selected_entity_)
 			{
-				selected_entity_ = {};
+				SelecteEntity(Entity::kNull);
 			}
+		}
+	}
+	void SceneHierarchyPanel::SelecteEntity(Entity e)
+	{
+		if (e != selected_entity_)
+		{
+			selected_entity_ = e;
+			SelectEntityEvent event(selected_entity_);
+			Application::Get().OnEvent(event);
 		}
 	}
 }

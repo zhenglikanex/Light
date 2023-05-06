@@ -9,12 +9,14 @@ namespace light::editor
 	public:
 		SceneHierarchyPanel() = default;
 
-		void SetScene(Scene* scene) { scene_ = scene; }
+		void SetScene(Scene* scene);
 
 		void OnImguiRender();
 
 		void DrawEntityNode(Entity e);
 	private:
+		void SelecteEntity(Entity e);
+
 		Scene* scene_ = nullptr;
 		Entity selected_entity_ = {};
 	};

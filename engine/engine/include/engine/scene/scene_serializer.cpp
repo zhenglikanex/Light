@@ -83,6 +83,8 @@ namespace YAML
 			{
 				node.push_back(value[i]);
 			}
+
+			return node;
 		}
 
 		static bool decode(const Node& node, glm::vec4& value)
@@ -96,6 +98,8 @@ namespace YAML
 			{
 				value[i] = node[i].as<float>();
 			}
+
+			return true;
 		}
 	};
 
@@ -109,6 +113,8 @@ namespace YAML
 			{
 				node.push_back(value[i]);
 			}
+
+			return node;
 		}
 
 		static bool decode(const Node& node, glm::vec3& value)
@@ -122,6 +128,8 @@ namespace YAML
 			{
 				value[i] = node[i].as<float>();
 			}
+
+			return true;
 		}
 	};
 
@@ -135,6 +143,8 @@ namespace YAML
 			{
 				node.push_back(value[i]);
 			}
+
+			return node;
 		}
 
 		static bool decode(const Node& node, glm::vec2& value)
@@ -148,6 +158,8 @@ namespace YAML
 			{
 				value[i] = node[i].as<float>();
 			}
+
+			return true;
 		}
 	};
 
@@ -164,6 +176,8 @@ namespace YAML
 					node.push_back(value[col][row]);
 				}
 			}
+
+			return node;
 		}
 
 		static bool decode(const Node& node, glm::mat3& value)
@@ -181,6 +195,8 @@ namespace YAML
 					value[col][row] = node[index++].as<float>();
 				}
 			}
+
+			return true;
 		}
 	};
 
@@ -197,6 +213,8 @@ namespace YAML
 					node.push_back(value[col][row]);
 				}
 			}
+
+			return node;
 		}
 
 		static bool decode(const Node& node, glm::mat4& value)
@@ -214,6 +232,8 @@ namespace YAML
 					value[col][row] = node[index++].as<float>();
 				}
 			}
+
+			return true;
 		}
 	};
 }
@@ -557,5 +577,7 @@ namespace light
 				}
 			}
 		}
+
+		return true;
 	}
 }

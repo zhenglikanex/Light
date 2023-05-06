@@ -7,10 +7,11 @@
 
 namespace light
 {
-	
 	class Entity
 	{
 	public:
+		static const Entity kNull;
+
 		Entity(entt::entity handle, Scene* scene);
 		Entity() = default;
 
@@ -18,7 +19,17 @@ namespace light
 		decltype(auto) AddComponent(Args&& ... args)
 		{
 			LIGHT_ASSERT(!HasComponent<T>(), "Entity already has component!");
-			return scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
+			
+			if constexpr (std::is_empty_v<T>)
+			{
+				return scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
+			}
+			else
+			{
+				T& component = scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
+				scene_->OnComponentAdd(*this, component);
+				return component;
+			} 
 		}
 
 		template<class ... Ts>

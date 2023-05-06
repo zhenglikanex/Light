@@ -6,7 +6,6 @@
 
 namespace light
 {
-
 	void Scene::OnUpdate(Timestep ts, rhi::CommandList* command_list)
 	{
 		// update scripts
@@ -79,6 +78,9 @@ namespace light
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		// set cameracomponent viewportsize
+		viewport_height_ = width;
+		viewport_height_ = height;
+
 		auto view = registry_.view<CameraComponent>();
 		for (auto e : view)
 		{
@@ -95,5 +97,11 @@ namespace light
 		registry_.each([this,&func](entt::entity e) {
 			func(Entity{ e,this });
 			});
+	}
+
+	template<>
+	inline void Scene::OnComponentAdd(Entity e, CameraComponent& component)
+	{
+		component.camera.SetViewportSize(viewport_width_, viewport_height_);
 	}
 }

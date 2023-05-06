@@ -11,6 +11,8 @@
 namespace light
 {
 	class Entity;
+	class CameraComponent;
+
 	class Scene : public RefCounter
 	{
 	public:
@@ -30,6 +32,18 @@ namespace light
 	private:
 		friend class Entity;
 
+		template<typename T>
+		void OnComponentAdd(Entity e, T& component)
+		{
+
+		}
+
+		template<>
+		inline void OnComponentAdd<CameraComponent>(Entity e, CameraComponent& component);
+
 		entt::registry registry_;
+		uint32_t viewport_width_;
+		uint32_t viewport_height_;
 	};
+	
 }

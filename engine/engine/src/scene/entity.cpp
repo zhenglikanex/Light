@@ -4,6 +4,8 @@
 
 namespace light
 {
+	const Entity Entity::kNull;
+
 	Entity::Entity(entt::entity handle, Scene* scene)
 		: entity_handle_(handle)
 		, scene_(scene)

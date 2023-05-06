@@ -33,8 +33,5 @@ namespace light::editor
 		Ref<Scene> active_secne_;
 		SceneHierarchyPanel scene_hierarchy_panel_;
 		PropertyPanel property_panel_;
-
-		Entity quad_entity_;
-		Entity camera_entity_;
 	};
 }
