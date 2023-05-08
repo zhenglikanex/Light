@@ -1,0 +1,3 @@
+[submodule "deps/imguizmo"]
+	path = deps/imguizmo
+	url = https://github.com/TheCherno/ImGuizmo.git
