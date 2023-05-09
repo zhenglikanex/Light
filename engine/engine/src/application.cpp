@@ -25,6 +25,7 @@ namespace light
 		: name_(name)
 		, running_(false)
 		, minimized_(false)
+		, imgui_layer_(nullptr)
 		, timestep_(0)
 		, last_frame_clock_(std::chrono::high_resolution_clock::now())
 	{
@@ -221,7 +222,10 @@ namespace light
 		depth_desc.format = rhi::Format::D24S8;
 		depth_desc.width = e.width;
 		depth_desc.height = e.height;
-		depth_texture_ = device_->CreateTexture(depth_desc);
+		rhi::ClearValue clear_value;
+		clear_value.depth_stencil.depth = 1.0f;
+		clear_value.depth_stencil.stencil = 0.0f;
+		depth_texture_ = device_->CreateTexture(depth_desc,&clear_value);
 	}
 
 	void Application::OnWindowClosed(const WindowClosedEvent& e)

@@ -1,13 +1,17 @@
 #include "editor_layer.h"
 #include "random.h"
 
+#include "engine/math/math.h"
 #include "engine/utils/platform_utils.h"
+
+#include "imguizmo/ImGuizmo.h"
 
 namespace light::editor
 {
 	EditorLayer::EditorLayer()
 	{
 		viewport_size_ = glm::vec2(0);
+		guizmo_type_ = ImGuizmo::TRANSLATE;
 	}
 
 	void EditorLayer::OnAttach()
@@ -47,11 +51,14 @@ namespace light::editor
 
 	void EditorLayer::OnUpdate(const light::Timestep& ts)
 	{
-		if (viewport_size_.x != render_target_.GetWidth() || viewport_size_.y != render_target_.GetHeight())
+		editor_camera_.OnUpdate(ts);
+
+		if (viewport_size_.x > 0.f && viewport_size_.y > 0.0f && (viewport_size_.x != render_target_.GetWidth() || viewport_size_.y != render_target_.GetHeight()))
 		{
 			RenderTargetResize(viewport_size_);
-			
-			active_secne_->SetViewportSize(render_target_.GetWidth(),render_target_.GetHeight());
+
+			active_secne_->SetViewportSize(render_target_.GetWidth(), render_target_.GetHeight());
+			editor_camera_.SetViewportSize(render_target_.GetWidth(), render_target_.GetHeight());
 		}
 
 		auto command_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
@@ -66,12 +73,12 @@ namespace light::editor
 			command_list->SetViewport(render_target_.GetViewport());
 			command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
 
-			constexpr float clear_color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+			constexpr float clear_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 			command_list->ClearTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
 			command_list->ClearDepthStencilTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
 				rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
 
-			active_secne_->OnUpdate(ts, command_list);
+			active_secne_->OnUpdateEditor(ts, command_list, render_target_, editor_camera_);
 		}
 
 		{
@@ -97,6 +104,7 @@ namespace light::editor
 	{
 		auto commnad_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
 		commnad_list->TransitionBarrier(rt_color_texture_, rhi::ResourceStates::kPixelShaderResource);
+		commnad_list->TransitionBarrier(rt_color2_texture_, rhi::ResourceStates::kPixelShaderResource);
 		commnad_list->ExecuteCommandList();
 
 		static bool show_dockspace = true;
@@ -231,7 +239,32 @@ namespace light::editor
 			viewport_size_ = *reinterpret_cast<glm::vec2*>(&viewport_panel_size);
 		}
 
-		ImGui::Image(rt_color_texture_->GetTextureID(), viewport_panel_size);
+		ImGui::Image(rt_color2_texture_->GetTextureID(), viewport_panel_size);
+
+		Entity selected_entity = scene_hierarchy_panel_.GetSelectedEntity();
+		if (selected_entity)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+			glm::mat4 projection = editor_camera_.GetProjectionMatrx();
+			glm::mat4 view_matrix = editor_camera_.GetViewMatrix();
+
+			auto& tc = selected_entity.GetComponent<TransformComponent>();
+			glm::mat4 model_matrix = tc.GetTransform();
+
+			ImGuizmo::Manipulate(glm::value_ptr(view_matrix), glm::value_ptr(projection), (ImGuizmo::OPERATION)guizmo_type_, ImGuizmo::LOCAL, glm::value_ptr(model_matrix));
+
+			if (ImGuizmo::IsUsing())
+			{
+				glm::vec3 rotation;
+
+				math::Decompose(model_matrix, tc.position, rotation, tc.scale);
+				tc.rotation = glm::degrees(rotation);
+			}
+		}
+
 		ImGui::End();
 		ImGui::PopStyleVar();
 
@@ -241,7 +274,26 @@ namespace light::editor
 
 	void EditorLayer::OnEvent(Event& e)
 	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_1(&EditorLayer::OnKeyPressedEvent, this));
+
 		property_panel_.OnEvent(e);
+	}
+
+	void EditorLayer::OnKeyPressedEvent(const KeyPressedEvent& e)
+	{
+		if (e.keycode == (int)Input::Key::KEY_W)
+		{
+			guizmo_type_ = ImGuizmo::TRANSLATE;
+		}
+		else if (e.keycode == (int)Input::Key::KEY_E)
+		{
+			guizmo_type_ = ImGuizmo::SCALE;
+		}
+		else if (e.keycode == (int) Input::Key::KEY_R)
+		{
+			guizmo_type_ = ImGuizmo::ROTATE;
+		}
 	}
 
 	void EditorLayer::RenderTargetResize(const glm::vec2& size)
@@ -260,6 +312,14 @@ namespace light::editor
 		color_clear_value.color[3] = 1.0f;
 		rt_color_texture_ = Application::Get().GetDevice()->CreateTexture(color_tex_desc, &color_clear_value);
 
+		rhi::TextureDesc color2_tex_desc;
+		color2_tex_desc.width = size.x;
+		color2_tex_desc.height = size.y;
+		color2_tex_desc.format = rhi::Format::RGBA8_UNORM;
+		color2_tex_desc.is_render_target = true;
+		rt_color2_texture_ = Application::Get().GetDevice()->CreateTexture(color2_tex_desc);
+
+
 		rhi::TextureDesc depth_tex_desc;
 		depth_tex_desc.width = size.x;
 		depth_tex_desc.height = size.y;
@@ -270,6 +330,7 @@ namespace light::editor
 		rt_depth_texture_ = Application::Get().GetDevice()->CreateTexture(depth_tex_desc, &depth_clear_value);
 
 		render_target_.AttachAttachment(rhi::AttachmentPoint::kColor0, rt_color_texture_);
+		render_target_.AttachAttachment(rhi::AttachmentPoint::kColor1, rt_color2_texture_);
 		render_target_.AttachAttachment(rhi::AttachmentPoint::kDepthStencil, rt_depth_texture_);
 	}
 }

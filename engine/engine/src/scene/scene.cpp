@@ -3,10 +3,24 @@
 #include "engine/scene/components.h"
 #include "engine/renderer/camera.h"
 #include "engine/renderer/renderer2d.h"
-
+#include "engine/renderer/editor_camera.h"
 namespace light
 {
-	void Scene::OnUpdate(Timestep ts, rhi::CommandList* command_list)
+	void Scene::OnUpdateEditor(Timestep ts, rhi::CommandList* command_list,const rhi::RenderTarget& render_target, EditorCamera& editor_camera)
+	{
+		Renderer2D::BeginScene(command_list,render_target,editor_camera);
+
+		auto group = registry_.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+		for (entt::entity e : group)
+		{
+			const auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(e);
+			Renderer2D::DrawQuad(command_list, transform.GetTransform(), sprite.color);
+		}
+
+		Renderer2D::EndScene(command_list);
+	}
+
+	void Scene::OnUpdateRuntime(Timestep ts, rhi::CommandList* command_list, const rhi::RenderTarget& render_target)
 	{
 		// update scripts
 		registry_.view<NativeScriptComponent>().each([=](auto entity, auto& nsc) {
@@ -17,13 +31,13 @@ namespace light
 				nsc.script_instance->OnCreate();
 			}
 			nsc.script_instance->OnUpdate(ts);
-		});
+			});
 
 		Camera* main_camera = nullptr;
 		glm::mat4 camera_transform;
 
 		{
-			auto view = registry_.view<TransformComponent,CameraComponent>();
+			auto view = registry_.view<TransformComponent, CameraComponent>();
 			for (auto e : view)
 			{
 				// find main camera
@@ -40,7 +54,7 @@ namespace light
 		{
 			if (main_camera)
 			{
-				Renderer2D::BeginScene(command_list, *main_camera, camera_transform);
+				Renderer2D::BeginScene(command_list, render_target, *main_camera, camera_transform);
 
 				auto group = registry_.group<TransformComponent>(entt::get<SpriteRendererComponent>);
 				for (entt::entity e : group)
@@ -51,7 +65,7 @@ namespace light
 
 				Renderer2D::EndScene(command_list);
 			}
-		}	
+		}
 	}
 
 	Entity Scene::CreateEntity(std::string_view name)
@@ -97,6 +111,20 @@ namespace light
 		registry_.each([this,&func](entt::entity e) {
 			func(Entity{ e,this });
 			});
+	}
+
+	Entity Scene::GetPrimaryCameraEntity()
+	{
+		auto view = registry_.view<CameraComponent>();
+		for (entt::entity e : view)
+		{
+			// find main camera
+			auto& camera = view.get<CameraComponent>(e);
+			if (camera.primary)
+			{
+				return Entity{ e,this };
+			}
+		}
 	}
 
 	template<>

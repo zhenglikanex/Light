@@ -66,6 +66,8 @@ namespace light::rhi
 
 		uint32_t GetNumColors() const;
 
+		bool HasDepthAttachment() const { return attachments_[static_cast<uint32_t>(AttachmentPoint::kDepthStencil)].texture != nullptr; }
+
 		SampleDesc GetSampleDesc() const;
 
 	private:

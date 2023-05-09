@@ -7,6 +7,7 @@ target("Test2D")
         add_deps("Platform")
     end
     add_deps("D12RHI")
+    add_deps("ReflectionGenerated")
     set_group("game")
     add_ldflags("/subsystem:console")
     add_cxflags("/utf-8")

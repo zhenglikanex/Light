@@ -1,0 +1,28 @@
+Scene: Untitled
+Entities:
+  - Entity: 1
+    Components:
+      - Type: light::SpriteRendererComponent
+        Fields:
+          color: [1, 1, 1, 1]
+      - Type: light::TransformComponent
+        Fields:
+          position: [0, 0, -2.20000005]
+          rotation: [0, -0, 0]
+          scale: [1, 1, 1]
+      - Type: light::TagComponent
+        Fields:
+          tag: Entity
+  - Entity: 0
+    Components:
+      - Type: light::SpriteRendererComponent
+        Fields:
+          color: [1, 0, 0, 1]
+      - Type: light::TransformComponent
+        Fields:
+          position: [0.829017639, 0, 0]
+          rotation: [0, -0, 0]
+          scale: [1, 1, 1]
+      - Type: light::TagComponent
+        Fields:
+          tag: Entity

@@ -5,8 +5,10 @@
 #include "engine/scene/scene_camera.h"
 #include "engine/scene/script.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace light
 {
@@ -44,10 +46,7 @@ namespace light
 
 		glm::mat4 GetTransform() const
 		{
-			glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(rotation.x), { 1.0f,0.0f,0.0f })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.y), { 0.0f,1.0f,0.0f })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), { 0.0f,0.0f,1.0f });
-
+			glm::mat4 rotate = glm::toMat4(glm::quat(glm::radians(rotation)));
 			return glm::translate(glm::mat4(1.0f), position) * rotate * glm::scale(glm::mat4(1.0f), scale);
 		}
 		

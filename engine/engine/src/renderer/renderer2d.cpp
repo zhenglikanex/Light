@@ -1,11 +1,11 @@
 #include "engine/renderer/renderer2d.h"
 #include "engine/core/application.h"
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
 #include "engine/profile/timer.h"
 #include "engine/log/log.h"
+
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace light
 {
@@ -16,17 +16,12 @@ namespace light
 	{
 		s_renderer_data = new Data();
 
-		std::vector<rhi::VertexAttributeDesc> vertex_attributes =
-		{
-			{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false },
-			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,12,false },
-			{ "COLOR",0,rhi::Format::RGBA32_FLOAT,0,20,false },
-			{ "COLOR",1,rhi::Format::R32_FLOAT,0,36,false },
-			{ "COLOR",2,rhi::Format::R32_FLOAT,0,40,false }
-		};
+
 
 		auto device = Application::Get().GetDevice();
 		auto render_target = Application::Get().GetRenderTarget();
+		render_target.AttachAttachment(rhi::AttachmentPoint::kColor1, nullptr);
+
 		auto command_list = device->GetCommandList(rhi::CommandListType::kCopy);
 
 		rhi::TextureDesc white_desc;
@@ -74,49 +69,7 @@ namespace light
 		command_list->WriteBuffer(s_renderer_data->index_buffer, reinterpret_cast<uint8_t*>(s_renderer_data->indices.data()), index_desc.size_in_bytes);
 
 		command_list->ExecuteCommandList();
-
-		rhi::BindingParameter scene_data_param;
-		scene_data_param.InitAsConstantBufferView(0);
-
-		rhi::BindingParameter::DescriptorRange sampler_range;
-		sampler_range.base_shader_register = 0;
-		sampler_range.num_descriptors = 1;
-		sampler_range.range_type = rhi::DescriptorRangeType::kSampler;
-
-		rhi::BindingParameter sampler_param;
-		sampler_param.InitAsDescriptorTable(1, &sampler_range);
-
-		rhi::BindingParameter::DescriptorRange tex_range;
-		tex_range.base_shader_register = 0;
-		tex_range.num_descriptors = kMaxTextures;
-		tex_range.range_type = rhi::DescriptorRangeType::kShaderResourceView;
-		tex_range.is_volatile = true;
-
-		rhi::BindingParameter tex_param;
-		tex_param.InitAsDescriptorTable(1, &tex_range);
-
-		// create tex_pso
-		rhi::BindingLayout* tex_binding_layout = new rhi::BindingLayout(3);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kTextures), tex_param);
-		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSampler), sampler_param);
-
-		rhi::ShaderHandle texture_vertex_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.hlsl", "VS", "vs_5_1");
-		rhi::ShaderHandle texture_pixel_shader = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/texture.hlsl", "PS", "ps_5_1");
-
-		rhi::GraphicsPipelineDesc tex_pso_desc;
-		tex_pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
-		tex_pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(tex_binding_layout);
-		tex_pso_desc.vs = texture_vertex_shader;
-		tex_pso_desc.ps = texture_pixel_shader;
-		tex_pso_desc.blend_state.render_target[0].blend_enable = true;
-		tex_pso_desc.blend_state.render_target[0].src_blend = rhi::BlendFactor::kSrcAlpha;
-		tex_pso_desc.blend_state.render_target[0].dest_blend = rhi::BlendFactor::kInvSrcAlpha;
-
 		
-		tex_pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
-		s_renderer_data->texture_pso = device->CreateGraphicsPipeline(tex_pso_desc, render_target);
-
 		rhi::SamplerDesc sampler_desc;
 		sampler_desc.filter = rhi::SamplerFilter::kMIN_MAG_MIP_POINT;
 		s_renderer_data->point_sampler = device->CreateSampler(sampler_desc);
@@ -136,13 +89,13 @@ namespace light
 		s_renderer_data = nullptr;
 	}
 
-	void Renderer2D::BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform)
+	void Renderer2D::BeginScene(rhi::CommandList* command_list,const rhi::RenderTarget& render_target, const Camera& camera, const glm::mat4& transform)
 	{
 		s_scene_data.projection_matrix = camera.GetProjection();
 		s_scene_data.view_matrix = glm::inverse(transform);
 		s_scene_data.view_projection_matrix = s_scene_data.projection_matrix * s_scene_data.view_matrix;
 
-		command_list->SetGraphicsPipeline(s_renderer_data->texture_pso);
+		command_list->SetGraphicsPipeline(GetGraphicsPipleline(render_target));
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_renderer_data->point_sampler);
 		command_list->SetIndexBuffer(s_renderer_data->index_buffer);
@@ -152,13 +105,29 @@ namespace light
 		s_renderer_data->texture_slot_index = 1;
 	}
 
-	void Renderer2D::BeginScene(rhi::CommandList* command_list, const OrthographicCamera& camera)
+	void Renderer2D::BeginScene(rhi::CommandList* command_list,const rhi::RenderTarget& render_target, const OrthographicCamera& camera)
 	{
 		s_scene_data.projection_matrix = camera.GetProjectionMatrix();
 		s_scene_data.view_matrix = camera.GetViewMatrix();
 		s_scene_data.view_projection_matrix = camera.GetViewProjectionMatrix();
 
-		command_list->SetGraphicsPipeline(s_renderer_data->texture_pso);
+		command_list->SetGraphicsPipeline(GetGraphicsPipleline(render_target));
+		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
+		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_renderer_data->point_sampler);
+		command_list->SetIndexBuffer(s_renderer_data->index_buffer);
+		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
+
+		s_renderer_data->batch_quad_count = 0;
+		s_renderer_data->texture_slot_index = 1;
+	}
+
+	void Renderer2D::BeginScene(rhi::CommandList* command_list,const rhi::RenderTarget& render_target, const EditorCamera& camera)
+	{
+		s_scene_data.projection_matrix = camera.GetProjectionMatrx();
+		s_scene_data.view_matrix = camera.GetViewMatrix();
+		s_scene_data.view_projection_matrix = camera.GetViewProjectionMatrix();
+
+		command_list->SetGraphicsPipeline(GetGraphicsPipleline(render_target));
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetSampler(static_cast<uint32_t>(ParameterIndex::kSampler), 0, s_renderer_data->point_sampler);
 		command_list->SetIndexBuffer(s_renderer_data->index_buffer);
@@ -362,5 +331,86 @@ namespace light
 	Renderer2D::Statistics Renderer2D::GetStats()
 	{
 		return s_renderer_data->stats;
+	}
+	
+	rhi::GraphicsPipeline* Renderer2D::GetGraphicsPipleline(const rhi::RenderTarget& render_target)
+	{
+		size_t hash = 0;
+		rhi::HashCombine(hash, render_target.GetNumColors());
+		for (auto& attachment : render_target.GetAttachments())
+		{
+			if (attachment.texture)
+			{
+				rhi::HashCombine(hash, (uint32_t)attachment.texture->GetDesc().format);
+			}
+		}
+
+		rhi::SampleDesc sample_desc = render_target.GetSampleDesc();
+		rhi::HashCombine(hash, (uint32_t)sample_desc.count);
+		rhi::HashCombine(hash, (uint32_t)sample_desc.quality);
+		
+		auto it = s_renderer_data->pso_cache_.find(hash);
+		if (it != s_renderer_data->pso_cache_.end())
+		{
+			return it->second;
+		}
+
+		auto result = s_renderer_data->pso_cache_.emplace(hash, CreateGraphicsPipleline(render_target));
+		return result.first->second;;
+	}
+
+	rhi::GraphicsPipelineHandle Renderer2D::CreateGraphicsPipleline(const rhi::RenderTarget& render_target)
+	{
+		rhi::Device* device = Application::Get().GetDevice();
+
+		std::vector<rhi::VertexAttributeDesc> vertex_attributes =
+		{
+			{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,0u,false },
+			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,12,false },
+			{ "COLOR",0,rhi::Format::RGBA32_FLOAT,0,20,false },
+			{ "COLOR",1,rhi::Format::R32_FLOAT,0,36,false },
+			{ "COLOR",2,rhi::Format::R32_FLOAT,0,40,false }
+		};
+
+		rhi::BindingParameter scene_data_param;
+		scene_data_param.InitAsConstantBufferView(0);
+
+		rhi::BindingParameter::DescriptorRange sampler_range;
+		sampler_range.base_shader_register = 0;
+		sampler_range.num_descriptors = 1;
+		sampler_range.range_type = rhi::DescriptorRangeType::kSampler;
+
+		rhi::BindingParameter sampler_param;
+		sampler_param.InitAsDescriptorTable(1, &sampler_range);
+
+		rhi::BindingParameter::DescriptorRange tex_range;
+		tex_range.base_shader_register = 0;
+		tex_range.num_descriptors = kMaxTextures;
+		tex_range.range_type = rhi::DescriptorRangeType::kShaderResourceView;
+		tex_range.is_volatile = true;
+
+		rhi::BindingParameter tex_param;
+		tex_param.InitAsDescriptorTable(1, &tex_range);
+
+		// create tex_pso
+		rhi::BindingLayout* tex_binding_layout = new rhi::BindingLayout(3);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kTextures), tex_param);
+		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSampler), sampler_param);
+
+		rhi::ShaderHandle texture_vertex_shader = device->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.hlsl", "VS", "vs_5_1");
+		rhi::ShaderHandle texture_pixel_shader = device->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/texture.hlsl", "PS", "ps_5_1");
+
+		rhi::GraphicsPipelineDesc pso_desc;
+		pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
+		pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(tex_binding_layout);
+		pso_desc.vs = texture_vertex_shader;
+		pso_desc.ps = texture_pixel_shader;
+		pso_desc.blend_state.render_target[0].blend_enable = true;
+		pso_desc.blend_state.render_target[0].src_blend = rhi::BlendFactor::kSrcAlpha;
+		pso_desc.blend_state.render_target[0].dest_blend = rhi::BlendFactor::kInvSrcAlpha;
+		pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
+
+		return device->CreateGraphicsPipeline(pso_desc, render_target);
 	}
 }

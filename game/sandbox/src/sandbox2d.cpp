@@ -6,7 +6,6 @@
 
 using namespace light;
 using namespace light::rhi;
-using namespace rttr;
 
 Sandbox2D::Sandbox2D()
 	: camera_controller_(static_cast<float>(Application::Get().GetWindow()->GetWidth()) / static_cast<float>(Application::Get().GetWindow()->GetHeight()), false)
@@ -25,9 +24,6 @@ void Sandbox2D::OnAttach()
 
 	quad_entity_ = scene_->CreateEntity("quad");
 	quad_entity_.AddComponent<SpriteRendererComponent>(glm::vec4(1, 1, 1, 1));
-
-	type t = rttr::type::get_by_name("light::TagComponent");
-	variant var = t.create();
 }
 
 void Sandbox2D::OnDetach()

@@ -2,6 +2,7 @@
 
 #include "engine/core/core.h"
 #include "engine/renderer/camera.h"
+#include "engine/renderer/editor_camera.h"
 #include "engine/rhi/buffer.h"
 #include "engine/rhi/graphics_pipeline.h"
 #include "engine/rhi/command_list.h"
@@ -50,7 +51,7 @@ namespace light
 			rhi::TextureHandle white_texture;
 			rhi::BufferHandle vertex_buffer;
 			rhi::BufferHandle index_buffer;
-			rhi::GraphicsPipelineHandle texture_pso;
+			std::unordered_map<size_t, rhi::GraphicsPipelineHandle> pso_cache_;
 			rhi::SamplerHandle point_sampler;
 
 			std::array<QuadVertex, kMaxBatchVertices> vertices;
@@ -78,8 +79,9 @@ namespace light
 		static void Shutdown();
 
 		// 设置当前帧统一变量,如相机，光源，环境参数
-		static void BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform);
-		static void BeginScene(rhi::CommandList* command_list, const OrthographicCamera& camera);
+		static void BeginScene(rhi::CommandList* command_list,const rhi::RenderTarget& render_target, const Camera& camera, const glm::mat4& transform);
+		static void BeginScene(rhi::CommandList* command_list,const rhi::RenderTarget& render_target, const OrthographicCamera& camera);
+		static void BeginScene(rhi::CommandList* command_list,const rhi::RenderTarget& render_target, const EditorCamera& camera);
 		static void EndScene(rhi::CommandList* command_list);
 
 		static void Flush(rhi::CommandList* command_list);
@@ -102,6 +104,8 @@ namespace light
 		static void ResetStats();
 		static Statistics GetStats();
 	private:
+		static rhi::GraphicsPipeline* GetGraphicsPipleline(const rhi::RenderTarget& render_target);
+		static rhi::GraphicsPipelineHandle CreateGraphicsPipleline(const rhi::RenderTarget& render_target);
 		static Data* s_renderer_data;
 		static SceneData s_scene_data;
 	};

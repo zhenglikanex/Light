@@ -1,6 +1,7 @@
 #include "d12_imgui_renderer.h"
 #include "imgui_impl_dx12.h"
 #include "d12_device.h"
+#include "imguizmo/ImGuizmo.h"
 
 namespace light::rhi
 {
@@ -48,6 +49,7 @@ namespace light::rhi
     {
         ImGui_ImplDX12_NewFrame();
         ::ImGui::NewFrame();
+        ::ImGuizmo::BeginFrame();
     }
 
 	void D12ImGuiRenderer::EndFrame(const RenderTarget& render_target)
