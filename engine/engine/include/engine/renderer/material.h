@@ -1,20 +1,23 @@
 #pragma once
 
-#include "engine/rhi/shader.h"
+#include "light_pch.h"
+
+#include "engine/core/core.h"
+#include "engine/renderer/shader.h"
 
 namespace light
 {
-	class Material
+	class Material : public RefCounter
 	{
 	public:
-
+		Material(Shader* shader);
+		
+		Shader* GetShader() const { return shader_; }
 	private:
-		rhi::ShaderHandle vs_;
-		rhi::ShaderHandle gs_;
-		rhi::ShaderHandle ps_;
+		Ref<Shader> shader_;
 	};
 
-	class MaterialInstance
+	class MaterialInstance : public RefCounter
 	{
 	public:
 		explicit MaterialInstance(Material* material);

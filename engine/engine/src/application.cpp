@@ -131,6 +131,7 @@ namespace light
 			imgui_renderer_->Init(device_);
 		}
 
+		Renderer::Init();
 		Renderer2D::Init();
 
 		imgui_layer_ = new ImguiLayer();

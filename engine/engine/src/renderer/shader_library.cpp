@@ -5,6 +5,11 @@
 
 namespace light
 {
+	void ShaderLibrary::Load(std::string_view name, std::string_view fielpath)
+	{
+
+	}
+
 	void ShaderLibrary::Load(std::string_view name, rhi::ShaderType type,std::string_view file_path)
 	{
 		LIGHT_ASSERT(!Exist(std::string(name),type), "shader load failed,shader exist!");
@@ -29,6 +34,10 @@ namespace light
 		Add(name,shader);
 	}
 
+	void ShaderLibrary::Add(const std::string& name, Shader* shader)
+	{
+	}
+
 	void ShaderLibrary::Add(std::string_view name, rhi::Shader* shader)
 	{
 		rhi::ShaderType type = shader->GetDesc().type;
@@ -45,6 +54,11 @@ namespace light
 			rhi::ShaderHandle handle = shader;
 			pixel_shaders_.emplace(std::string(name), handle);
 		}
+	}
+
+	Shader* ShaderLibrary::GetShader(const std::string& name) const
+	{
+		return nullptr;
 	}
 
 	rhi::Shader* ShaderLibrary::Get(const std::string& name, rhi::ShaderType type)

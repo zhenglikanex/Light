@@ -21,8 +21,9 @@
 #include "engine/scene/components.h"
 #include "engine/scene/scene_serializer.h"
 
-
 #include "engine/renderer/camera.h"
+#include "engine/renderer/mesh.h"
+#include "engine/renderer/material.h"
 #include "engine/renderer/renderer.h"
 #include "engine/renderer/renderer2d.h"
 #include "engine/renderer/shader_library.h"

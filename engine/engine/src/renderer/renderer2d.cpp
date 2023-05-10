@@ -16,8 +16,6 @@ namespace light
 	{
 		s_renderer_data = new Data();
 
-
-
 		auto device = Application::Get().GetDevice();
 		auto render_target = Application::Get().GetRenderTarget();
 		render_target.AttachAttachment(rhi::AttachmentPoint::kColor1, nullptr);
