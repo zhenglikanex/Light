@@ -15,8 +15,6 @@ namespace light
 	class Renderer
 	{
 	public:
-		
-
 		enum class ParameterIndex
 		{
 			kSceneData = 0,
@@ -24,11 +22,22 @@ namespace light
 			kMaterial
 		};
 
+		struct Light
+		{
+			glm::vec3 direction;
+			float padding1;
+			glm::vec3 color;
+			float padding2;
+		};
+
 		struct SceneData
 		{
 			glm::mat4 projection_matrix;
 			glm::mat4 view_matrix;
 			glm::mat4 view_projection_matrix;
+			glm::vec3 camera_position;
+			float padding1;
+			Light light;
 		};
 
 		struct RenderData
@@ -44,6 +53,8 @@ namespace light
 		static void BeginScene(rhi::CommandList* command_list, const rhi::RenderTarget& render_target, const EditorCamera& camera);
 		static void EndScene(rhi::CommandList* command_list);
 		
+		static void SetupLight(Light light);
+
 		// 提交渲染命令
 		static void DrawMesh(rhi::CommandList* command_list, Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix);
 	private:

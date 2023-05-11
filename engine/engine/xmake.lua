@@ -1,6 +1,6 @@
 target("Engine")
     set_kind("static")
-    add_includedirs("include/",{ public = true })
+    add_includedirs("include/",{ public = true }) 
     add_includedirs("../../3rdparty",{ public = true })
     add_includedirs("../../deps",{ public = true })
     add_packages("glm","imgui","spdlog","stb","DirectXTex","yaml-cpp","assimp",{public = true})

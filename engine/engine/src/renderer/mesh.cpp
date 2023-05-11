@@ -70,6 +70,7 @@ namespace light
 		vertex_buffer_ = device->CreateBuffer(vertex_buffer_desc);
 
 		rhi::BufferDesc index_buffer_desc;
+		index_buffer_desc.format = rhi::Format::R32_UINT;
 		index_buffer_desc.type = rhi::BufferType::kIndex;
 		index_buffer_desc.size_in_bytes = indices_.size() * sizeof(uint32_t);
 		index_buffer_desc.stride = sizeof(uint32_t);

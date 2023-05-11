@@ -33,7 +33,7 @@ struct VertexOut
 	float2 UV : TEXCOORD;
 };
 
-VertexOut VS(VertexIn vin)
+VertexOut VsMain(VertexIn vin)
 {
 	VertexOut vout;
 	
@@ -45,7 +45,7 @@ VertexOut VS(VertexIn vin)
     return vout;
 }
 
-float4 PS(VertexOut pin) : SV_Target
+float4 PsMain(VertexOut pin) : SV_Target
 {
 	float4 color = gDiffuseMap.SampleLevel(gSamplerLinearWrap,pin.UV,0);
     return color;

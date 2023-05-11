@@ -10,11 +10,6 @@ cbuffer cbModelMatrix : register(b1)
 	float4x4 model_matrix;
 }
 
-cbuffer cbMaterial : register(b2)
-{
-	float4 color;
-}
-
 struct VertexIn
 {
 	float3 PosL  : POSITION;
@@ -36,5 +31,5 @@ VertexOut VsMain(VertexIn vin)
 
 float4 PsMain(VertexOut pin) : SV_Target
 {
-    return color;
+    return float4(1.0f,1.0f,0.0f,1.0f);
 }

@@ -9,6 +9,7 @@ namespace light
 	}
 
 	Material::Material(Shader* shader)
+		: shader_(shader)
 	{
 	}
 }

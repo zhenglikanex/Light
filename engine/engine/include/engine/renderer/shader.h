@@ -9,7 +9,7 @@ namespace light
 	class Shader : public RefCounter
 	{
 	public:
-		Shader(std::string_view file);
+		Shader(rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
 
 		rhi::Shader* GetVS() const { return vs_; }
 		rhi::Shader* GetGS() const { return gs_; }

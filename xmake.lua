@@ -90,7 +90,7 @@ rule("parser_meta")
     end)
 rule_end()
 
-add_rules("parser_meta",{outputdir="."})
+--add_rules("parser_meta",{outputdir="."})
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --

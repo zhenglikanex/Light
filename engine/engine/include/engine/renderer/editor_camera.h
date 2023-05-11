@@ -21,6 +21,8 @@ namespace light
 
 		glm::vec3 GetRight() const;
 
+		glm::vec3 GetPosition() const { return position_; }
+
 		const glm::mat4& GetProjectionMatrx() const { return projection_matrix_; }
 		const glm::mat4& GetViewMatrix() const { return view_matrix_; }
 		const glm::mat4& GetViewProjectionMatrix() const { return view_projection_matrix_; }

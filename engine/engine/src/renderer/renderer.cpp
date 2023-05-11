@@ -19,7 +19,7 @@ namespace light
 		s_scene_data.projection_matrix = camera.GetProjection();
 		s_scene_data.view_matrix = glm::inverse(transform);
 		s_scene_data.view_projection_matrix = s_scene_data.projection_matrix * s_scene_data.view_matrix;
-
+		s_scene_data.camera_position = transform[3];
 		s_render_data->render_target = render_target;
 	}
 
@@ -28,7 +28,7 @@ namespace light
 		s_scene_data.projection_matrix = camera.GetProjectionMatrx();
 		s_scene_data.view_matrix = camera.GetViewMatrix();
 		s_scene_data.view_projection_matrix = camera.GetViewProjectionMatrix();
-
+		s_scene_data.camera_position = camera.GetPosition();
 		s_render_data->render_target = render_target;
 	}
 
@@ -37,12 +37,20 @@ namespace light
 
 	}
 
+	void Renderer::SetupLight(Light light)
+	{
+		s_scene_data.light = light;
+	}
+
 	void Renderer::DrawMesh(rhi::CommandList* command_list, Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix)
 	{
 		command_list->SetGraphicsPipeline(GetGraphicsPipeline(material,s_render_data->render_target));
 
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
-		command_list->SetGraphics32BitConstants(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
+		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
+
+		auto& material_params_buffer = material->GetParamsBuffer();
+		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kMaterial), material_params_buffer.size(), material_params_buffer.data());
 
 		command_list->SetVertexBuffer(0, vertex_buffer);
 		command_list->SetIndexBuffer(index_buffer);
@@ -75,7 +83,7 @@ namespace light
 			{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,position),false},
 			{ "NORMAL",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,normal),false },
 			{ "TANGENT",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,tangent),false },
-			{ "BITANGENT",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,bitangent),false },
+			{ "BINORMAL",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,bitangent),false },
 			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,offsetof(Vertex,texcoord),false},
 		};
 
@@ -85,9 +93,13 @@ namespace light
 		rhi::BindingParameter model_matrix_param;
 		model_matrix_param.InitAsConstantBufferView(1);
 
-		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(2);
+		rhi::BindingParameter material_param;
+		material_param.InitAsConstantBufferView(2);
+
+		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(3);
 		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
 		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
+		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kMaterial),material_param);
 
 		rhi::GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);

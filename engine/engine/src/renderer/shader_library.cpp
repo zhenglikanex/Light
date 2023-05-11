@@ -3,91 +3,90 @@
 #include "engine/core/application.h"
 #include "engine/rhi/shader.h"
 
+#include <fstream>
+#include <sstream>
+
+const std::string kVsShaderEntryPoint = "VsMain";
+const std::string kPsShaderEntryPoint = "PsMain";
+const std::string kGsShaderEntryPoint = "GsMain";
+
 namespace light
 {
-	void ShaderLibrary::Load(std::string_view name, std::string_view fielpath)
+	Shader* ShaderLibrary::Load(const std::string& name, std::string_view filepath)
 	{
+		LIGHT_ASSERT(!Exist(name), "shader load failed,shader exist!");
+		
+		std::fstream fs(filepath.data());
 
+		LIGHT_ASSERT(fs.is_open(), "shader file open failed!");
+
+		std::stringstream sstream;
+		sstream << fs.rdbuf();
+		
+		fs.close();
+
+		std::string source = sstream.str();
+
+		rhi::ShaderHandle vs;
+		rhi::ShaderHandle ps;
+		rhi::ShaderHandle gs;
+
+		if (FindSubShader(source, rhi::ShaderType::kVertex))
+		{
+			 vs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, filepath, kVsShaderEntryPoint, "vs_5_1");
+		}
+		
+		if (FindSubShader(source, rhi::ShaderType::kPixel))
+		{
+			ps = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, filepath, kPsShaderEntryPoint, "ps_5_1");
+		}
+
+		if (FindSubShader(source, rhi::ShaderType::kGeometry))
+		{
+			gs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kGeometry, filepath, kGsShaderEntryPoint, "gs_5_1");
+		}
+
+		LIGHT_ASSERT(vs && ps, "shader error!");
+
+		Ref<Shader> shader = MakeRef<Shader>(vs, ps, gs);
+		Add(name, shader);
+
+		return shader;
 	}
 
-	void ShaderLibrary::Load(std::string_view name, rhi::ShaderType type,std::string_view file_path)
+	void ShaderLibrary::Add(std::string_view name, Shader* shader)
 	{
-		LIGHT_ASSERT(!Exist(std::string(name),type), "shader load failed,shader exist!");
+		LIGHT_ASSERT(!Exist(std::string(name)), "shader add failed,shader exist!");
 
-		rhi::ShaderDesc desc;
-		desc.type = type;
-
-		std::string entry_point;
-		std::string target;
-		if (type == rhi::ShaderType::kVertex)
-		{
-			entry_point = "VS";
-			target = "vs_5_1";
-		}
-		else if(type == rhi::ShaderType::kPixel)
-		{
-			entry_point = "PS";
-			target = "ps_5_1";
-		}
-
-		rhi::ShaderHandle shader = Application::Get().GetDevice()->CreateShader(type, file_path, entry_point, target);
-		Add(name,shader);
+		shaders_.emplace(name, shader);
 	}
 
-	void ShaderLibrary::Add(const std::string& name, Shader* shader)
+	Shader* ShaderLibrary::Get(const std::string& name)
 	{
+		LIGHT_ASSERT(Exist(name), "shader not found!");
+		return shaders_[name];
 	}
 
-	void ShaderLibrary::Add(std::string_view name, rhi::Shader* shader)
+	bool ShaderLibrary::FindSubShader(const std::string& source,rhi::ShaderType type)
 	{
-		rhi::ShaderType type = shader->GetDesc().type;
-
-		LIGHT_ASSERT(!Exist(std::string(name),type), "shader add failed,shader exist!");
-
-		if (type == rhi::ShaderType::kVertex)
+		if (rhi::ShaderType::kVertex == type)
 		{
-			rhi::ShaderHandle handle = shader;
-			vertex_shaders_.emplace(std::string(name), handle);
+			return source.find(kVsShaderEntryPoint) != std::string::npos;
 		}
-		else if (type == rhi::ShaderType::kPixel)
+		else if (rhi::ShaderType::kPixel == type)
 		{
-			rhi::ShaderHandle handle = shader;
-			pixel_shaders_.emplace(std::string(name), handle);
+			return source.find(kPsShaderEntryPoint) != std::string::npos;
 		}
-	}
-
-	Shader* ShaderLibrary::GetShader(const std::string& name) const
-	{
-		return nullptr;
-	}
-
-	rhi::Shader* ShaderLibrary::Get(const std::string& name, rhi::ShaderType type)
-	{
-		LIGHT_ASSERT(Exist(name,type), "shader not found!");
-
-		if (type == rhi::ShaderType::kVertex)
+		else if (rhi::ShaderType::kGeometry == type)
 		{
-			return vertex_shaders_[name];
-		}
-		else if (type == rhi::ShaderType::kPixel)
-		{
-			return pixel_shaders_[name];
-		}
-
-		return nullptr;
-	}
-
-	bool ShaderLibrary::Exist(const std::string& name, rhi::ShaderType type)
-	{
-		if (type == rhi::ShaderType::kVertex)
-		{
-			return vertex_shaders_.contains(name);
-		}
-		else if (type == rhi::ShaderType::kPixel)
-		{
-			return pixel_shaders_.contains(name);
+			return source.find(kGsShaderEntryPoint) != std::string::npos;
 		}
 
 		return false;
+	}
+
+	bool ShaderLibrary::Exist(const std::string& name)
+	{
+		return shaders_.contains(name);
 	}
 }
