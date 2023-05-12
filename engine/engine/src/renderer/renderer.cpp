@@ -44,7 +44,7 @@ namespace light
 
 	void Renderer::DrawMesh(rhi::CommandList* command_list, Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix)
 	{
-		command_list->SetGraphicsPipeline(GetGraphicsPipeline(material,s_render_data->render_target));
+		command_list->SetGraphicsPipeline(GetGraphicsPipeline(material->GetShader(), s_render_data->render_target));
 
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
 		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
@@ -58,7 +58,7 @@ namespace light
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
 		command_list->DrawIndexed(index_buffer->GetDesc().size_in_bytes / index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}
-	rhi::GraphicsPipeline* Renderer::GetGraphicsPipeline(Material* material, const rhi::RenderTarget& render_target)
+	rhi::GraphicsPipeline* Renderer::GetGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target)
 	{
 		size_t hash = 0;
 
@@ -70,11 +70,11 @@ namespace light
 			return it->second;
 		}
 
-		auto result = s_render_data->pso_cache.emplace(hash, CreateGraphicsPipeline(material, render_target));
+		auto result = s_render_data->pso_cache.emplace(hash, CreateGraphicsPipeline(shader, render_target));
 		return result.first->second;
 	}
 
-	rhi::GraphicsPipelineHandle Renderer::CreateGraphicsPipeline(Material* material, const rhi::RenderTarget& render_target)
+	rhi::GraphicsPipelineHandle Renderer::CreateGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target)
 	{
 		rhi::Device* device = Application::Get().GetDevice();
 
@@ -87,25 +87,98 @@ namespace light
 			{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,offsetof(Vertex,texcoord),false},
 		};
 
-		rhi::BindingParameter scene_data_param;
-		scene_data_param.InitAsConstantBufferView(0);
+		bool has_volatile_tex_range = false;
+		uint32_t index = 0;
+		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(shader->GetBindResources().size());
+		std::vector<rhi::BindingParameter::DescriptorRange> texture_ranges;
+		std::vector<rhi::BindingParameter::DescriptorRange> sampler_ranges;
+		for (auto& bind_resource : shader->GetBindResources())
+		{
+			rhi::BindingParameter bind_param;
 
-		rhi::BindingParameter model_matrix_param;
-		model_matrix_param.InitAsConstantBufferView(1);
+			switch (bind_resource.type)
+			{
+			case rhi::ShaderBindResourceType::kConstantBuffer:
+				bind_param.InitAsConstantBufferView(bind_resource.bind_point, bind_resource.space);
+				binding_layout->Add(index++, bind_param);
+				break;
 
-		rhi::BindingParameter material_param;
-		material_param.InitAsConstantBufferView(2);
+			case rhi::ShaderBindResourceType::kTexture:
+				if (texture_ranges.empty() 
+					|| !(texture_ranges.back().base_shader_register + texture_ranges.back().num_descriptors == bind_resource.bind_point
+						&& texture_ranges.back().register_space == bind_resource.space))
+				{
+					rhi::BindingParameter::DescriptorRange range;
+					range.range_type = rhi::DescriptorRangeType::kShaderResourceView;
+					range.base_shader_register = bind_resource.bind_point;
 
-		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(3);
-		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSceneData), scene_data_param);
-		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix_param);
-		binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kMaterial),material_param);
+					if (bind_resource.bind_count == 0) // dynamic array
+					{
+						// 只允许存在一个volatile tex range
+						LIGHT_ASSERT(has_volatile_tex_range == false,"只允许存在一个volatile tex range!")
+
+						range.is_volatile = true;
+						// todo
+						range.num_descriptors = kMaxTextures;
+						has_volatile_tex_range = true;
+					}
+					else
+					{
+						range.num_descriptors = bind_resource.bind_count;
+					}
+					range.register_space = bind_resource.space;
+					texture_ranges.emplace_back(range);
+				}
+				else
+				{
+					// 合并连续纹理绑定
+					texture_ranges.back().num_descriptors += bind_resource.bind_count;
+				}
+				break;
+			case rhi::ShaderBindResourceType::kSampler:
+				if (sampler_ranges.empty() || !(sampler_ranges.back().base_shader_register + sampler_ranges.back().num_descriptors == bind_resource.bind_point
+					&& sampler_ranges.back().register_space == bind_resource.space))
+				{
+					rhi::BindingParameter::DescriptorRange range;
+					range.range_type = rhi::DescriptorRangeType::kSampler;
+					range.base_shader_register = bind_resource.bind_point;
+					range.num_descriptors = bind_resource.bind_count;
+					range.register_space = bind_resource.space;
+					sampler_ranges.emplace_back(range);
+				}
+				else 
+				{
+					// 合并连续的Sampler
+					sampler_ranges.back().num_descriptors += bind_resource.bind_count;
+				}
+				break;
+			default:
+				LIGHT_ASSERT(false, "暂时还不支持!");
+				break;
+			}
+		}
+		
+		if (!texture_ranges.empty())
+		{
+			rhi::BindingParameter texture_param;
+			texture_param.InitAsDescriptorTable(texture_ranges.size(), texture_ranges.data(), rhi::ShaderVisibility::kPixel);
+
+			binding_layout->Add(index++, texture_param);
+		}
+		
+		if (!sampler_ranges.empty())
+		{
+			rhi::BindingParameter sampler_param;
+			sampler_param.InitAsDescriptorTable(sampler_ranges.size(), sampler_ranges.data(), rhi::ShaderVisibility::kPixel);
+
+			binding_layout->Add(index++, sampler_param);
+		}
 
 		rhi::GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
 		pso_desc.binding_layout = rhi::BindingLayoutHandle::Create(binding_layout);
-		pso_desc.vs = material->GetShader()->GetVS();
-		pso_desc.ps = material->GetShader()->GetPS();
+		pso_desc.vs = shader->GetVS();
+		pso_desc.ps = shader->GetPS();
 		pso_desc.blend_state.render_target[0].blend_enable = true;
 		pso_desc.blend_state.render_target[0].src_blend = rhi::BlendFactor::kSrcAlpha;
 		pso_desc.blend_state.render_target[0].dest_blend = rhi::BlendFactor::kInvSrcAlpha;

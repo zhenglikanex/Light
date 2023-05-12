@@ -13,7 +13,8 @@ Sandbox3D::Sandbox3D()
 
 void Sandbox3D::OnAttach()
 {
-	shader_ = shader_library_.Load("color", "assets/shaders/simplepbr.hlsl");
+	shader_ = shader_library_.Load("simplepbr", "assets/shaders/simplepbr.hlsl");
+	shader_library_.Load("color", "assets/shaders/texture.hlsl");
 }
 
 void Sandbox3D::OnDetach()

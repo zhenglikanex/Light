@@ -295,6 +295,14 @@ namespace light::rhi
 		return info;
 	}
 
+	enum class ShaderBindResourceType
+	{
+		kConstantBuffer = 0,
+		kTextureBuffer,
+		kTexture,
+		kSampler
+	};
+
 	enum class BindingParameterType : uint8_t
 	{
 		kDescriptorTable,

@@ -46,6 +46,8 @@ namespace light
 			rhi::RenderTarget render_target;
 		};
 
+		constexpr static uint32_t kMaxTextures = 32;
+
 		static void Init();
 
 		// 设置当前帧统一变量,如相机，光源，环境参数
@@ -58,9 +60,9 @@ namespace light
 		// 提交渲染命令
 		static void DrawMesh(rhi::CommandList* command_list, Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix);
 	private:
-		static rhi::GraphicsPipeline* GetGraphicsPipeline(Material* material, const rhi::RenderTarget& render_target);
+		static rhi::GraphicsPipeline* GetGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target);
 
-		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(Material* material, const rhi::RenderTarget& render_target);
+		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target);
 
 		static SceneData s_scene_data;
 		static RenderData* s_render_data;

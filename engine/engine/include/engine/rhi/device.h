@@ -21,14 +21,7 @@ namespace light::rhi
 		virtual GraphicsApi GetGraphicsApi() const = 0;
 		virtual SwapChainHandle CreateSwapChain() = 0;
 		
-		virtual ShaderHandle CreateShader(ShaderType type, std::vector<char> bytecode)
-		{
-			ShaderDesc desc;
-			desc.type = type;
-
-			return MakeHandle<Shader>(desc, std::move(bytecode));
-		}
-
+		virtual ShaderHandle CreateShader(ShaderType type, std::vector<char> bytecode) = 0;
 		virtual ShaderHandle CreateShader(ShaderType type, std::string_view filename, std::string_view entry_point, std::string_view target) = 0;
 		virtual BufferHandle CreateBuffer(BufferDesc desc) = 0;
 		virtual TextureHandle CreateTexture(const TextureDesc& desc,const ClearValue* clear_value = nullptr) = 0;

@@ -82,6 +82,14 @@ namespace light::rhi
 		return MakeHandle<D12SwapChain>(this, hwnd_);
 	}
 
+	ShaderHandle D12Device::CreateShader(ShaderType type, std::vector<char> bytecode)
+	{
+		ShaderDesc desc;
+		desc.type = type;
+
+		return MakeHandle<D12Shader>(this, desc, std::move(bytecode));
+	}
+
 	ShaderHandle D12Device::CreateShader(ShaderType type, std::string_view filename, std::string_view entry_point, std::string_view target)
 	{
 		UINT compile_flags = 0;
@@ -107,7 +115,7 @@ namespace light::rhi
 		std::vector<char> vbyte_code(byte_code->GetBufferSize());
 		memcpy(vbyte_code.data(), byte_code->GetBufferPointer(), vbyte_code.size());
 
-		return Device::CreateShader(type, std::move(vbyte_code));
+		return CreateShader(type, std::move(vbyte_code));
 	}
 
 	BufferHandle D12Device::CreateBuffer(BufferDesc desc)

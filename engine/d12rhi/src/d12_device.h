@@ -4,6 +4,7 @@
 
 #include "engine/rhi/device.h"
 
+#include "d12_shader.h"
 #include "d12_convert.h"
 #include "d12_command_list.h"
 #include "d12_command_queue.h"
@@ -41,6 +42,8 @@ namespace light::rhi
 
 		SwapChainHandle CreateSwapChain() override;
 
+		ShaderHandle CreateShader(ShaderType type, std::vector<char> bytecode) override;
+		
 		ShaderHandle CreateShader(ShaderType type, std::string_view filename,std::string_view entry_point,std::string_view target) override;
 
 		BufferHandle CreateBuffer(BufferDesc desc) override;

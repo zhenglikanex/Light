@@ -14,9 +14,13 @@ namespace light
 		rhi::Shader* GetVS() const { return vs_; }
 		rhi::Shader* GetGS() const { return gs_; }
 		rhi::Shader* GetPS() const { return ps_; }
+
+		const std::vector<rhi::ShaderBindResourceDesc>& GetBindResources() const { return bind_resources_; }
 	private:
 		rhi::ShaderHandle vs_;
 		rhi::ShaderHandle gs_;
 		rhi::ShaderHandle ps_;
+
+		std::vector<rhi::ShaderBindResourceDesc> bind_resources_;
 	};
 }
