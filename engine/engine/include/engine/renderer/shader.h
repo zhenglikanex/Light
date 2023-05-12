@@ -15,12 +15,17 @@ namespace light
 		rhi::Shader* GetGS() const { return gs_; }
 		rhi::Shader* GetPS() const { return ps_; }
 
-		const std::vector<rhi::ShaderBindResourceDesc>& GetBindResources() const { return bind_resources_; }
+		const rhi::ShaderParamDeclaration* FindParamDeclaration(const std::string& name) const;
+
+		const rhi::ShaderBindResourceDeclarationList& GetBindResources() const { return bind_resources_; }
+
+		const rhi::ShaderParamDeclarationMap& GetParamDeclarations() const { return param_declaractions_; }
 	private:
 		rhi::ShaderHandle vs_;
 		rhi::ShaderHandle gs_;
 		rhi::ShaderHandle ps_;
 
-		std::vector<rhi::ShaderBindResourceDesc> bind_resources_;
+		rhi::ShaderBindResourceDeclarationList bind_resources_;
+		rhi::ShaderParamDeclarationMap param_declaractions_;
 	};
 }

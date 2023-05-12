@@ -295,7 +295,7 @@ namespace light::rhi
 		return info;
 	}
 
-	enum class ShaderBindResourceType
+	enum class ShaderBindResourceType : uint8_t
 	{
 		kConstantBuffer = 0,
 		kTextureBuffer,
@@ -310,6 +310,17 @@ namespace light::rhi
 		kConstantBufferView,
 		kShaderResourceView,
 		kUnorderAccessView
+	};
+
+	enum class ShaderMaterialParamType
+	{
+		kInt,
+		kUint,
+		kFloat,
+		kFloat2,
+		kFloat3,
+		kFloat4,
+		kTexture,
 	};
 
 	enum class ShaderVisibility : uint8_t

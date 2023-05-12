@@ -50,12 +50,12 @@ void Sandbox3D::OnUpdate(const light::Timestep& ts)
 		light.direction = light_.direction;
 		light.color = light_.color;
 		Renderer::SetupLight(light);
+
 		if (mesh_)
 		{
-			std::vector<uint8_t> buffer(sizeof(PbrMaterial));
-			memcpy(buffer.data(), &pbr_material_, buffer.size());
-
-			material_->SetParamsBuffer(std::move(buffer));
+			material_->Set("cbAlbedo", pbr_material_.albedo);
+			material_->Set("cbMetalness", pbr_material_.metalness);
+			material_->Set("cbRoughness", pbr_material_.roughness);
 
 			Renderer::DrawMesh(command_list, mesh_->GetMaterial(), mesh_->GetVertexBuffer(), mesh_->GetIndexBuffer(), glm::mat4(1.0f));
 		}

@@ -2,13 +2,14 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include "resource.h"
 #include "types.h"
 
 namespace light::rhi
 {
-	struct ShaderBindResourceDesc
+	struct ShaderBindResourceDeclaration
 	{
 		std::string name;
 		ShaderBindResourceType type;
@@ -16,6 +17,17 @@ namespace light::rhi
 		uint32_t bind_count = 0;
 		uint32_t space;          // Register space
 	};
+
+	using ShaderBindResourceDeclarationList = std::vector<ShaderBindResourceDeclaration>;
+
+	struct ShaderParamDeclaration
+	{
+		std::string name;
+		uint32_t offset = 0;
+		uint32_t size = 0;
+	};
+
+	using ShaderParamDeclarationMap = std::unordered_map<std::string, ShaderParamDeclaration>;
 
 	struct ShaderDesc
 	{
@@ -35,11 +47,15 @@ namespace light::rhi
 
 		const std::vector<char>& GetBytecode() const { return bytecode_; }
 
-		const std::vector<ShaderBindResourceDesc>& GetBindResources() const { return bind_resources_; }
+		const ShaderBindResourceDeclarationList& GetBindResources() const { return bind_resources_; }
+		
+		const ShaderParamDeclarationMap& GetParamDeclarations() const { return param_declaractions_; }
+
 	protected:
 		ShaderDesc desc_;
 		std::vector<char> bytecode_;
-		std::vector<ShaderBindResourceDesc> bind_resources_;
+		ShaderBindResourceDeclarationList bind_resources_;
+		ShaderParamDeclarationMap param_declaractions_;
 	};
 
 	using ShaderHandle = Handle<Shader>;

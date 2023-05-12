@@ -2,12 +2,17 @@
 
 #include "engine/core/core.h"
 
+#include <cstdio>
 #include <d3d12shader.h>
 #include <d3d12.h>
 #include <d3dcompiler.h>
 
 namespace light::rhi
 {
+	const char* kSceneDataName = "cbSceneData";
+	const char* kPerDrawConstantsName = "cbPerDrawConstants";
+	const char* kMaterialConstantsName = "cbMaterialConstants";
+
 	D12Shader::D12Shader(D12Device* device, const ShaderDesc& desc, std::vector<char> bytecode)
 		: Shader(desc, std::move(bytecode))
 		, device_(device)
@@ -23,7 +28,7 @@ namespace light::rhi
 			D3D12_SHADER_INPUT_BIND_DESC d12_bind_desc;
 			reflection->GetResourceBindingDesc(i, &d12_bind_desc);
 
-			ShaderBindResourceDesc bind_res_desc;
+			ShaderBindResourceDeclaration bind_res_desc;
 			bind_res_desc.name = d12_bind_desc.Name;
 
 			switch (d12_bind_desc.Type)
@@ -51,8 +56,45 @@ namespace light::rhi
 			bind_res_desc.space = d12_bind_desc.Space;
 
 			bind_resources_.emplace_back(bind_res_desc);
+
+			if (bind_res_desc.type == ShaderBindResourceType::kTexture)
+			{
+				if (bind_res_desc.bind_count == 0) // 说明是动态数组
+				{
+					// todo:	
+				}
+				else
+				{
+					// todo:
+				}
+			}
+
+			if (bind_res_desc.type == ShaderBindResourceType::kSampler)
+			{
+				// todo
+			}
+		}
+
+		for (uint32_t i = 0; i < shader_desc.ConstantBuffers; ++i)
+		{
+			ID3D12ShaderReflectionConstantBuffer* d12_constant_buffer = reflection->GetConstantBufferByIndex(i);
+			D3D12_SHADER_BUFFER_DESC d12_buffer_desc;
+			d12_constant_buffer->GetDesc(&d12_buffer_desc);
+
+			if (std::strcmp(d12_buffer_desc.Name,kMaterialConstantsName) == 0)
+			{
+				for (uint32_t j = 0; j < d12_buffer_desc.Variables; ++j)
+				{
+					ID3D12ShaderReflectionVariable* d12_variable = d12_constant_buffer->GetVariableByIndex(j);
+					D3D12_SHADER_VARIABLE_DESC d12_variable_desc;
+					d12_variable->GetDesc(&d12_variable_desc);
+					ShaderParamDeclaration param_desc;
+					param_desc.name = d12_variable_desc.Name;
+					param_desc.offset = d12_variable_desc.StartOffset;
+					param_desc.size = d12_variable_desc.Size;
+					param_declaractions_.emplace(param_desc.name, param_desc);
+				}
+			}
 		}
 	}
 }
-
-

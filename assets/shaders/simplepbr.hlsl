@@ -21,12 +21,16 @@ cbuffer cbPerDrawConstants : register(b1)
     float4x4 cbModelMatrix;
 }
 
-cbuffer cbPbrMaterialConstants : register(b2)
+cbuffer cbMaterialConstants : register(b2)
 {
     float3 cbAlbedo;        // 基础颜色
     float cbMetalness;          // 金属度 (0-1)
     float cbRoughness;          // 粗糙度(0-1)
 }
+
+Texture2D color_map2 : register(t1);
+Texture2D color_map : register(t0);
+SamplerState sampler_point_warp : register(s0);
 
 static const float kPI = 3.1415926;
 static const float kEpsilon = 0.00001;
@@ -166,6 +170,6 @@ float4 PsMain(VertexOut vsInput) : SV_Target
     float3 F0 = lerp(kFdielectric,gParams.Albedo,gParams.Metalness);
 
     float3 color = Lighting(F0);
-
+    color += color_map.Sample(sampler_point_warp,float2(1.0,1.0));
     return float4(color,1.0f);
 }

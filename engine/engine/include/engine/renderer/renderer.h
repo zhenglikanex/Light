@@ -19,7 +19,9 @@ namespace light
 		{
 			kSceneData = 0,
 			kModelMatrix,
-			kMaterial
+			kMaterial,
+			kTextures,
+			kSampler,
 		};
 
 		struct Light
