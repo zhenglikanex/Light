@@ -170,6 +170,5 @@ float4 PsMain(VertexOut vsInput) : SV_Target
     float3 F0 = lerp(kFdielectric,gParams.Albedo,gParams.Metalness);
 
     float3 color = Lighting(F0);
-    color += color_map.Sample(sampler_point_warp,float2(1.0,1.0));
     return float4(color,1.0f);
 }

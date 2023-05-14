@@ -4,8 +4,8 @@ namespace light
 {
 	Shader::Shader(rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs)
 		: vs_(vs)
-		, ps_(ps)
 		, gs_(gs)
+		, ps_(ps)
 	{
 		if (ps_)
 		{
@@ -18,10 +18,10 @@ namespace light
 
 			for (auto& bind_resource : vs_->GetBindResources())
 			{
-				if (std::find_if(bind_resources_.begin(), bind_resources_.end(), [&bind_resource](const rhi::ShaderBindResourceDeclaration& value)
-					{
-						return value.name == bind_resource.name;
-					}) == bind_resources_.end())
+				if (std::ranges::find_if(bind_resources_, [&bind_resource](const rhi::ShaderBindResourceDeclaration& value)
+				{
+					return value.name == bind_resource.name;
+				}) == bind_resources_.end())
 				{
 					bind_resources_.emplace_back(bind_resource);
 				}
@@ -34,10 +34,10 @@ namespace light
 
 			for (auto& bind_resource : gs_->GetBindResources())
 			{
-				if (std::find_if(bind_resources_.begin(), bind_resources_.end(), [&bind_resource](const rhi::ShaderBindResourceDeclaration& value)
-					{
-						return value.name == bind_resource.name;
-					}) == bind_resources_.end())
+				if (std::ranges::find_if(bind_resources_, [&bind_resource](const rhi::ShaderBindResourceDeclaration& value)
+				{
+					return value.name == bind_resource.name;
+				}) == bind_resources_.end())
 				{
 					bind_resources_.emplace_back(bind_resource);
 				}
@@ -59,6 +59,7 @@ namespace light
 			param_declaractions_.insert(gs_->GetParamDeclarations().begin(), gs_->GetParamDeclarations().end());
 		}
 	}
+
 	const rhi::ShaderParamDeclaration* Shader::FindParamDeclaration(const std::string& name) const
 	{
 		auto it = param_declaractions_.find(name);

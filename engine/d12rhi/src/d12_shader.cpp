@@ -9,10 +9,6 @@
 
 namespace light::rhi
 {
-	const char* kSceneDataName = "cbSceneData";
-	const char* kPerDrawConstantsName = "cbPerDrawConstants";
-	const char* kMaterialConstantsName = "cbMaterialConstants";
-
 	D12Shader::D12Shader(D12Device* device, const ShaderDesc& desc, std::vector<char> bytecode)
 		: Shader(desc, std::move(bytecode))
 		, device_(device)
@@ -81,7 +77,7 @@ namespace light::rhi
 			D3D12_SHADER_BUFFER_DESC d12_buffer_desc;
 			d12_constant_buffer->GetDesc(&d12_buffer_desc);
 
-			if (std::strcmp(d12_buffer_desc.Name,kMaterialConstantsName) == 0)
+			if (d12_buffer_desc.Name == kMaterialConstantsName)
 			{
 				for (uint32_t j = 0; j < d12_buffer_desc.Variables; ++j)
 				{

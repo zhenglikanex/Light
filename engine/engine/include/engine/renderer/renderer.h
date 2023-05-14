@@ -60,11 +60,11 @@ namespace light
 		static void SetupLight(Light light);
 
 		// 提交渲染命令
-		static void DrawMesh(rhi::CommandList* command_list, Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix);
+		static void DrawMesh(rhi::CommandList* command_list, const Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix);
 	private:
-		static rhi::GraphicsPipeline* GetGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target);
+		static rhi::GraphicsPipeline* GetGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target);
 
-		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target);
+		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target);
 
 		static SceneData s_scene_data;
 		static RenderData* s_render_data;

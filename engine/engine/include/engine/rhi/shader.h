@@ -37,6 +37,30 @@ namespace light::rhi
 	class Shader : public Resource
 	{
 	public:
+		inline static constexpr std::string_view kSceneDataName = "cbSceneData";
+		inline static constexpr std::string_view kPerDrawConstantsName = "cbPerDrawConstants";
+		inline static constexpr std::string_view kMaterialConstantsName = "cbMaterialConstants";
+
+		static uint32_t GetBindIndex(std::string_view name)
+		{
+			if(kSceneDataName == name)
+			{
+				return 0;
+			}
+
+			if(kPerDrawConstantsName == name)
+			{
+				return 1;
+			}
+
+			if(kMaterialConstantsName == name)
+			{
+				return 2;
+			}
+
+			return 0;
+		}
+
 		Shader(const ShaderDesc& desc, std::vector<char> bytecode)
 			: desc_(desc)
 			, bytecode_(std::move(bytecode))

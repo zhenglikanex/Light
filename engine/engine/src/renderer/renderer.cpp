@@ -42,15 +42,15 @@ namespace light
 		s_scene_data.light = light;
 	}
 
-	void Renderer::DrawMesh(rhi::CommandList* command_list, Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix)
+	void Renderer::DrawMesh(rhi::CommandList* command_list,const Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix)
 	{
 		command_list->SetGraphicsPipeline(GetGraphicsPipeline(material->GetShader(), s_render_data->render_target));
 
-		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kSceneData), s_scene_data);
-		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kModelMatrix), model_matrix);
+		command_list->SetGraphicsDynamicConstantBuffer(rhi::Shader::GetBindIndex(rhi::Shader::kSceneDataName), s_scene_data);
+		command_list->SetGraphicsDynamicConstantBuffer(rhi::Shader::GetBindIndex(rhi::Shader::kPerDrawConstantsName), model_matrix);
 
 		auto& material_params_buffer = material->GetParamsBuffer();
-		command_list->SetGraphicsDynamicConstantBuffer(static_cast<uint32_t>(ParameterIndex::kMaterial), material_params_buffer.size(), material_params_buffer.data());
+		command_list->SetGraphicsDynamicConstantBuffer(rhi::Shader::GetBindIndex(rhi::Shader::kMaterialConstantsName), material_params_buffer.size(), material_params_buffer.data());
 
 		command_list->SetVertexBuffer(0, vertex_buffer);
 		command_list->SetIndexBuffer(index_buffer);
@@ -58,7 +58,7 @@ namespace light
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
 		command_list->DrawIndexed(index_buffer->GetDesc().size_in_bytes / index_buffer->GetDesc().stride, 1, 0, 0, 0);
 	}
-	rhi::GraphicsPipeline* Renderer::GetGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target)
+	rhi::GraphicsPipeline* Renderer::GetGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target)
 	{
 		size_t hash = 0;
 
@@ -74,7 +74,7 @@ namespace light
 		return result.first->second;
 	}
 
-	rhi::GraphicsPipelineHandle Renderer::CreateGraphicsPipeline(Shader* shader, const rhi::RenderTarget& render_target)
+	rhi::GraphicsPipelineHandle Renderer::CreateGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target)
 	{
 		rhi::Device* device = Application::Get().GetDevice();
 
@@ -88,7 +88,7 @@ namespace light
 		};
 
 		bool has_volatile_tex_range = false;
-		uint32_t index = 0;
+		uint32_t index = 3;
 		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(shader->GetBindResources().size());
 		std::vector<rhi::BindingParameter::DescriptorRange> texture_ranges;
 		std::vector<rhi::BindingParameter::DescriptorRange> sampler_ranges;
@@ -100,7 +100,7 @@ namespace light
 			{
 			case rhi::ShaderBindResourceType::kConstantBuffer:
 				bind_param.InitAsConstantBufferView(bind_resource.bind_point, bind_resource.space);
-				binding_layout->Add(index++, bind_param);
+				binding_layout->Add(rhi::Shader::GetBindIndex(bind_resource.name), bind_param);
 				break;
 
 			case rhi::ShaderBindResourceType::kTexture:

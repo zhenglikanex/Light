@@ -12,9 +12,9 @@ namespace light
 	class Material : public RefCounter
 	{
 	public:
-		Material(Shader* shader);
+		explicit Material(Shader* shader);
 		
-		Shader* GetShader() const { return shader_; }
+		const Shader* GetShader() const { return shader_; }
 
 		template<typename T>
 		void Set(const std::string& name, const T& value)

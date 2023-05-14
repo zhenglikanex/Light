@@ -15,6 +15,8 @@ namespace light
 		rhi::Shader* GetGS() const { return gs_; }
 		rhi::Shader* GetPS() const { return ps_; }
 
+		uint32_t FindBindResourceIndex(const std::string& name) const;
+
 		const rhi::ShaderParamDeclaration* FindParamDeclaration(const std::string& name) const;
 
 		const rhi::ShaderBindResourceDeclarationList& GetBindResources() const { return bind_resources_; }
