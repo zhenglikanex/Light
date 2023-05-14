@@ -7,6 +7,7 @@
 
 #include "engine/rhi/command_list.h"
 #include "engine/rhi/graphics_pipeline.h"
+#include "engine/rhi/sampler.h"
 
 #include "glm/glm.hpp"
 
@@ -22,6 +23,12 @@ namespace light
 			kMaterial,
 			kTextures,
 			kSampler,
+		};
+
+		struct QuadVertex
+		{
+			glm::vec3 position;
+			glm::vec2 texcoord;
 		};
 
 		struct Light
@@ -44,8 +51,13 @@ namespace light
 
 		struct RenderData
 		{
+			rhi::BufferHandle quad_vertex_buffer;
+			rhi::BufferHandle quad_index_buffer;
 			std::unordered_map<size_t, rhi::GraphicsPipelineHandle> pso_cache;
 			rhi::RenderTarget render_target;
+			rhi::SamplerHandle sampler;
+			//todo:
+			std::unordered_map<std::string, rhi::SamplerHandle> samplers;
 		};
 
 		constexpr static uint32_t kMaxTextures = 32;
@@ -61,10 +73,12 @@ namespace light
 
 		// 提交渲染命令
 		static void DrawMesh(rhi::CommandList* command_list, const Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix);
-	private:
-		static rhi::GraphicsPipeline* GetGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target);
 
-		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target);
+		static void DrawQuad(rhi::CommandList* command_list, const Shader* shader, glm::vec2 position = glm::vec2(0), glm::vec2 scale = glm::vec2(1));
+	private:
+		static rhi::GraphicsPipeline* GetGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target,size_t vertex_type);
+
+		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target,size_t vertex_type);
 
 		static SceneData s_scene_data;
 		static RenderData* s_render_data;

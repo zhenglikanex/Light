@@ -17,8 +17,6 @@ namespace light
 		s_renderer_data = new Data();
 
 		auto device = Application::Get().GetDevice();
-		auto render_target = Application::Get().GetRenderTarget();
-		render_target.AttachAttachment(rhi::AttachmentPoint::kColor1, nullptr);
 
 		auto command_list = device->GetCommandList(rhi::CommandListType::kCopy);
 
@@ -334,19 +332,8 @@ namespace light
 	rhi::GraphicsPipeline* Renderer2D::GetGraphicsPipleline(const rhi::RenderTarget& render_target)
 	{
 		size_t hash = 0;
-		rhi::HashCombine(hash, render_target.GetNumColors());
-		for (auto& attachment : render_target.GetAttachments())
-		{
-			if (attachment.texture)
-			{
-				rhi::HashCombine(hash, (uint32_t)attachment.texture->GetDesc().format);
-			}
-		}
+		light::HashCombine(hash, render_target);
 
-		rhi::SampleDesc sample_desc = render_target.GetSampleDesc();
-		rhi::HashCombine(hash, (uint32_t)sample_desc.count);
-		rhi::HashCombine(hash, (uint32_t)sample_desc.quality);
-		
 		auto it = s_renderer_data->pso_cache_.find(hash);
 		if (it != s_renderer_data->pso_cache_.end())
 		{

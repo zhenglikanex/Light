@@ -32,7 +32,11 @@ private:
 	void CreateMesh(std::string_view fielname);
 
 	light::ShaderLibrary shader_library_;
-	light::Ref<light::Shader> shader_;
+	light::rhi::TextureHandle rt_color_texture_;
+	light::rhi::TextureHandle rt_depth_texture_;
+	light::rhi::RenderTarget render_target_;
+	light::Ref<light::Shader> pbr_shader_;
+	light::Ref<light::Shader> hdr_shader_;
 	light::EditorCamera editor_camera_;
 	light::Ref<light::Material> material_;
 	light::Ref<light::Mesh> mesh_;

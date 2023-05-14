@@ -77,7 +77,7 @@ namespace light::rhi
 			D3D12_SHADER_BUFFER_DESC d12_buffer_desc;
 			d12_constant_buffer->GetDesc(&d12_buffer_desc);
 
-			if (d12_buffer_desc.Name == kMaterialConstantsName)
+			if (kMaterialConstantsName == d12_buffer_desc.Name)
 			{
 				for (uint32_t j = 0; j < d12_buffer_desc.Variables; ++j)
 				{

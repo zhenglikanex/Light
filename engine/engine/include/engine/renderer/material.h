@@ -34,10 +34,12 @@ namespace light
 
 		void SetParamsBuffer(std::vector<uint8_t> buffer) { params_buffer_ = std::move(buffer); }
 		const std::vector<uint8_t>& GetParamsBuffer() const { return params_buffer_; }
+
+		const std::unordered_map<std::string, rhi::TextureHandle>& GetTextures() const { return textures_; };
 	private:
 		Ref<Shader> shader_;
 		std::vector<uint8_t> params_buffer_;
-		std::vector<rhi::Texture> textures_;
+		std::unordered_map<std::string,rhi::TextureHandle> textures_;
 	};
 
 	class MaterialInstance : public RefCounter
