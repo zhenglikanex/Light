@@ -22,6 +22,6 @@ namespace light
 
 	void Material::Set(const std::string& name, rhi::Texture* texture)
 	{
-		// todo
+		textures_[name] = texture;
 	}
 }

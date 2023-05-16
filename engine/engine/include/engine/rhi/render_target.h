@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "engine/core/core.h"
 #include "types.h"
 #include "texture.h"
 
@@ -74,3 +75,29 @@ namespace light::rhi
 		AttachmentArray attachments_;
 	};
 }
+
+template<>
+struct std::hash<light::rhi::RenderTarget>
+{
+	size_t operator()(const light::rhi::RenderTarget& render_target) const noexcept
+	{
+		using namespace light;
+		using namespace rhi;
+
+		size_t hash = 0;
+		rhi::HashCombine(hash, render_target.GetNumColors());
+		for (auto& attachment : render_target.GetAttachments())
+		{
+			if (attachment.texture)
+			{
+				rhi::HashCombine(hash, static_cast<uint32_t>(attachment.texture->GetDesc().format));
+			}
+		}
+
+		SampleDesc sample_desc = render_target.GetSampleDesc();
+		rhi::HashCombine(hash,sample_desc.count);
+		rhi::HashCombine(hash, sample_desc.quality);
+
+		return hash;
+	}
+};

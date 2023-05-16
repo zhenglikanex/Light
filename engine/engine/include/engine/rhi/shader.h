@@ -4,6 +4,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "engine/core/core.h"
+
 #include "resource.h"
 #include "types.h"
 
@@ -37,6 +39,10 @@ namespace light::rhi
 	class Shader : public Resource
 	{
 	public:
+		inline static const std::string kSceneDataName = "cbSceneData";
+		inline static const std::string kPerDrawConstantsName = "cbPerDrawConstants";
+		inline static const std::string kMaterialConstantsName = "cbMaterialConstants";
+
 		Shader(const ShaderDesc& desc, std::vector<char> bytecode)
 			: desc_(desc)
 			, bytecode_(std::move(bytecode))
@@ -50,7 +56,6 @@ namespace light::rhi
 		const ShaderBindResourceDeclarationList& GetBindResources() const { return bind_resources_; }
 		
 		const ShaderParamDeclarationMap& GetParamDeclarations() const { return param_declaractions_; }
-
 	protected:
 		ShaderDesc desc_;
 		std::vector<char> bytecode_;
@@ -60,3 +65,20 @@ namespace light::rhi
 
 	using ShaderHandle = Handle<Shader>;
 }
+
+template<>
+struct std::hash<light::rhi::ShaderBindResourceDeclaration>
+{
+	size_t operator()(const light::rhi::ShaderBindResourceDeclaration& bind_resource) const noexcept
+	{
+		using namespace light;
+
+		size_t hash = 0;
+		light::HashCombine(hash, static_cast<uint64_t>(bind_resource.type));
+		light::HashCombine(hash, bind_resource.bind_count);
+		light::HashCombine(hash, bind_resource.bind_point);
+		light::HashCombine(hash, bind_resource.space);
+
+		return hash;
+	}
+};
