@@ -14,6 +14,7 @@ namespace light
 {
 	Renderer::SceneData Renderer::s_scene_data = {};
 	Renderer::RenderData* Renderer::s_render_data = nullptr;
+	ShaderLibrary Renderer::s_shader_library = {};
 
 	void Renderer::Init()
 	{
@@ -55,6 +56,12 @@ namespace light
 		s_render_data->sampler = device->CreateSampler(sampler_desc);
 	}
 
+	void Renderer::Shutdown()
+	{
+		delete s_render_data;
+		s_render_data = nullptr;
+	}
+
 	void Renderer::BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform)
 	{
 		s_scene_data.projection_matrix = camera.GetProjection();
@@ -87,36 +94,43 @@ namespace light
 		s_render_data->render_target = render_target;
 	}
 
-	void Renderer::DrawMesh(rhi::CommandList* command_list, const Material* material, rhi::Buffer* vertex_buffer,
-		rhi::Buffer* index_buffer, const glm::mat4& model_matrix, uint32_t base_vertex, uint32_t base_index)
+	void Renderer::Draw(
+		rhi::CommandList* command_list,
+		const Material* material,
+		rhi::Buffer* vertex_buffer,
+		rhi::Buffer* index_buffer,
+		const glm::mat4& model_matrix,
+		uint32_t index_count,
+		uint32_t base_vertex,
+		uint32_t base_index)
 	{
 		const Shader* shader = material->GetShader();
 
 		command_list->SetGraphicsPipeline(GetGraphicsPipeline(shader, s_render_data->render_target, typeid(Vertex).hash_code()));
 
 		int32_t scene_data_index = shader->FindConstantsBufferBindingIndex(rhi::Shader::kSceneDataName);
-		if(scene_data_index >= 0)
+		if (scene_data_index >= 0)
 		{
 			command_list->SetGraphicsDynamicConstantBuffer(scene_data_index, s_scene_data);
 		}
 
 		int32_t model_matrix_index = shader->FindConstantsBufferBindingIndex(rhi::Shader::kPerDrawConstantsName);
-		if(model_matrix_index >= 0)
+		if (model_matrix_index >= 0)
 		{
 			command_list->SetGraphicsDynamicConstantBuffer(model_matrix_index, model_matrix);
 		}
 
 		int32_t material_index = shader->FindConstantsBufferBindingIndex(rhi::Shader::kMaterialConstantsName);
-		if(material_index >= 0)
+		if (material_index >= 0)
 		{
 			const auto& material_params_buffer = material->GetParamsBuffer();
 			command_list->SetGraphicsDynamicConstantBuffer(material_index, material_params_buffer.size(), material_params_buffer.data());
 		}
 
-		for(auto&[name,texture] : material->GetTextures())
+		for (auto& [name, texture] : material->GetTextures())
 		{
 			auto table = shader->FindTextureBindingTable(name);
-			if(table)
+			if (table)
 			{
 				command_list->SetShaderResourceView(table->index, table->offset, texture);
 			}
@@ -131,7 +145,7 @@ namespace light
 		command_list->SetIndexBuffer(index_buffer);
 
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
-		command_list->DrawIndexed(index_buffer->GetDesc().size_in_bytes / index_buffer->GetDesc().stride, 1, base_index, base_vertex, 0);
+		command_list->DrawIndexed(index_count, 1, base_index, base_vertex, 0);
 	}
 
 	void Renderer::DrawQuad(rhi::CommandList* command_list, const Shader* shader, glm::vec2 position, glm::vec2 scale)
@@ -170,7 +184,7 @@ namespace light
 		command_list->SetIndexBuffer(s_render_data->quad_index_buffer);
 
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
-		command_list->DrawIndexed(s_render_data->quad_index_buffer->GetDesc().size_in_bytes / s_render_data->quad_index_buffer->GetDesc().stride, 1, 0, 0, 0);
+		command_list->DrawIndexed(6, 1, 0, 0, 0);
 	}
 
 	rhi::GraphicsPipeline* Renderer::GetGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target, size_t vertex_type)

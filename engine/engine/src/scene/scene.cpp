@@ -1,23 +1,69 @@
 #include "engine/scene/scene.h"
 #include "engine/scene/entity.h"
 #include "engine/scene/components.h"
+
 #include "engine/renderer/camera.h"
+#include "engine/renderer/renderer.h"
 #include "engine/renderer/renderer2d.h"
+#include "engine/renderer/scene_renderer.h"
 #include "engine/renderer/editor_camera.h"
+
 namespace light
 {
 	void Scene::OnUpdateEditor(Timestep ts, rhi::CommandList* command_list,const rhi::RenderTarget& render_target, EditorCamera& editor_camera)
 	{
-		Renderer2D::BeginScene(command_list,render_target,editor_camera);
-
-		auto group = registry_.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (entt::entity e : group)
+		// draw 3d
 		{
-			const auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(e);
-			Renderer2D::DrawQuad(command_list, transform.GetTransform(), sprite.color);
+			{
+				auto group = registry_.group<TransformComponent>(entt::get<MeshComponent>);
+
+				for (entt::entity e : group)
+				{
+					const auto& [transform, mesh] = group.get<TransformComponent, MeshComponent>(e);
+					
+					SceneRenderer::SubmitMesh(mesh.mesh, transform.GetTransform());
+				};
+			}
+
+			{
+				auto view = registry_.view<TransformComponent, LightComponent>();
+				
+				for (entt::entity e : view)
+				{
+					const auto& [transform, light] = view.get<TransformComponent, LightComponent>(e);
+					
+					glm::vec3 direction = glm::quat(glm::radians(transform.rotation))* glm::vec3(0, 0, 1);
+
+					SceneRenderer::SubmitLight(direction, light.color);
+				}
+			}
+
+			SceneRenderer::BeginScene(this);
+
+			Renderer::BeginScene(command_list, editor_camera);
+
+			Renderer::SetupRenderTarget(command_list, render_target);
+
+			SceneRenderer::Draw(command_list);
+
+			Renderer::EndScene(command_list);
+
+			SceneRenderer::EndScene();
 		}
 
-		Renderer2D::EndScene(command_list);
+		// draw 2d
+		{
+			Renderer2D::BeginScene(command_list, render_target, editor_camera);
+
+			auto view = registry_.view<TransformComponent, SpriteRendererComponent>();
+			for (entt::entity e : view)
+			{
+				const auto& [transform, sprite] = view.get<TransformComponent, SpriteRendererComponent>(e);
+				Renderer2D::DrawQuad(command_list, transform.GetTransform(), sprite.color);
+			}
+
+			Renderer2D::EndScene(command_list);
+		}
 	}
 
 	void Scene::OnUpdateRuntime(Timestep ts, rhi::CommandList* command_list, const rhi::RenderTarget& render_target)

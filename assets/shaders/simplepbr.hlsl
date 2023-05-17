@@ -71,11 +71,13 @@ struct VertexOut
 VertexOut VsMain(VertexIn vin)
 {
     VertexOut vout;
-    vout.PosH = mul(cbViewProjectionMatrix, float4(vin.Position, 1.0f));
-    vout.WorldPosition = (float3)mul(cbViewMatrix,float4(vin.Position,1.0f));
+    float4 pos = mul(cbModelMatrix,float4(vin.Position, 1.0f));
+    vout.PosH = mul(cbViewProjectionMatrix,pos);
+    vout.WorldPosition = (float3)mul(cbViewMatrix,pos);
     vout.Normal = vin.Normal;
     vout.TexCoord = vin.TexCoord;
-    vout.WorldNormalMatrix = mul((float3x3)cbModelMatrix,float3x3(vin.Tangent,vin.Binormal,vin.Normal));
+    //vout.WorldNormalMatrix = mul((float3x3)cbModelMatrix,float3x3(vin.Tangent,vin.Binormal,vin.Normal));
+    vout.WorldNormalMatrix = (float3x3)cbModelMatrix;
 
     return vout;
 }
@@ -162,13 +164,13 @@ float4 PsMain(VertexOut vsInput) : SV_Target
     gParams.Metalness = cbMetalness;
     gParams.Roughness = cbRoughness;
 
-    gParams.Normal = normalize(vsInput.Normal);
+    gParams.Normal = normalize(mul(vsInput.WorldNormalMatrix,vsInput.Normal));
 
     gParams.View = normalize(cbCameraPosition - vsInput.WorldPosition);
     gParams.NdotV = max(dot(gParams.Normal,gParams.View),0.0f);
 
     float3 F0 = lerp(kFdielectric,gParams.Albedo,gParams.Metalness);
 
-    float3 color = Lighting(F0);
+    float3 color = Lighting(F0) + float3(0.5,0.5,0.5);
     return float4(color,1.0f);
 }

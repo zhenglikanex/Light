@@ -17,6 +17,10 @@ namespace light
 
 		void SetFov(float fov);
 
+		void SetPosition(const glm::vec3& position) { position_ = position; Recalculate(); }
+
+		void SetRotation(const glm::vec3& rotation) { rotation_ = rotation; Recalculate(); }
+		 
 		glm::vec3 GetForward() const;
 
 		glm::vec3 GetRight() const;

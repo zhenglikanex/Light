@@ -18,7 +18,6 @@ namespace light
 	class Scene : public RefCounter
 	{
 	public:
-
 		void OnUpdateEditor(Timestep ts, rhi::CommandList* command_list,const rhi::RenderTarget& render_target,EditorCamera& editor_camera);
 
 		void OnUpdateRuntime(Timestep ts, rhi::CommandList* command_list,const rhi::RenderTarget& render_target);

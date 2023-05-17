@@ -1,12 +1,17 @@
 #include "engine/core/application.h"
 
 #include "engine/log/log.h"
+
+#include "engine/renderer/scene_renderer.h"
 #include "engine/renderer/renderer.h"
 #include "engine/renderer/renderer2d.h"
 #include "engine/renderer/camera.h"
+#include "engine/renderer/shader_library.h"
+
 #include "engine/layer/imgui_layer.h"
 #include "engine/profile/profile.h"
 #include "engine/reflection/meta.h"
+
 
 #include "imgui.h"
 
@@ -34,7 +39,7 @@ namespace light
 
 	Application::~Application()
 	{
-		imgui_renderer_->Shutdown();
+		
 	}
 
 	void Application::Init()
@@ -133,6 +138,8 @@ namespace light
 
 		Renderer::Init();
 		Renderer2D::Init();
+		SceneRenderer::Init();
+		ShaderLibrary::Get().Init();
 
 		imgui_layer_ = new ImguiLayer();
 		layer_stack_.PushOverlayLayer(imgui_layer_);
@@ -142,7 +149,12 @@ namespace light
 
 	void Application::Shutdown()
 	{
+		ShaderLibrary::Get().Shutdown();
+		SceneRenderer::Shutdown();
 		Renderer2D::Shutdown();
+		Renderer::Shutdown();
+
+		imgui_renderer_->Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)

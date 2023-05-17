@@ -34,6 +34,11 @@ data.AddField<light::CameraComponent, light::SceneCamera>("camera", &light::Came
 data.AddField<light::CameraComponent, bool>("primary", &light::CameraComponent::primary);
 data.AddField<light::CameraComponent, bool>("aspect_ratio_fixed", &light::CameraComponent::aspect_ratio_fixed);
 }
+{
+TypeData &data = Registry::Get().AddTypeData<light::LightComponent>("light::LightComponent");
+data.AddBaseType("light::Component");
+data.AddField<light::LightComponent, glm::vec<3, float>>("color", &light::LightComponent::color);
+}
 };
 void Registercomponents() {
 AutoRegisterTypes();

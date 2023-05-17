@@ -19,16 +19,17 @@ namespace light
 		glm::vec2 texcoord;
 	};
 
+	struct SubMesh
+	{
+		uint32_t base_vertex;
+		uint32_t base_index;
+		uint32_t index_count;
+		uint32_t material_index;
+	};
+
 	class Mesh : public RefCounter
 	{
 	public:
-		struct SubMesh
-		{
-			uint32_t base_vertex;
-			uint32_t base_index;
-			uint32_t material_index;
-		};
-
 		Mesh(std::string_view filename);
 
 		void SetMaterial(uint32_t index, Material* material);

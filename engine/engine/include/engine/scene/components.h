@@ -4,6 +4,8 @@
 #include "engine/reflection/meta.h"
 #include "engine/scene/scene_camera.h"
 #include "engine/scene/script.h"
+#include "engine/renderer/mesh.h"
+#include "engine/renderer/shader_library.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/glm.hpp"
@@ -72,6 +74,42 @@ namespace light
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& other) = default;
+	};
+
+	struct MeshComponent : public Component
+	{
+		Ref<Mesh> mesh;
+
+		MeshComponent() = default;
+		MeshComponent(const MeshComponent& other) = default;
+		MeshComponent(const Ref<Mesh>& mesh)
+			: mesh(mesh)
+		{
+			Ref<Shader> shader = ShaderLibrary::Get().Get("simplepbr");
+
+			auto material = MakeRef<Material>(shader);
+			
+			material->Set("cbAlbedo", glm::vec3(1.0f,0.0f,0.0f));
+			material->Set("cbMetalness",0.5f);
+			material->Set("cbRoughness", 0.3f);
+
+			for (uint32_t i = 0; i < mesh->GetNumSubMesh(); ++i)
+			{
+				mesh->SetMaterial(i,material);
+			}
+		}
+	};
+
+	struct META() LightComponent : public Component
+	{
+		glm::vec3 color = glm::vec3(1);
+
+		LightComponent() = default;
+		LightComponent(const LightComponent& other) = default;
+		LightComponent(const glm::vec3 & color)
+			: color(color)
+		{
+		}
 	};
 
 	struct NativeScriptComponent : public Component

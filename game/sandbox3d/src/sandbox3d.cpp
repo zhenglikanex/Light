@@ -86,7 +86,7 @@ void Sandbox3D::OnUpdate(const light::Timestep& ts)
 
 			for (auto& sub_mesh : *mesh_)
 			{
-				Renderer::DrawMesh(command_list,mesh_->GetMaterial(sub_mesh.material_index), mesh_->GetVertexBuffer(), mesh_->GetIndexBuffer(), glm::mat4(1.0f));
+				Renderer::Draw(command_list,mesh_->GetMaterial(sub_mesh.material_index), mesh_->GetVertexBuffer(), mesh_->GetIndexBuffer(), glm::mat4(1.0f),sub_mesh.index_count);
 			}
 		}
 		

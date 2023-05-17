@@ -25,6 +25,8 @@ namespace light::editor
 
 		void RenderTargetResize(const glm::vec2& size);
 
+		void NewScene();
+
 		ShaderLibrary shader_library_;
 		TextureLibrary texture_library_;
 		rhi::TextureHandle texture_;

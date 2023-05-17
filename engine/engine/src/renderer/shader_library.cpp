@@ -12,6 +12,29 @@ const std::string kGsShaderEntryPoint = "GsMain";
 
 namespace light
 {
+	ShaderLibrary* ShaderLibrary::s_instance = nullptr;
+
+	ShaderLibrary& ShaderLibrary::Get()
+	{
+		if (!s_instance)
+		{
+			s_instance = new ShaderLibrary();
+		}
+
+		return *s_instance;
+	}
+
+	void ShaderLibrary::Init()
+	{
+		Load("simplepbr", "assets/shaders/simplepbr.hlsl");
+		Load("hdr", "assets/shaders/hdr.hlsl");
+	}
+
+	void ShaderLibrary::Shutdown()
+	{
+		shaders_.clear();
+	}
+
 	Shader* ShaderLibrary::Load(const std::string& name, std::string_view filepath)
 	{
 		LIGHT_ASSERT(!Exist(name), "shader load failed,shader exist!");

@@ -164,9 +164,7 @@ namespace light::editor
 			{
 				if (ImGui::MenuItem("New", "Ctrl+N"))
 				{
-					active_secne_ = MakeRef<Scene>();
-					active_secne_->SetViewportSize(render_target_.GetWidth(), render_target_.GetHeight());
-					scene_hierarchy_panel_.SetScene(active_secne_);
+					NewScene();
 				}
 
 				if (ImGui::MenuItem("Open...","Ctrl+O"))
@@ -239,7 +237,7 @@ namespace light::editor
 			viewport_size_ = *reinterpret_cast<glm::vec2*>(&viewport_panel_size);
 		}
 
-		ImGui::Image(rt_color2_texture_->GetTextureID(), viewport_panel_size);
+		ImGui::Image(rt_color_texture_->GetTextureID(), viewport_panel_size);
 
 		Entity selected_entity = scene_hierarchy_panel_.GetSelectedEntity();
 		if (selected_entity)
@@ -282,6 +280,8 @@ namespace light::editor
 
 	void EditorLayer::OnKeyPressedEvent(const KeyPressedEvent& e)
 	{
+		
+
 		if (e.keycode == (int)Input::Key::KEY_W)
 		{
 			guizmo_type_ = ImGuizmo::TRANSLATE;
@@ -293,6 +293,18 @@ namespace light::editor
 		else if (e.keycode == (int) Input::Key::KEY_R)
 		{
 			guizmo_type_ = ImGuizmo::ROTATE;
+		}
+
+		if (e.keycode == (int)Input::Key::KEY_F)
+		{
+			Entity e = scene_hierarchy_panel_.GetSelectedEntity();
+			if (e)
+			{
+				glm::vec3 position = e.GetComponent<TransformComponent>().position;
+
+				editor_camera_.SetPosition(position - glm::vec3(0, 0, 10));
+				editor_camera_.SetRotation(glm::vec3(0));
+			}
 		}
 	}
 
@@ -332,5 +344,22 @@ namespace light::editor
 		render_target_.AttachAttachment(rhi::AttachmentPoint::kColor0, rt_color_texture_);
 		render_target_.AttachAttachment(rhi::AttachmentPoint::kColor1, rt_color2_texture_);
 		render_target_.AttachAttachment(rhi::AttachmentPoint::kDepthStencil, rt_depth_texture_);
+	}
+
+	void EditorLayer::NewScene()
+	{
+		active_secne_ = MakeRef<Scene>();
+		active_secne_->SetViewportSize(render_target_.GetWidth(), render_target_.GetHeight());
+		scene_hierarchy_panel_.SetScene(active_secne_);
+
+		Entity cube = active_secne_->CreateEntity("Cube");
+		cube.AddComponent<MeshComponent>(MakeRef<Mesh>("assets/models/mayaCube.obj"));
+
+		Entity light = active_secne_->CreateEntity("Light");
+		light.AddComponent<LightComponent>(glm::vec3(1.0f));
+
+		auto& transform_comp = light.GetComponent<TransformComponent>();
+		transform_comp.position.y += 5;
+		transform_comp.rotation.x = 45;
 	}
 }

@@ -53,6 +53,7 @@ namespace light
 
 			sub_meshes_[mesh_index].base_vertex = vertices_.size();
 			sub_meshes_[mesh_index].base_index = indices_.size();
+			sub_meshes_[mesh_index].index_count = mesh->mNumFaces * 3;
 			sub_meshes_[mesh_index].material_index = mesh_index;
 
 			LIGHT_ASSERT(mesh->HasPositions() && mesh->HasNormals(), "必须含有Position和Normals!");

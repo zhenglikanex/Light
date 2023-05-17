@@ -51,8 +51,8 @@ includes("game")
 includes("test")
 
 rule("parser_meta")
-    set_kind("project")
-    before_build(function (opt)
+    --set_kind("project")
+    on_build(function (opt)
         -- imports
         import("core.project.config")
         import("core.project.depend")
@@ -89,6 +89,10 @@ rule("parser_meta")
         os.exec("tool/metareflect.exe C:/Project/Light/engine/engine/include/engine/scene/components.h C:/Project/Light/engine/engine/include/engine/scene/scene_camera.h -p C:/Project/Light/compile_commands.json")
     end)
 rule_end()
+
+target("ReflectionTool")
+    set_kind("phony")
+    add_rules("parser_meta",{outputdir="."})
 
 --add_rules("parser_meta",{outputdir="."})
 --
