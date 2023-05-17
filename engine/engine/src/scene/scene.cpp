@@ -125,6 +125,8 @@ namespace light
 				return Entity{ e,this };
 			}
 		}
+
+		return Entity::kNull;
 	}
 
 	template<>

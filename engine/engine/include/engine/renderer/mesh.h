@@ -22,18 +22,31 @@ namespace light
 	class Mesh : public RefCounter
 	{
 	public:
+		struct SubMesh
+		{
+			uint32_t base_vertex;
+			uint32_t base_index;
+			uint32_t material_index;
+		};
+
 		Mesh(std::string_view filename);
 
-		void SetMaterial(Material* material) { material_ = material; }
+		void SetMaterial(uint32_t index, Material* material);
 
 		rhi::Buffer* GetVertexBuffer() const { return vertex_buffer_; }
 		rhi::Buffer* GetIndexBuffer() const { return index_buffer_; }
-		Material* GetMaterial() const { return material_; }
+		Material* GetMaterial(uint32_t index) const { return materials_[index]; }
+		const SubMesh& GetSubMesh(uint32_t index) const { return sub_meshes_[index]; }
+		uint32_t GetNumSubMesh() const { return sub_meshes_.size(); }
+
+		auto begin() const { return sub_meshes_.begin(); }
+		auto end() const { return sub_meshes_.end(); }
 	private:
 		std::vector<Vertex> vertices_;
 		std::vector<uint32_t> indices_;
 		rhi::BufferHandle vertex_buffer_;
 		rhi::BufferHandle index_buffer_;
-		Ref<Material> material_;
+		std::vector<Ref<Material>> materials_;
+		std::vector<SubMesh> sub_meshes_;
 	};
 }

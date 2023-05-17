@@ -84,7 +84,10 @@ void Sandbox3D::OnUpdate(const light::Timestep& ts)
 			material_->Set("cbMetalness", pbr_material_.metalness);
 			material_->Set("cbRoughness", pbr_material_.roughness);
 
-			Renderer::DrawMesh(command_list, mesh_->GetMaterial(), mesh_->GetVertexBuffer(), mesh_->GetIndexBuffer(), glm::mat4(1.0f));
+			for (auto& sub_mesh : *mesh_)
+			{
+				Renderer::DrawMesh(command_list,mesh_->GetMaterial(sub_mesh.material_index), mesh_->GetVertexBuffer(), mesh_->GetIndexBuffer(), glm::mat4(1.0f));
+			}
 		}
 		
 		Renderer::EndScene(command_list);
@@ -163,5 +166,8 @@ void Sandbox3D::CreateMesh(std::string_view filename)
 	mesh_ = MakeRef<Mesh>(filename);
 
 	material_ = MakeRef<Material>(pbr_shader_);
-	mesh_->SetMaterial(material_);
+	for (int i = 0; i < mesh_->GetNumSubMesh(); ++i)
+	{
+		mesh_->SetMaterial(i,material_);
+	}
 }

@@ -74,7 +74,7 @@ namespace light
 		static void SetupRenderTarget(rhi::CommandList* command_list, const rhi::RenderTarget& render_target);
 
 		// 提交渲染命令
-		static void DrawMesh(rhi::CommandList* command_list, const Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix);
+		static void DrawMesh(rhi::CommandList* command_list, const Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix, uint32_t base_vertex = 0, uint32_t base_index = 0);
 
 		static void DrawQuad(rhi::CommandList* command_list, const Shader* shader, glm::vec2 position = glm::vec2(0), glm::vec2 scale = glm::vec2(1));
 	private:

@@ -32,36 +32,64 @@ namespace light
 			return;
 		}
 
-		aiMesh* mesh = scene->mMeshes[0];
+		materials_.resize(scene->mNumMeshes);
+		sub_meshes_.resize(scene->mNumMeshes);
 		
-		vertices_.reserve(mesh->mNumVertices);
-
-		for (int i = 0; i < vertices_.capacity(); ++i)
+		uint32_t num_vertices = 0;
+		uint32_t num_indices = 0;
+		for (int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index)
 		{
-			Vertex vertex;
-			vertex.position = { mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z };
-			vertex.normal = { mesh->mNormals[i].x,mesh->mNormals[i].y,mesh->mNormals[i].z };
-			vertex.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-			vertex.tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
-			vertex.bitangent = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
-
-			vertices_.emplace_back(vertex);
+			aiMesh* mesh = scene->mMeshes[mesh_index];
+			num_vertices += mesh->mNumVertices;
+			num_indices += mesh->mNumFaces * 3;
 		}
 
-		indices_.reserve(mesh->mNumFaces * 3);
+		vertices_.reserve(num_vertices);
+		indices_.reserve(num_indices);
 
-		//现在通过每个网格的面（一个面是一个网格它的三角形）并检索相应的顶点索引
-		for (uint32_t i = 0; i < mesh->mNumFaces; ++i) 
+		for (int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index)
 		{
-			aiFace face = mesh->mFaces[i];
-			for (uint32_t j = 0; j < face.mNumIndices; j++)
+			aiMesh* mesh = scene->mMeshes[mesh_index];
+
+			sub_meshes_[mesh_index].base_vertex = vertices_.size();
+			sub_meshes_[mesh_index].base_index = indices_.size();
+			sub_meshes_[mesh_index].material_index = mesh_index;
+
+			LIGHT_ASSERT(mesh->HasPositions() && mesh->HasNormals(), "必须含有Position和Normals!");
+
+			for (int i = 0; i < mesh->mNumVertices; ++i)
 			{
-				indices_.emplace_back(face.mIndices[j]);
+				Vertex vertex;
+				vertex.position = { mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z };
+				vertex.normal = { mesh->mNormals[i].x,mesh->mNormals[i].y,mesh->mNormals[i].z };
+
+				if (mesh->HasTangentsAndBitangents())
+				{
+					vertex.tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
+					vertex.bitangent = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+				}
+				
+				if (mesh->HasTextureCoords(0))
+				{
+					vertex.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+				}
+
+				vertices_.emplace_back(vertex);
+			}
+
+			//现在通过每个网格的面（一个面是一个网格它的三角形）并检索相应的顶点索引
+			for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
+			{
+				aiFace face = mesh->mFaces[i];
+				for (uint32_t j = 0; j < face.mNumIndices; j++)
+				{
+					indices_.emplace_back(face.mIndices[j]);
+				}
 			}
 		}
-
-		rhi::Device* device = Application::Get().GetDevice();
 		
+		rhi::Device* device = Application::Get().GetDevice();
+
 		rhi::BufferDesc vertex_buffer_desc;
 		vertex_buffer_desc.type = rhi::BufferType::kVertex;
 		vertex_buffer_desc.size_in_bytes = vertices_.size() * sizeof(Vertex);
@@ -81,5 +109,12 @@ namespace light
 		command_list->WriteBuffer(vertex_buffer_, (uint8_t*)vertices_.data(), vertices_.size() * sizeof(Vertex));
 		command_list->WriteBuffer(index_buffer_, (uint8_t*)indices_.data(), indices_.size() * sizeof(uint32_t));
 		command_list->ExecuteCommandList();
+	}
+
+	void Mesh::SetMaterial(uint32_t index, Material* material)
+	{
+		LIGHT_ASSERT(index < materials_.size(), "out range!");
+
+		materials_[index] = material;
 	}
 }

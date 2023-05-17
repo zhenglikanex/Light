@@ -87,7 +87,8 @@ namespace light
 		s_render_data->render_target = render_target;
 	}
 
-	void Renderer::DrawMesh(rhi::CommandList* command_list, const Material* material, rhi::Buffer* vertex_buffer, rhi::Buffer* index_buffer, const glm::mat4& model_matrix)
+	void Renderer::DrawMesh(rhi::CommandList* command_list, const Material* material, rhi::Buffer* vertex_buffer,
+		rhi::Buffer* index_buffer, const glm::mat4& model_matrix, uint32_t base_vertex, uint32_t base_index)
 	{
 		const Shader* shader = material->GetShader();
 
@@ -130,7 +131,7 @@ namespace light
 		command_list->SetIndexBuffer(index_buffer);
 
 		command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
-		command_list->DrawIndexed(index_buffer->GetDesc().size_in_bytes / index_buffer->GetDesc().stride, 1, 0, 0, 0);
+		command_list->DrawIndexed(index_buffer->GetDesc().size_in_bytes / index_buffer->GetDesc().stride, 1, base_index, base_vertex, 0);
 	}
 
 	void Renderer::DrawQuad(rhi::CommandList* command_list, const Shader* shader, glm::vec2 position, glm::vec2 scale)
