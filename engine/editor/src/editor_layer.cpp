@@ -69,15 +69,6 @@ namespace light::editor
 		{
 			PROFILE_SCOPE("Renderer Draw");
 
-			command_list->SetRenderTarget(render_target_);
-			command_list->SetViewport(render_target_.GetViewport());
-			command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
-
-			constexpr float clear_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			command_list->ClearTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
-			command_list->ClearDepthStencilTexture(render_target_.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
-				rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
-
 			active_secne_->OnUpdateEditor(ts, command_list, render_target_, editor_camera_);
 		}
 
@@ -104,7 +95,6 @@ namespace light::editor
 	{
 		auto commnad_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
 		commnad_list->TransitionBarrier(rt_color_texture_, rhi::ResourceStates::kPixelShaderResource);
-		commnad_list->TransitionBarrier(rt_color2_texture_, rhi::ResourceStates::kPixelShaderResource);
 		commnad_list->ExecuteCommandList();
 
 		static bool show_dockspace = true;
@@ -324,12 +314,12 @@ namespace light::editor
 		color_clear_value.color[3] = 1.0f;
 		rt_color_texture_ = Application::Get().GetDevice()->CreateTexture(color_tex_desc, &color_clear_value);
 
-		rhi::TextureDesc color2_tex_desc;
+		/*rhi::TextureDesc color2_tex_desc;
 		color2_tex_desc.width = size.x;
 		color2_tex_desc.height = size.y;
 		color2_tex_desc.format = rhi::Format::RGBA8_UNORM;
 		color2_tex_desc.is_render_target = true;
-		rt_color2_texture_ = Application::Get().GetDevice()->CreateTexture(color2_tex_desc);
+		rt_color2_texture_ = Application::Get().GetDevice()->CreateTexture(color2_tex_desc);*/
 
 
 		rhi::TextureDesc depth_tex_desc;
@@ -342,7 +332,7 @@ namespace light::editor
 		rt_depth_texture_ = Application::Get().GetDevice()->CreateTexture(depth_tex_desc, &depth_clear_value);
 
 		render_target_.AttachAttachment(rhi::AttachmentPoint::kColor0, rt_color_texture_);
-		render_target_.AttachAttachment(rhi::AttachmentPoint::kColor1, rt_color2_texture_);
+		//render_target_.AttachAttachment(rhi::AttachmentPoint::kColor1, rt_color2_texture_);
 		render_target_.AttachAttachment(rhi::AttachmentPoint::kDepthStencil, rt_depth_texture_);
 	}
 

@@ -1,6 +1,10 @@
 #include "engine/renderer/scene_renderer.h"
 #include "engine/renderer/mesh.h"
+#include "engine/renderer/editor_camera.h"
 #include "engine/renderer/renderer.h"
+#include "engine/renderer/render_pass.h"
+#include "engine/renderer/shader_library.h"
+#include "engine/core/application.h"
 
 #include "engine/rhi/buffer.h"
 
@@ -11,6 +15,11 @@ namespace light
 	void SceneRenderer::Init()
 	{
 		s_instance = new SceneRenderer();
+
+		uint32_t width = Application::Get().GetWindow()->GetWidth();
+		uint32_t height = Application::Get().GetWindow()->GetHeight();
+
+		SetViewportSize(width, height);
 	}
 
 	void SceneRenderer::Shutdown()
@@ -19,13 +28,33 @@ namespace light
 		s_instance = nullptr;
 	}
 
-	void SceneRenderer::BeginScene(const Scene* scene)
+	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		s_instance->active_scene_ = scene;
+		s_instance->viewport_width_ = width;
+		s_instance->viewport_height_ = height;
+
+		CreateRenderPass();
 	}
 
-	void SceneRenderer::EndScene()
+	void SceneRenderer::BeginScene(rhi::CommandList* command_list, const rhi::RenderTarget& render_target, EditorCamera& editor_camera, const Scene* scene)
 	{
+		s_instance->active_scene_ = scene;
+		s_instance->final_render_target_ = render_target;
+
+		RenderPassResources resources;
+		resources.render_target = s_instance->final_render_target_;
+
+		s_instance->final_pass_ = MakeRef<RenderPass>(resources);
+		
+		Renderer::BeginScene(command_list, editor_camera);
+	}
+
+	void SceneRenderer::EndScene(rhi::CommandList* command_list)
+	{
+		Draw(command_list);
+
+		Renderer::EndScene(command_list);
+
 		s_instance->active_scene_ = nullptr;
 		s_instance->draw_items_.clear();
 	}
@@ -60,6 +89,62 @@ namespace light
 
 	void SceneRenderer::Draw(rhi::CommandList* command_list)
 	{
+		GeometryPass(command_list);
+		FinalPass(command_list);
+	}
+
+	void SceneRenderer::CreateRenderPass()
+	{
+		rhi::Device* device = Application::Get().GetDevice();
+
+		rhi::ClearValue color_clear_value;
+		color_clear_value.color[0] = 0;
+		color_clear_value.color[1] = 0;
+		color_clear_value.color[2] = 0;
+		color_clear_value.color[3] = 1;
+
+		rhi::ClearValue depth_clear_value;
+		depth_clear_value.depth_stencil.depth = 1;
+		depth_clear_value.depth_stencil.stencil = 0;
+
+		rhi::TextureDesc color_tex_desc;
+		color_tex_desc.width = s_instance->viewport_width_;
+		color_tex_desc.height = s_instance->viewport_height_;
+		color_tex_desc.format = rhi::Format::RGBA8_UNORM;
+		color_tex_desc.is_render_target = true;
+
+		rhi::TextureDesc depth_tex_desc;
+		depth_tex_desc.width = s_instance->viewport_width_;
+		depth_tex_desc.height = s_instance->viewport_height_;
+		depth_tex_desc.format = rhi::Format::D24S8;
+
+		{
+			rhi::TextureHandle color_tex = device->CreateTexture(color_tex_desc, &color_clear_value);
+			rhi::TextureHandle depth_tex = device->CreateTexture(depth_tex_desc, &depth_clear_value);
+
+			rhi::RenderTarget geo_render_target;
+			geo_render_target.AttachAttachment(rhi::AttachmentPoint::kColor0, color_tex);
+			geo_render_target.AttachAttachment(rhi::AttachmentPoint::kDepthStencil, depth_tex);
+
+			RenderPassResources resources;
+			resources.render_target = geo_render_target;
+			s_instance->geometry_pass_ = MakeRef<RenderPass>(resources);
+		}
+	}
+
+	void SceneRenderer::GeometryPass(rhi::CommandList* command_list)
+	{
+		const rhi::RenderTarget& render_target = s_instance->geometry_pass_->GetResources().render_target;
+
+		Renderer::SetupRenderTarget(command_list, render_target);
+
+		command_list->SetViewport(render_target.GetViewport());
+		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+		constexpr float clear_color[] = { 0, 0, 0, 1.0 };
+		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+		command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
+			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
+
 		for (const auto& draw_item : s_instance->draw_items_)
 		{
 			Renderer::Draw(
@@ -72,5 +157,23 @@ namespace light
 				draw_item.base_vertex,
 				draw_item.base_index);
 		}
+	}
+
+	void SceneRenderer::FinalPass(rhi::CommandList* command_list)
+	{
+		const rhi::RenderTarget& render_target = s_instance->final_pass_->GetResources().render_target;
+		Renderer::SetupRenderTarget(command_list, render_target);
+		command_list->SetViewport(render_target.GetViewport());
+		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+		constexpr float clear_color[] = { 0, 0, 0, 1.0 };
+		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
+		command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
+			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
+
+
+	 	Shader* hdr_shader = ShaderLibrary::Get().Get("hdr");
+		
+		hdr_shader->Set("gSourceMap", s_instance->geometry_pass_->GetResources().render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture);
+		Renderer::DrawQuad(command_list, hdr_shader);
 	}
 }

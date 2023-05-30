@@ -32,7 +32,7 @@ namespace light::editor
 		rhi::TextureHandle texture_;
 
 		rhi::TextureHandle rt_color_texture_;
-		rhi::TextureHandle rt_color2_texture_;
+		//rhi::TextureHandle rt_color2_texture_;
 		rhi::TextureHandle rt_depth_texture_;
 		rhi::RenderTarget render_target_;
 

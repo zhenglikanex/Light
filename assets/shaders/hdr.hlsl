@@ -36,6 +36,6 @@ VertexOut VsMain(VertexIn vin)
 
 float4 PsMain(VertexOut pin) : SV_Target
 {
-    float4 color = float4(gSourceMap.Sample(gSamplerPointWrap,GetTexcoord(pin.TexCoord)).rgb * cbColor,1.0);
+    float4 color = float4(gSourceMap.Sample(gSamplerPointWrap,GetTexcoord(pin.TexCoord)).rgb,1.0);
     return color;
 }

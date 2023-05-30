@@ -140,6 +140,11 @@ namespace light
 
 	void Renderer2D::Flush(rhi::CommandList* command_list)
 	{
+		if (s_renderer_data->batch_quad_count <= 0)
+		{
+			return;
+		}
+
 		command_list->SetDynamicVertexBuffer(0, s_renderer_data->vertices.data(), s_renderer_data->batch_quad_count * sizeof(QuadVertex) * 4, sizeof(QuadVertex));
 
 		for (uint32_t index = 0; index < s_renderer_data->texture_slot_index; ++index)

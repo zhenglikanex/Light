@@ -12,6 +12,8 @@ namespace light
 {
 	void Scene::OnUpdateEditor(Timestep ts, rhi::CommandList* command_list,const rhi::RenderTarget& render_target, EditorCamera& editor_camera)
 	{
+		SceneRenderer::BeginScene(command_list,render_target,editor_camera,this);
+
 		// draw 3d
 		{
 			{
@@ -38,17 +40,7 @@ namespace light
 				}
 			}
 
-			SceneRenderer::BeginScene(this);
-
-			Renderer::BeginScene(command_list, editor_camera);
-
-			Renderer::SetupRenderTarget(command_list, render_target);
-
-			SceneRenderer::Draw(command_list);
-
-			Renderer::EndScene(command_list);
-
-			SceneRenderer::EndScene();
+			SceneRenderer::EndScene(command_list);			
 		}
 
 		// draw 2d

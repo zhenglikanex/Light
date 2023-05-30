@@ -35,6 +35,7 @@ namespace light
 			memcpy(params_buffer_.data() + decl->offset, &value, sizeof(T));
 		}
 
+		void Set(const std::string& name, rhi::TextureHandle texture);
 		void Set(const std::string& name, rhi::Texture* texture);
 
 		rhi::Shader* GetVS() const { return vs_; }
