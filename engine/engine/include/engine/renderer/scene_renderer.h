@@ -33,6 +33,8 @@ namespace light
 	private:
 		static void CreateRenderPass();
 
+		static void ShadowPass(rhi::CommandList* command_list);
+		static void PreDpehtPass(rhi::CommandList* command_list);
 		static void GeometryPass(rhi::CommandList* command_list);
 		static void FinalPass(rhi::CommandList* command_list);
 
@@ -59,6 +61,7 @@ namespace light
 
 		rhi::RenderTarget final_render_target_;
 
+		Ref<RenderPass> shadow_pass_;
 		Ref<RenderPass> geometry_pass_;
 		Ref<RenderPass> final_pass_;
 

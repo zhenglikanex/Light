@@ -40,6 +40,8 @@ namespace light::rhi
 			}
 
 			device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, &d12_clear_value, IID_PPV_ARGS(&resource_));
+
+			clear_value_ = std::make_unique<ClearValue>(*clear_value);
 		}
 		else
 		{
@@ -58,6 +60,18 @@ namespace light::rhi
 	D12Texture::~D12Texture()
 	{
 		ResourceStateTracker::RemoveGlobalResourceState(resource_);
+	}
+
+	const ClearValue* D12Texture::GetClearValue() const
+	{
+		if (clear_value_)
+		{
+			return clear_value_.get();
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE D12Texture::GetRTV()

@@ -132,18 +132,19 @@ namespace light
 		}
 	}
 
+	void SceneRenderer::ShadowPass(rhi::CommandList* command_list)
+	{
+		
+	}
+
+	void SceneRenderer::PreDpehtPass(rhi::CommandList* command_list)
+	{
+
+	}
+
 	void SceneRenderer::GeometryPass(rhi::CommandList* command_list)
 	{
-		const rhi::RenderTarget& render_target = s_instance->geometry_pass_->GetResources().render_target;
-
-		Renderer::SetupRenderTarget(command_list, render_target);
-
-		command_list->SetViewport(render_target.GetViewport());
-		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
-		constexpr float clear_color[] = { 0, 0, 0, 1.0 };
-		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
-		command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
-			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
+		Renderer::BeginRenderPass(command_list,s_instance->geometry_pass_);
 
 		for (const auto& draw_item : s_instance->draw_items_)
 		{
@@ -157,23 +158,19 @@ namespace light
 				draw_item.base_vertex,
 				draw_item.base_index);
 		}
+
+		Renderer::EndRenderPass(command_list, s_instance->geometry_pass_);
 	}
 
 	void SceneRenderer::FinalPass(rhi::CommandList* command_list)
 	{
-		const rhi::RenderTarget& render_target = s_instance->final_pass_->GetResources().render_target;
-		Renderer::SetupRenderTarget(command_list, render_target);
-		command_list->SetViewport(render_target.GetViewport());
-		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
-		constexpr float clear_color[] = { 0, 0, 0, 1.0 };
-		command_list->ClearTexture(render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture, clear_color);
-		command_list->ClearDepthStencilTexture(render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture,
-			rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
-
+		Renderer::BeginRenderPass(command_list, s_instance->s_instance->final_pass_);
 
 	 	Shader* hdr_shader = ShaderLibrary::Get().Get("hdr");
 		
 		hdr_shader->Set("gSourceMap", s_instance->geometry_pass_->GetResources().render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture);
 		Renderer::DrawQuad(command_list, hdr_shader);
+
+		Renderer::EndRenderPass(command_list, s_instance->s_instance->final_pass_);
 	}
 }

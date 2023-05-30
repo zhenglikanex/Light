@@ -82,6 +82,47 @@ namespace light
 
 	}
 
+	void Renderer::BeginRenderPass(rhi::CommandList* command_list, RenderPass* render_pass)
+	{
+		const rhi::RenderTarget& render_target = render_pass->GetResources().render_target;
+
+		Renderer::SetupRenderTarget(command_list, render_target);
+
+		command_list->SetViewport(render_target.GetViewport());
+		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+
+		for (uint32_t i = 0; i < static_cast<uint32_t>(rhi::AttachmentPoint::kDepthStencil); ++i)
+		{
+			rhi::Texture* texture = render_target.GetAttachment(static_cast<rhi::AttachmentPoint>(i)).texture;
+			if (texture)
+			{
+				command_list->ClearTexture(texture, texture->GetClearValue()->color);
+			}
+		}
+
+		if (render_target.HasDepthAttachment())
+		{
+			rhi::Texture* texture = render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture;
+
+			const rhi::FormatInfo& format_info = rhi::GetFormatInfo(texture->GetDesc().format);
+			if (format_info.has_stencil)
+			{
+				command_list->ClearDepthStencilTexture(texture, rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil,
+					texture->GetClearValue()->depth_stencil.depth, texture->GetClearValue()->depth_stencil.stencil);
+			}
+			else
+			{
+				command_list->ClearDepthStencilTexture(texture, rhi::ClearFlags::kClearFlagDepth,
+					texture->GetClearValue()->depth_stencil.depth, texture->GetClearValue()->depth_stencil.stencil);
+			}
+		}
+	}
+
+	void Renderer::EndRenderPass(rhi::CommandList* command_list, RenderPass* render_pass)
+	{
+		
+	}
+
 	void Renderer::SetupLight(Light light)
 	{
 		s_scene_data.light = light;

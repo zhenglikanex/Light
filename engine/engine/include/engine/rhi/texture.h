@@ -36,8 +36,9 @@ namespace light::rhi
 
 		bool IsPermanentState() const { return permanent_state_; }
 
-		virtual void* GetTextureID() = 0;
+		virtual const ClearValue* GetClearValue() const = 0;
 
+		virtual void* GetTextureID() = 0;
 	protected:
 		TextureDesc desc_;
 		bool permanent_state_;

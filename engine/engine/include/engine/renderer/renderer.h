@@ -4,6 +4,7 @@
 
 #include "engine/renderer/camera.h"
 #include "engine/renderer/material.h"
+#include "engine/renderer/render_pass.h"
 #include "engine/renderer/shader_library.h"
 
 #include "engine/rhi/command_list.h"
@@ -62,6 +63,9 @@ namespace light
 		static void BeginScene(rhi::CommandList* command_list,const EditorCamera& camera);
 		static void EndScene(rhi::CommandList* command_list);
 		
+		static void BeginRenderPass(rhi::CommandList* command_list, RenderPass* render_pass);
+		static void EndRenderPass(rhi::CommandList* command_list, RenderPass* render_pass);
+
 		static void SetupLight(Light light);
 		
 		static void SetupRenderTarget(rhi::CommandList* command_list, const rhi::RenderTarget& render_target);

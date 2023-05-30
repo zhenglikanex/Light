@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <memory>
 
 #include "engine/rhi/types.h"
 #include "engine/rhi/texture.h"
@@ -20,6 +21,8 @@ namespace light::rhi
 
 		~D12Texture() override;
 
+		const ClearValue* GetClearValue() const override;
+
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRTV();
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRTV(Format format, uint32_t mip_level,uint32_t array_slice,uint32_t num_array_slices);
 		D3D12_CPU_DESCRIPTOR_HANDLE GetDSV();
@@ -33,6 +36,7 @@ namespace light::rhi
 
 		D12Device* device_;
 		Handle<ID3D12Resource> resource_;
+		std::unique_ptr<ClearValue> clear_value_;
 		std::unordered_map<size_t, DescriptorAllocation> rtv_map_;
 		std::unordered_map<size_t, DescriptorAllocation> dsv_map_;
 		std::unordered_map<size_t, DescriptorAllocation> srv_map_;
