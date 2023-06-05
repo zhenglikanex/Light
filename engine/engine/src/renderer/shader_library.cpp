@@ -28,6 +28,7 @@ namespace light
 	{
 		Load("simplepbr", "assets/shaders/simplepbr.hlsl");
 		Load("hdr", "assets/shaders/hdr.hlsl");
+		Load("shadow", "assets/shaders/shadow.hlsl");
 	}
 
 	void ShaderLibrary::Shutdown()

@@ -79,7 +79,7 @@ namespace light
 
 	void Renderer::EndScene(rhi::CommandList* command_list)
 	{
-
+		
 	}
 
 	void Renderer::BeginRenderPass(rhi::CommandList* command_list, RenderPass* render_pass)
@@ -96,6 +96,8 @@ namespace light
 			rhi::Texture* texture = render_target.GetAttachment(static_cast<rhi::AttachmentPoint>(i)).texture;
 			if (texture)
 			{
+				LIGHT_ASSERT(texture->GetClearValue(), "not clear value!");
+
 				command_list->ClearTexture(texture, texture->GetClearValue()->color);
 			}
 		}
@@ -103,6 +105,8 @@ namespace light
 		if (render_target.HasDepthAttachment())
 		{
 			rhi::Texture* texture = render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture;
+
+			LIGHT_ASSERT(texture->GetClearValue(), "not clear value!");
 
 			const rhi::FormatInfo& format_info = rhi::GetFormatInfo(texture->GetDesc().format);
 			if (format_info.has_stencil)
@@ -231,6 +235,7 @@ namespace light
 	{
 		size_t hash = 0;
 
+		light::HashCombine(hash, (uint64_t)shader->GetCullMode());
 		HashCombine(hash, shader->GetBindResources().size());
 
 		for(auto& bind_resource : shader->GetBindResources())

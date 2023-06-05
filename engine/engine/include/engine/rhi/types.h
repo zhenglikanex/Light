@@ -385,7 +385,7 @@ namespace light::rhi
 	struct RasterizerDesc
 	{
 		FillMode fill_mode = FillMode::kSolid;
-		CullMode cull_mode = CullMode::kBack;
+		CullMode cull_mode = CullMode::kBack; //todo
 		bool front_counter_clockwise = false;
 		int32_t depth_bias = 0;
 		float depth_bias_clamp = 0.0;

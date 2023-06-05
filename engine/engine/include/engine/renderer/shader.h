@@ -21,6 +21,8 @@ namespace light
 	public:
 		Shader(rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
 
+		void SetCullMode(rhi::CullMode cull_mode) { cull_mode_ = cull_mode; }
+
 		template<typename T>
 		void Set(const std::string& name, const T& value)
 		{
@@ -56,6 +58,8 @@ namespace light
 
 		rhi::BindingLayoutHandle CreateBindingLayout() const;
 
+		rhi::CullMode GetCullMode() const { return cull_mode_; }
+
 		const std::vector<uint8_t>& GetParamsBuffer() const { return params_buffer_; }
 
 		const std::unordered_map<std::string, rhi::TextureHandle>& GetTextures() const { return textures_; };
@@ -72,6 +76,7 @@ namespace light
 		mutable std::unordered_map<std::string, ShaderBindingTable> texture_binding_tables_;
 		mutable std::unordered_map<std::string, ShaderBindingTable> sampler_binding_tables_;
 
+		rhi::CullMode cull_mode_;
 		std::vector<uint8_t> params_buffer_;
 		std::unordered_map<std::string, rhi::TextureHandle> textures_;
 	};

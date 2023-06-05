@@ -29,7 +29,7 @@ struct VertexOut
 struct PixelOut
 {
 	float4 color : SV_Target0;
-	float4 color2 : SV_Target1;
+	//float4 color2 : SV_Target1;
 };
 
 VertexOut VsMain(VertexIn vin)
@@ -48,6 +48,6 @@ PixelOut PsMain(VertexOut pin)
 {
 	PixelOut pout;
 	pout.color = color_map[int(pin.TexIndex)].Sample(sampler_point_warp,pin.UV * pin.TilingFactor) * pin.Color;
-	pout.color2 = float4(0.9,0.2,0.2,1.0f);
+	//pout.color2 = float4(0.9,0.2,0.2,1.0f);
     return pout;
 }

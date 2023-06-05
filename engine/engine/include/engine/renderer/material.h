@@ -16,6 +16,8 @@ namespace light
 		
 		const Shader* GetShader() const { return shader_; }
 
+		void SetCullMode(rhi::CullMode cull_mode) { shader_->SetCullMode(cull_mode); }
+
 		template<typename T>
 		void Set(const std::string& name, const T& value)
 		{

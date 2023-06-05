@@ -1,9 +1,12 @@
+#include "lighting.hlsl"
+
 struct Light
 {
     float3 Direction;
     float padding1;
     float3 Color;  
     float padding2;
+    float4x4 ViewProjectionMatrix;
 };
 
 cbuffer cbSceneData : register(b0)
@@ -23,14 +26,13 @@ cbuffer cbPerDrawConstants : register(b1)
 
 cbuffer cbMaterialConstants : register(b2)
 {
-    float3 cbAlbedo;        // 基础颜色
+    float3 cbAlbedo;            // 基础颜色
     float cbMetalness;          // 金属度 (0-1)
     float cbRoughness;          // 粗糙度(0-1)
 }
 
-Texture2D color_map2 : register(t1);
-Texture2D color_map : register(t0);
-SamplerState sampler_point_warp : register(s0);
+Texture2D gShadowMap : register(t0);
+SamplerState gSamplerPointWarp : register(s0);
 
 static const float kPI = 3.1415926;
 static const float kEpsilon = 0.00001;
@@ -73,7 +75,7 @@ VertexOut VsMain(VertexIn vin)
     VertexOut vout;
     float4 pos = mul(cbModelMatrix,float4(vin.Position, 1.0f));
     vout.PosH = mul(cbViewProjectionMatrix,pos);
-    vout.WorldPosition = (float3)mul(cbViewMatrix,pos);
+    vout.WorldPosition = pos;
     vout.Normal = vin.Normal;
     vout.TexCoord = vin.TexCoord;
     //vout.WorldNormalMatrix = mul((float3x3)cbModelMatrix,float3x3(vin.Tangent,vin.Binormal,vin.Normal));
@@ -134,8 +136,19 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
     return ggx1 * ggx2;
 }
 
+float IsShadow(float3 position,float cosTheta)
+{   
+    float4 posLight = mul(light.ViewProjectionMatrix,float4(position,1.0));
+    float2 shadowUV = posLight.xy * 0.5 + 0.5;
+    shadowUV.y = 1-shadowUV.y;
+    float shadow = gShadowMap.Sample(gSamplerPointWarp,shadowUV).r;
 
-float3 Lighting(float3 F0)
+    float bias = 7e-4 * tan(acos(cosTheta)); // cosTheta is dot( n,l ), clamped between 0 and 1
+    bias = clamp(bias, 0.0f, 0.01f);
+    return posLight.z > shadow + bias ? 0.5 : 1;
+}
+
+float3 Lighting(float3 worldPosition, float3 F0)
 {
     float3 result = 0.0;
 
@@ -153,7 +166,9 @@ float3 Lighting(float3 F0)
     // Cook-TorranceBRDF
     float3 specularBRDF = F * D * G / max(kEpsilon,4.0 * cosLi * gParams.NdotV);
 
-    result = specularBRDF * Lradinace * cosLi;
+    result = specularBRDF * Lradinace * cosLi + float3(0.5,0.5,0.5);
+     
+    result *= IsShadow(worldPosition,cosLi);
 
     return result;
 }
@@ -171,6 +186,7 @@ float4 PsMain(VertexOut vsInput) : SV_Target
 
     float3 F0 = lerp(kFdielectric,gParams.Albedo,gParams.Metalness);
 
-    float3 color = Lighting(F0) + float3(0.5,0.5,0.5);
+    float3 color = Lighting(vsInput.WorldPosition, F0);
+
     return float4(color,1.0f);
 }

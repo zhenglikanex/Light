@@ -137,9 +137,9 @@ namespace light
 		}
 
 		Renderer::Init();
+		ShaderLibrary::Get().Init();
 		Renderer2D::Init();
 		SceneRenderer::Init();
-		ShaderLibrary::Get().Init();
 
 		imgui_layer_ = new ImguiLayer();
 		layer_stack_.PushOverlayLayer(imgui_layer_);

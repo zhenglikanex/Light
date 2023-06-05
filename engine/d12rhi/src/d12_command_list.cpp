@@ -306,6 +306,11 @@ namespace light::rhi
 		uint32_t num_array_slices, ResourceStates state_after)
 	{
 		TrackResource(texture);
+
+		//if (GetFormatInfo(texture->GetDesc().format).has_depth)
+		//{
+		//	state_after =  ResourceStates::kDepthWrite;
+		//}
 		
 		TransitionBarrier(texture, state_after);
 

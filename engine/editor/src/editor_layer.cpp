@@ -195,11 +195,11 @@ namespace light::editor
 
 		ImGui::End();
 
-		ImGui::Begin("Settings");
+		ImGui::Begin("SceneRenderSettings");
 
+		
 
 		ImGui::End();
-		
 
 		ImGui::Begin("Profile");
 		for (auto& [name, dt] : Profile::GetProfileResults())
@@ -326,6 +326,7 @@ namespace light::editor
 		depth_tex_desc.width = size.x;
 		depth_tex_desc.height = size.y;
 		depth_tex_desc.format = rhi::Format::D24S8;
+		depth_tex_desc.debug_name = "editor_layer_depth_tex";
 		rhi::ClearValue depth_clear_value;
 		depth_clear_value.depth_stencil.depth = 1.0f;
 		depth_clear_value.depth_stencil.stencil = 0.0f;
@@ -345,11 +346,18 @@ namespace light::editor
 		Entity cube = active_secne_->CreateEntity("Cube");
 		cube.AddComponent<MeshComponent>(MakeRef<Mesh>("assets/models/mayaCube.obj"));
 
+		Entity plane = active_secne_->CreateEntity("Plane");
+		plane.AddComponent<MeshComponent>(MakeRef<Mesh>("assets/models/Plane.fbx"));
+		plane.GetComponent<TransformComponent>().position.y = -1.0f;
+		plane.GetComponent<TransformComponent>().scale.x = 10;
+		plane.GetComponent<TransformComponent>().scale.z = 10;
+
+
 		Entity light = active_secne_->CreateEntity("Light");
 		light.AddComponent<LightComponent>(glm::vec3(1.0f));
 
 		auto& transform_comp = light.GetComponent<TransformComponent>();
-		transform_comp.position.y += 5;
-		transform_comp.rotation.x = 45;
+		transform_comp.position.z = 0;
+		transform_comp.rotation.x = 24;
 	}
 }

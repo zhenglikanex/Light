@@ -6,6 +6,7 @@ namespace light
 		: vs_(vs)
 		, gs_(gs)
 		, ps_(ps)
+		, cull_mode_(rhi::CullMode::kBack)
 	{
 		if (ps_)
 		{

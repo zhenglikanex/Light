@@ -34,9 +34,9 @@ namespace light
 				{
 					const auto& [transform, light] = view.get<TransformComponent, LightComponent>(e);
 					
-					glm::vec3 direction = glm::quat(glm::radians(transform.rotation))* glm::vec3(0, 0, 1);
+					glm::vec3 direction = glm::quat(glm::radians(transform.rotation)) * glm::vec3(0, 0, 1);
 
-					SceneRenderer::SubmitLight(direction, light.color);
+					SceneRenderer::SubmitLight(direction, light.color,transform.GetTransform());
 				}
 			}
 

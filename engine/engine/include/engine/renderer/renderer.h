@@ -30,6 +30,7 @@ namespace light
 			float padding1;
 			glm::vec3 color;
 			float padding2;
+			glm::mat4 view_projection_matrix;
 		};
 
 		struct SceneData

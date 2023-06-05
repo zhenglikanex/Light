@@ -47,6 +47,11 @@ namespace light::rhi
 		{
 			device_->GetNative()->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &res_desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource_));
 		}
+
+#ifdef DEBUG
+		std::wstring wname(desc.debug_name.begin(), desc.debug_name.end());
+		resource_->SetName(wname.c_str());
+#endif
 	}
 
 	D12Texture::D12Texture(D12Device* device, const TextureDesc& desc, ID3D12Resource* native)
