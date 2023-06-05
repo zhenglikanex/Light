@@ -290,6 +290,7 @@ namespace light
 		pso_desc.binding_layout = shader->CreateBindingLayout();
 		pso_desc.vs = shader->GetVS();
 		pso_desc.ps = shader->GetPS();
+		pso_desc.rasterizer_state.cull_mode = shader->GetCullMode();
 		pso_desc.blend_state.render_target[0].blend_enable = true;
 		pso_desc.blend_state.render_target[0].src_blend = rhi::BlendFactor::kSrcAlpha;
 		pso_desc.blend_state.render_target[0].dest_blend = rhi::BlendFactor::kInvSrcAlpha;

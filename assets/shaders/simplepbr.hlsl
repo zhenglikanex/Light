@@ -143,9 +143,9 @@ float IsShadow(float3 position,float cosTheta)
     shadowUV.y = 1-shadowUV.y;
     float shadow = gShadowMap.Sample(gSamplerPointWarp,shadowUV).r;
 
-    float bias = 7e-4 * tan(acos(cosTheta)); // cosTheta is dot( n,l ), clamped between 0 and 1
+    float bias = 5e-4 * tan(acos(cosTheta)); // cosTheta is dot( n,l ), clamped between 0 and 1
     bias = clamp(bias, 0.0f, 0.01f);
-    return posLight.z > shadow + bias ? 0.5 : 1;
+    return posLight.z > shadow + 0.0005 ? 0.5 : 1;
 }
 
 float3 Lighting(float3 worldPosition, float3 F0)
