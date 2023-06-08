@@ -26,7 +26,7 @@ cbuffer cbPerDrawConstants : register(b1)
 
 cbuffer cbMaterialConstants : register(b2)
 {
-    float3 cbAlbedo;            // 基础颜色
+    float3 cbAlbedoColor;            // 基础颜色
     float cbMetalness;          // 金属度 (0-1)
     float cbRoughness;          // 粗糙度(0-1)
 }
@@ -175,7 +175,7 @@ float3 Lighting(float3 worldPosition, float3 F0)
 
 float4 PsMain(VertexOut vsInput) : SV_Target
 {
-    gParams.Albedo = cbAlbedo;
+    gParams.Albedo = cbAlbedoColor;
     gParams.Metalness = cbMetalness;
     gParams.Roughness = cbRoughness;
 

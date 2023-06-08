@@ -19,7 +19,7 @@ namespace light
 	class Shader : public RefCounter
 	{
 	public:
-		Shader(rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
+		Shader(std::string_view filepath,rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
 
 		void SetCullMode(rhi::CullMode cull_mode) { cull_mode_ = cull_mode; }
 
@@ -37,8 +37,22 @@ namespace light
 			memcpy(params_buffer_.data() + decl->offset, &value, sizeof(T));
 		}
 
+		template<typename T>
+		T Get(const std::string& name) const
+		{
+			auto decl = FindParamDeclaration(name);
+			LIGHT_ASSERT(decl, "not param!");
+			LIGHT_ASSERT(decl->size == sizeof(T), "type size not match!");
+			LIGHT_ASSERT(decl->offset + decl->size <= params_buffer_.size(), "out of range!");
+			T value;
+			memcpy(&value, params_buffer_.data() + decl->offset, sizeof(T));
+			return value;
+		}
+
 		void Set(const std::string& name, rhi::TextureHandle texture);
 		void Set(const std::string& name, rhi::Texture* texture);
+
+		const std::string& GetFilePath() const { return filepath_; }
 
 		rhi::Shader* GetVS() const { return vs_; }
 		rhi::Shader* GetGS() const { return gs_; }
@@ -56,7 +70,7 @@ namespace light
 
 		const rhi::ShaderParamDeclarationMap& GetParamDeclarations() const { return param_declaractions_; }
 
-		rhi::BindingLayoutHandle CreateBindingLayout() const;
+		rhi::BindingLayoutHandle GetBindingLayout() const { return binding_layout_; }
 
 		rhi::CullMode GetCullMode() const { return cull_mode_; }
 
@@ -66,11 +80,17 @@ namespace light
 
 		const std::unordered_map<std::string, ShaderBindingTable>& GetSamplerBindingTables() const { return sampler_binding_tables_; }
 	private:
+		rhi::BindingLayoutHandle CreateBindingLayout() const;
+
+		std::string filepath_;
+
 		rhi::ShaderHandle vs_;
 		rhi::ShaderHandle gs_;
 		rhi::ShaderHandle ps_;
 		rhi::ShaderBindResourceDeclarationList bind_resources_;
 		rhi::ShaderParamDeclarationMap param_declaractions_;
+
+		rhi::BindingLayoutHandle binding_layout_;
 
 		mutable std::unordered_map<std::string, uint32_t> constants_buffer_bindings_;
 		mutable std::unordered_map<std::string, ShaderBindingTable> texture_binding_tables_;

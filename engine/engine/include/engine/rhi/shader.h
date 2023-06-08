@@ -25,6 +25,7 @@ namespace light::rhi
 	struct ShaderParamDeclaration
 	{
 		std::string name;
+		std::string type;
 		uint32_t offset = 0;
 		uint32_t size = 0;
 	};

@@ -174,7 +174,7 @@ namespace light::editor
 
 				if (ImGui::MenuItem("Save As...","Ctrl+Shift+S"))
 				{
-					std::string filepath = FileDialogs::SaveFile("Light Scene (*.scene)\0*.scene\0");
+					std::string filepath = FileDialogs::SaveFile("test.scene","Light Scene (*.scene)\0*.scene\0");
 					if (!filepath.empty())
 					{
 						SceneSerializer serializer(active_secne_);
@@ -258,6 +258,24 @@ namespace light::editor
 
 		scene_hierarchy_panel_.OnImguiRender();
 		property_panel_.OnImguiRender();
+
+		if (selected_entity)
+		{
+			if (selected_entity.HasComponent<MeshComponent>())
+			{
+				auto& mesh_comp = selected_entity.GetComponent<MeshComponent>();
+				if (mesh_comp.mesh)
+				{
+					Material* material = mesh_comp.mesh->GetMaterial(0);
+					if (material)
+					{
+						material_panel_.SelectMaterial(material);
+					}
+				}
+			}
+			
+			material_panel_.OnImguiRender();
+		}
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -270,8 +288,6 @@ namespace light::editor
 
 	void EditorLayer::OnKeyPressedEvent(const KeyPressedEvent& e)
 	{
-		
-
 		if (e.keycode == (int)Input::Key::KEY_W)
 		{
 			guizmo_type_ = ImGuizmo::TRANSLATE;

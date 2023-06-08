@@ -19,7 +19,7 @@
 #include "engine/scene/scene_camera.h"
 #include "engine/scene/script.h"
 #include "engine/scene/components.h"
-#include "engine/scene/scene_serializer.h"
+#include "engine/serializer/scene_serializer.h"
 
 #include "engine/renderer/camera.h"
 #include "engine/renderer/mesh.h"

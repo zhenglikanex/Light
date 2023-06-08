@@ -35,6 +35,13 @@ data.AddField<light::CameraComponent, bool>("primary", &light::CameraComponent::
 data.AddField<light::CameraComponent, bool>("aspect_ratio_fixed", &light::CameraComponent::aspect_ratio_fixed);
 }
 {
+TypeData &data = Registry::Get().AddTypeData<light::MeshComponent>("light::MeshComponent");
+data.AddBaseType("light::Component");
+data.AddMethod<light::MeshComponent>("ImGuiDrawProperty", &light::MeshComponent::ImGuiDrawProperty);
+data.AddMethod<light::MeshComponent>("SerializeText", &light::MeshComponent::SerializeText);
+data.AddMethod<light::MeshComponent>("DeserializeText", &light::MeshComponent::DeserializeText);
+}
+{
 TypeData &data = Registry::Get().AddTypeData<light::LightComponent>("light::LightComponent");
 data.AddBaseType("light::Component");
 data.AddField<light::LightComponent, glm::vec<3, float>>("color", &light::LightComponent::color);

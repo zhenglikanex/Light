@@ -1,0 +1,45 @@
+Scene: Untitled
+Entities:
+  - Entity: 2
+    Components:
+      - Type: light::TransformComponent
+        Fields:
+          position: [0, 0, 0]
+          rotation: [24, 0, 0]
+          scale: [1, 1, 1]
+      - Type: light::TagComponent
+        Fields:
+          tag: Light
+      - Type: light::LightComponent
+        Fields:
+          color: [1, 1, 1]
+  - Entity: 1
+    Components:
+      - Type: light::TransformComponent
+        Fields:
+          position: [0, -1, 0]
+          rotation: [0, 0, 0]
+          scale: [10, 1, 10]
+      - Type: light::TagComponent
+        Fields:
+          tag: Plane
+      - Type: light::MeshComponent
+        Fields:
+          mesh: assets/models/Plane.fbx
+          materials:
+            - C:\project\Light\assets\materials\pb2r.mtl
+  - Entity: 0
+    Components:
+      - Type: light::TransformComponent
+        Fields:
+          position: [0, 0, 0]
+          rotation: [0, -0, 0]
+          scale: [1, 1, 1]
+      - Type: light::TagComponent
+        Fields:
+          tag: Cube
+      - Type: light::MeshComponent
+        Fields:
+          mesh: assets/models/mayaCube.obj
+          materials:
+            - C:\project\Light\assets\materials\pb2r.mtl

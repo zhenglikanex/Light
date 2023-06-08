@@ -5,6 +5,7 @@
 
 #include "panel/scene_hierarchy_panel.h"
 #include "panel/property_panel.h"
+#include "panel/material_panel.h"
 
 namespace light::editor
 {
@@ -41,6 +42,7 @@ namespace light::editor
 		Ref<Scene> active_secne_;
 		SceneHierarchyPanel scene_hierarchy_panel_;
 		PropertyPanel property_panel_;
+		MaterialPanel material_panel_;
 
 		int guizmo_type_;
 

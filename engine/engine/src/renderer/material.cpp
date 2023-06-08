@@ -5,7 +5,7 @@ namespace light
 	MaterialInstance::MaterialInstance(Material* material)
 		: material_(material)
 	{
-
+		
 	}
 
 	Material::Material(Shader* shader)
@@ -18,6 +18,21 @@ namespace light
 		}
 
 		params_buffer_.resize(size);
+	}
+
+	void Material::SetShader(Shader* shader)
+	{
+		shader_ = shader;
+
+		uint32_t size = 0;
+		for (auto& [name, decl] : shader_->GetParamDeclarations())
+		{
+			size += decl.size;
+		}
+
+		params_buffer_.clear();
+		params_buffer_.resize(size);
+		textures_.clear();
 	}
 
 	void Material::Set(const std::string& name, rhi::Texture* texture)

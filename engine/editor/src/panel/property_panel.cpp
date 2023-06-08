@@ -78,7 +78,16 @@ namespace light::editor
 		bool open_tree = ImGui::TreeNodeEx(instance.GetType().GetName().data(), ImGuiTreeNodeFlags_OpenOnArrow, name_ref.data());
 		if(open_tree)
 		{
-			DrawTypeProperty(instance);
+			const meta::Method& method = instance.GetType().GetMethod("ImGuiDrawProperty");
+			if (method.IsValid())
+			{
+				method.Invoke(instance);
+			}
+			else 
+			{
+				DrawTypeProperty(instance);
+			}
+			
 			ImGui::TreePop();
 		}
 

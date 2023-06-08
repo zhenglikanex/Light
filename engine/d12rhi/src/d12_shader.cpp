@@ -82,10 +82,17 @@ namespace light::rhi
 				for (uint32_t j = 0; j < d12_buffer_desc.Variables; ++j)
 				{
 					ID3D12ShaderReflectionVariable* d12_variable = d12_constant_buffer->GetVariableByIndex(j);
+					
 					D3D12_SHADER_VARIABLE_DESC d12_variable_desc;
 					d12_variable->GetDesc(&d12_variable_desc);
+
+					D3D12_SHADER_TYPE_DESC type_desc;
+					ID3D12ShaderReflectionType* variable_type = d12_variable->GetType();
+					variable_type->GetDesc(&type_desc);
+
 					ShaderParamDeclaration param_desc;
 					param_desc.name = d12_variable_desc.Name;
+					param_desc.type = type_desc.Name;
 					param_desc.offset = d12_variable_desc.StartOffset;
 					param_desc.size = d12_variable_desc.Size;
 					param_declaractions_.emplace(param_desc.name, param_desc);

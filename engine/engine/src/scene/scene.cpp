@@ -22,8 +22,10 @@ namespace light
 				for (entt::entity e : group)
 				{
 					const auto& [transform, mesh] = group.get<TransformComponent, MeshComponent>(e);
-					
-					SceneRenderer::SubmitMesh(mesh.mesh, transform.GetTransform());
+					if (mesh.mesh)
+					{
+						SceneRenderer::SubmitMesh(mesh.mesh, transform.GetTransform());
+					}
 				};
 			}
 

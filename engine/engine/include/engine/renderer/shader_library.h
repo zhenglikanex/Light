@@ -21,10 +21,10 @@ namespace light
 		void Add(std::string_view name, Shader* shader);
 
 		Shader* Get(const std::string& name);
-	private:
-		bool FindSubShader(const std::string& source,rhi::ShaderType type);
 
 		bool Exist(const std::string& name);
+	private:
+		bool FindSubShader(const std::string& source,rhi::ShaderType type);
 
 		static ShaderLibrary* s_instance;
 

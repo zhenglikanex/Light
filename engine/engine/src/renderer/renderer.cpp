@@ -287,7 +287,7 @@ namespace light
 		
 		rhi::GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
-		pso_desc.binding_layout = shader->CreateBindingLayout();
+		pso_desc.binding_layout = shader->GetBindingLayout();
 		pso_desc.vs = shader->GetVS();
 		pso_desc.ps = shader->GetPS();
 		pso_desc.rasterizer_state.cull_mode = shader->GetCullMode();

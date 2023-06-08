@@ -6,11 +6,14 @@
 #include "engine/scene/script.h"
 #include "engine/renderer/mesh.h"
 #include "engine/renderer/shader_library.h"
+#include "engine/serializer/material_serializer.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/quaternion.hpp"
+
+
 
 namespace light
 {
@@ -76,12 +79,19 @@ namespace light
 		CameraComponent(const CameraComponent& other) = default;
 	};
 
-	struct MeshComponent : public Component
+	struct META() MeshComponent : public Component
 	{
+		NOT_PROPERTY()
 		Ref<Mesh> mesh;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent& other) = default;
+		MeshComponent(std::string_view mesh_file)
+			: mesh(MakeRef<Mesh>(mesh_file))
+		{
+
+		}
+
 		MeshComponent(const Ref<Mesh>& mesh)
 			: mesh(mesh)
 		{
@@ -89,7 +99,7 @@ namespace light
 
 			auto material = MakeRef<Material>(shader);
 			
-			material->Set("cbAlbedo", glm::vec3(1.0f,0.0f,0.0f));
+			material->Set("cbAlbedoColor", glm::vec3(1.0f,0.0f,0.0f));
 			material->Set("cbMetalness",0.5f);
 			material->Set("cbRoughness", 0.3f);
 
@@ -98,6 +108,12 @@ namespace light
 				mesh->SetMaterial(i,material);
 			}
 		}
+
+		void ImGuiDrawProperty();
+
+		void SerializeText(YAML::Emitter* out);
+
+		void DeserializeText(YAML::Node node);
 	};
 
 	struct META() LightComponent : public Component

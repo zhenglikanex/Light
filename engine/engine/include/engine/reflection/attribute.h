@@ -27,4 +27,6 @@ namespace light::meta::attribute
 
 		EditorCondition(const std::string& field_name, uint64_t value) : field_name(field_name), value(value) {}
 	};
+
+	
 }

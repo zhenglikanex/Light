@@ -1,26 +1,87 @@
 #include "engine/scene/components.h"
 
-//RTTR_REGISTRATION
-//{
-//    using namespace rttr;
-//    using namespace ns_3d;
-//    registration::class_<node>("ns_3d::node")
-//        .constructor<std::string, node*>()
-//        (
-//            policy::ctor::as_std_shared_ptr, // should create an instance of the class as shared_ptr<ns_3d::node>
-//            default_arguments(nullptr)       // second argument is optional, so we provide the default value for it
-//        )
-//        .property("name", &node::get_name, &node::set_name)
-//        (
-//            metadata("TOOL_TIP", "Set the name of node.")  // stores metadata associated with this property
-//        )
-//        // register directly a member object pointer; mark it as 'private'
-//        .property_readonly("children", &node::get_children) // a read-only property; so not set possible
-//        .method("set_visible", &node::set_visible)
-//        (
-//            default_arguments(true),              // the default value for 'cascade'
-//            parameter_names("visible", "cascade") // provide the names of the parameter; optional, but might be useful for clients
-//        )
-//        .method("render", &node::render)
-//        ;
-//}
+#include "engine/utils/platform_utils.h"
+#include "engine/serializer/material_serializer.h"
+
+#ifdef LIGHT_EDITOR
+#include "imgui.h"
+#endif
+
+#include "yaml-cpp/yaml.h"
+
+namespace light
+{
+	void MeshComponent::ImGuiDrawProperty()
+	{
+#ifdef LIGHT_EDITOR
+		ImGui::Text("Mesh");
+		std::string mesh_file = mesh != nullptr ? mesh->GetFileName() : "null";
+		ImGui::Text(mesh_file.c_str());
+		ImGui::SameLine();
+		if (ImGui::Button("Select"))
+		{
+			std::string file = FileDialogs::OpenFile("Mesh\0 *.obj;*.fbx\0");
+			if (!file.empty())
+			{
+				mesh = MakeRef<Mesh>(file);
+			}
+		}
+
+		if (ImGui::TreeNode("Materials"))
+		{
+			if (mesh)
+			{
+				for (uint32_t i = 0; i < mesh->GetNumSubMesh(); ++i)
+				{
+					Material* mat = mesh->GetMaterial(i);
+					std::string label = mat != nullptr ? std::format("{}.{}", i, mat->GetFilePath()) : std::format("{}.null", i);
+					ImGui::Text(label.c_str());
+					ImGui::SameLine();
+					if (ImGui::Button("Select"))
+					{
+						std::string file = FileDialogs::OpenFile("Material\0 *.mtl\0");
+						if (!file.empty())
+						{
+							Ref<Material> material = MakeRef<Material>();
+							MaterialSerializer serializer(material);
+							serializer.DeserializeText(file);
+
+							mesh->SetMaterial(i, material);
+						}
+					}
+				}
+				ImGui::TreePop();
+			}
+		}
+#endif
+	}
+
+	void MeshComponent::SerializeText(YAML::Emitter* out)
+	{
+		*out << YAML::Key << "mesh" << YAML::Value << mesh->GetFileName();
+		*out << YAML::Key << "materials" << YAML::Value << YAML::BeginSeq;
+		for (int i = 0; i < mesh->GetNumSubMesh(); ++i)
+		{
+			Material* mat = mesh->GetMaterial(i);
+			*out << mat->GetFilePath();
+		}
+		*out << YAML::EndSeq;
+	}
+
+	void MeshComponent::DeserializeText(YAML::Node node)
+	{
+		std::string mesh_file = node["mesh"].as<std::string>();
+		mesh = MakeRef<Mesh>(mesh_file);
+
+		uint32_t i = 0;
+		for (auto mat_node : node["materials"])
+		{
+			Ref<Material> material = MakeRef<Material>();
+			std::string mat_file = mat_node.as<std::string>();
+			MaterialSerializer serializer(material);
+			serializer.DeserializeText(mat_file);
+
+			mesh->SetMaterial(i++, material);
+		}
+	}
+}

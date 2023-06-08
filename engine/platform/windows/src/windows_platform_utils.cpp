@@ -32,10 +32,14 @@ namespace light
 		return std::string();
 	}
 
-	std::string FileDialogs::SaveFile(std::string_view filter)
+	std::string FileDialogs::SaveFile(std::string_view default_name, std::string_view filter)
 	{
 		OPENFILENAMEA ofn;
-		CHAR sz_file[256] = { "test.scene" };
+		CHAR sz_file[256];
+
+		memcpy(sz_file, default_name.data(), default_name.size());
+		sz_file[default_name.size()] = '\0';
+
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hwndOwner = (HWND)(Application::Get().GetWindow()->GetHwnd());

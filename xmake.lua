@@ -27,6 +27,8 @@ if is_os("windows") then
     add_defines("_CRT_SECURE_NO_WARNINGS")
 end
 
+add_defines("LIGHT_EDITOR")
+
 -- 如果当前编译模式是debug
 if is_mode("debug") then
 
@@ -38,7 +40,6 @@ if is_mode("debug") then
 
     -- 禁用优化
     set_optimize("none")
-
 end
 
 add_defines("UNICODE")

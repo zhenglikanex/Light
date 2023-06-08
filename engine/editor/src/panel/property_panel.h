@@ -1,7 +1,9 @@
 #pragma once
 
 #include "engine/light.h"
+#include "engine/scene/components.h"
 #include "../editor_event.h"
+
 
 namespace light::editor
 {

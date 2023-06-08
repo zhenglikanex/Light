@@ -2,8 +2,9 @@
 
 namespace light
 {
-	Shader::Shader(rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs)
-		: vs_(vs)
+	Shader::Shader(std::string_view filepath, rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs)
+		: filepath_(filepath)
+		, vs_(vs)
 		, gs_(gs)
 		, ps_(ps)
 		, cull_mode_(rhi::CullMode::kBack)
@@ -67,6 +68,8 @@ namespace light
 		}
 
 		params_buffer_.resize(size);
+
+		binding_layout_ = CreateBindingLayout();
 	}
 
 	void Shader::Set(const std::string& name, rhi::TextureHandle texture)

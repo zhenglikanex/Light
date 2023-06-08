@@ -10,12 +10,14 @@ namespace meta_generated
     #define META(...) __attribute__((annotate("reflect-class;" #__VA_ARGS__)))
     #define PROPERTY(...) __attribute__((annotate(#__VA_ARGS__)))
     #define FUNCTION(...) __attribute__((annotate(#__VA_ARGS__)))
-    #define FRIEND_META(...) 
+    #define FRIEND_META(...)
+    #define NOT_PROPERTY() __attribute__((annotate("not-property")))
 #else /* else __METAREFLECT__ */
     #define META(...)
     #define PROPERTY(...)
     #define FUNCTION(...)
     #define FRIEND_META(...)  friend void ::meta_generated::AutoRegisterTypes();
+    #define NOT_PROPERTY()
 #endif /* __METAREFLECT__ */
 
 namespace meta_generated

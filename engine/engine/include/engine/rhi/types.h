@@ -312,17 +312,6 @@ namespace light::rhi
 		kUnorderAccessView
 	};
 
-	enum class ShaderMaterialParamType
-	{
-		kInt,
-		kUint,
-		kFloat,
-		kFloat2,
-		kFloat3,
-		kFloat4,
-		kTexture,
-	};
-
 	enum class ShaderVisibility : uint8_t
 	{
 		kAll = 0,
