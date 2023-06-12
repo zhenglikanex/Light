@@ -106,16 +106,16 @@ namespace light::rhi
 	protected:
 		void CommitDescriptorHeaps();
 
-		// �Զ�׷��ʹ���е���Դ��������
-		void TrackResource(Resource* resource) override;
+		// 保证使用中的资源的生命周期
+		void TrackResource(RefCounter* resource) override;
 
 		void FlushResourceBarriers() override;
 	private:
 		D12Device* device_;
-		Handle<ID3D12CommandAllocator> d3d12_command_allocator_;
-		Handle<ID3D12GraphicsCommandList> d3d12_command_list_;
-		std::vector<ResourceHandle> track_resources_;
-		std::vector<Handle<ID3D12Resource>> track_upload_resources_;
+		Ref<ID3D12CommandAllocator> d3d12_command_allocator_;
+		Ref<ID3D12GraphicsCommandList> d3d12_command_list_;
+		std::vector<Ref<RefCounter>> track_resources_;
+		std::vector<Ref<ID3D12Resource>> track_upload_resources_;
 		UploadBuffer upload_buffer_;
 		ResourceStateTracker resource_state_tracker_;
 		std::unique_ptr<DynamicDescriptorHeap> dynamic_descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER + 1];

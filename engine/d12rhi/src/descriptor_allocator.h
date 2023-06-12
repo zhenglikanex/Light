@@ -7,7 +7,7 @@
 #include <queue>
 #include <mutex>
 
-#include "engine/rhi/resource.h"
+#include "engine/core/base.h"
 
 #include "d3dx12.h"
 
@@ -36,10 +36,10 @@ namespace light::rhi
 
 		DescriptorAllocation& operator=(DescriptorAllocation&& other) noexcept;
 
-		// ¼ì²éÊÇ·ñÓĞĞ§
+		// æ£€æŸ¥æ˜¯å¦æœ‰æ•ˆ
 		bool IsNull() const;
 
-		// ¼ì²éÊÇ·ñÓĞĞ§
+		// æ£€æŸ¥æ˜¯å¦æœ‰æ•ˆ
 		bool IsValid() const;
 
 		void Reset();
@@ -61,7 +61,7 @@ namespace light::rhi
 	public:
 		D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() const { return heap_type_; }
 
-		// ¼ì²éÊÇ·ñ»¹ÓĞÁ¬ĞøµÄÊ£ÓàÃèÊö·û
+		// æ£€æŸ¥æ˜¯å¦è¿˜æœ‰è¿ç»­çš„å‰©ä½™æè¿°ç¬¦
 		bool HasSpace(uint32_t num_descriptors) const;
 
 		uint32_t NumFreeHandles() const;
@@ -74,10 +74,10 @@ namespace light::rhi
 
 		DescriptorAllocatorPage(D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t num_descriptors);
 
-		// ¼ÆËã¶ÔÓÚHandle¶ÔÓÚHeapÆğÊ¼Î»ÖÃµÄÆ«ÒÆ
+		// è®¡ç®—å¯¹äºHandleå¯¹äºHeapèµ·å§‹ä½ç½®çš„åç§»
 		uint32_t ComputeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle);
 
-		// Ìí¼ÓÃèÊö·ûµ½FreeList
+		// æ·»åŠ æè¿°ç¬¦åˆ°FreeList
 		void AddNewBlock(uint32_t offset, uint32_t num_descriptors);
 
 		void FreeBlock(uint32_t offset, uint32_t num_descriptors);
@@ -120,7 +120,7 @@ namespace light::rhi
 
 		D12Device* device_;
 		D3D12_DESCRIPTOR_HEAP_TYPE heap_type_;
-		Handle<ID3D12DescriptorHeap> d3d12_descriptor_heap_;
+		Ref<ID3D12DescriptorHeap> d3d12_descriptor_heap_;
 		CD3DX12_CPU_DESCRIPTOR_HANDLE base_descriptor_;
 		uint32_t descriptor_handle_increment_size_;
 		uint32_t num_descriptors_;

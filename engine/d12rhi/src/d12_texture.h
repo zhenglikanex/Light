@@ -35,7 +35,7 @@ namespace light::rhi
 	private:
 
 		D12Device* device_;
-		Handle<ID3D12Resource> resource_;
+		Ref<ID3D12Resource> resource_;
 		std::unique_ptr<ClearValue> clear_value_;
 		std::unordered_map<size_t, DescriptorAllocation> rtv_map_;
 		std::unordered_map<size_t, DescriptorAllocation> dsv_map_;

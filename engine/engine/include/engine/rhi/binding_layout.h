@@ -3,7 +3,8 @@
 #include <vector>
 
 #include "types.h"
-#include "resource.h"
+
+#include "engine/core/base.h"
 
 namespace light::rhi
 {
@@ -106,7 +107,7 @@ namespace light::rhi
 		}
 	};
 
-	class BindingLayout final : public Resource
+	class BindingLayout final : public RefCounter
 	{
 	public:
 		explicit BindingLayout(uint32_t num_parameters)
@@ -147,5 +148,5 @@ namespace light::rhi
 		std::vector<BindingParameter> parameters_;
 	};
 
-	using BindingLayoutHandle = Handle<BindingLayout>;
+	using BindingLayoutHandle = Ref<BindingLayout>;
 }

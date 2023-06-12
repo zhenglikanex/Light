@@ -4,7 +4,7 @@
 #include <string>
 #include <mutex>
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "engine/profile/timer.h"
 
 namespace light

@@ -1,6 +1,6 @@
 #include <format>
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "engine/reflection/type.h"
 #include "engine/reflection/field.h"
 #include "engine/reflection/method.h"

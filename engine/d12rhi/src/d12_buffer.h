@@ -27,7 +27,7 @@ namespace light::rhi
 		ID3D12Resource* GetNative() { return resource_.Get(); }
 	private:
 		D12Device* device_;
-		Handle<ID3D12Resource> resource_;
+		Ref<ID3D12Resource> resource_;
 
 		DescriptorAllocation cbv_;
 		std::unordered_map<size_t, DescriptorAllocation> sbv_map_;

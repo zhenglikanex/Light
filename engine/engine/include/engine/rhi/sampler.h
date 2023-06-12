@@ -3,7 +3,7 @@
 #include <numeric>
 
 #include "types.h"
-#include "resource.h"
+#include "engine/core/base.h"
 
 #undef max
 #undef min
@@ -24,7 +24,7 @@ namespace light::rhi
         float max_lod = std::numeric_limits<float>::max();
 	};
 
-    class Sampler : public Resource
+    class Sampler : public RefCounter
     {
     public:
         explicit Sampler(const SamplerDesc& desc)
@@ -38,5 +38,5 @@ namespace light::rhi
         SamplerDesc desc_;
     };
 
-    using SamplerHandle = Handle<Sampler>;
+    using SamplerHandle = Ref<Sampler>;
 }

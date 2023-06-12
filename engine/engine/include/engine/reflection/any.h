@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "engine/reflection/type.h"
 
 namespace light::meta

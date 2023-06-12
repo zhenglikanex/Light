@@ -4,7 +4,7 @@
 #include <queue>
 #include <functional>
 
-#include "engine/rhi/resource.h"
+#include "engine/core/base.h"
 
 #include "d3dx12.h"
 
@@ -37,7 +37,7 @@ namespace light::rhi
 	private:
 		ID3D12DescriptorHeap* RequestDescriptorHeap();
 
-		Handle<ID3D12DescriptorHeap> CreateDescriptorHeap();
+		Ref<ID3D12DescriptorHeap> CreateDescriptorHeap();
 
 		// ������Ҫ�ύ��GPU�ɼ��ѵ�����
 		uint32_t ComputeStaleDescriptorCount() const;
@@ -86,8 +86,8 @@ namespace light::rhi
 		// ��Ҫ�ĸ��µ�root signature�����������ĸ���������������
 		uint32_t stale_descriptor_table_bit_mask_;
 
-		std::queue<Handle<ID3D12DescriptorHeap>> descriptor_heap_pool_;
-		std::queue<Handle<ID3D12DescriptorHeap>> available_descriptor_heaps_;
+		std::queue<Ref<ID3D12DescriptorHeap>> descriptor_heap_pool_;
+		std::queue<Ref<ID3D12DescriptorHeap>> available_descriptor_heaps_;
 
 		ID3D12DescriptorHeap* current_descriptor_heap_;
 		CD3DX12_GPU_DESCRIPTOR_HANDLE current_gpu_descriptor_handle_;

@@ -5,7 +5,7 @@
 #include <deque>
 #include <vector>
 
-#include "engine/rhi/resource.h"
+#include "engine/core/base.h"
 
 namespace light::rhi
 {
@@ -53,7 +53,7 @@ namespace light::rhi
 		private:
 			D12Device* device_;
 
-			Handle<ID3D12Resource> resource_;
+			Ref<ID3D12Resource> resource_;
 
 			void* cpu_;
 			D3D12_GPU_VIRTUAL_ADDRESS gpu_;
@@ -79,6 +79,6 @@ namespace light::rhi
 
 		std::shared_ptr<Page> current_page_;
 
-		std::vector<Handle<ID3D12Resource>> large_upload_resources_;
+		std::vector<Ref<ID3D12Resource>> large_upload_resources_;
 	};
 }

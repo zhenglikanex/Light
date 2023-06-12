@@ -1,6 +1,6 @@
 #include "d12_shader.h"
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 
 #include <cstdio>
 #include <d3d12shader.h>
@@ -13,7 +13,7 @@ namespace light::rhi
 		: Shader(desc, std::move(bytecode))
 		, device_(device)
 	{
-		Handle<ID3D12ShaderReflection> reflection;
+		Ref<ID3D12ShaderReflection> reflection;
 		D3DReflect(GetBytecode().data(), GetBytecode().size(), IID_PPV_ARGS(&reflection));
 
 		D3D12_SHADER_DESC shader_desc;

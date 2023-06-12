@@ -365,7 +365,7 @@ namespace light::rhi
 
 			const BufferDesc& desc = buffer->GetDesc();
 
-			CHECK(desc.type == BufferType::kVertex, "buffer的Type不是VertexBuffer");
+			LIGHT_ASSERT(desc.type == BufferType::kVertex, "buffer的Type不是VertexBuffer");
 
 			auto d12_buffer = CheckedCast<D12Buffer*>(buffer.Get());
 
@@ -384,7 +384,7 @@ namespace light::rhi
 	{
 		const BufferDesc& desc = buffer->GetDesc();
 
-		CHECK(desc.type == BufferType::kVertex, "buffer的Type不是VertexBuffer");
+		LIGHT_ASSERT(desc.type == BufferType::kVertex, "buffer的Type不是VertexBuffer");
 
 		auto d12_buffer = CheckedCast<D12Buffer*>(buffer);
 
@@ -417,7 +417,7 @@ namespace light::rhi
 	{
 		const BufferDesc& desc = buffer->GetDesc();
 
-		CHECK(desc.type == BufferType::kIndex,"buffer的Type不是IndexBuffer");
+		LIGHT_ASSERT(desc.type == BufferType::kIndex,"buffer的Type不是IndexBuffer");
 
 		auto d12_buffer = CheckedCast<D12Buffer*>(buffer);
 
@@ -597,7 +597,7 @@ namespace light::rhi
 		d3d12_command_list_->SetDescriptorHeaps(num_heaps, heap);
 	}
 
-	void D12CommandList::TrackResource(Resource* resource)
+	void D12CommandList::TrackResource(RefCounter* resource)
 	{
 		track_resources_.emplace_back(resource);
 	}

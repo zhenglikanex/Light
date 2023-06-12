@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "resource.h"
+#include "engine/core/base.h"
 #include "types.h"
 
 namespace light::rhi
@@ -18,7 +18,7 @@ namespace light::rhi
 		bool is_instance;
 	};
 
-	class InputLayout : public Resource
+	class InputLayout : public RefCounter
 	{
 	public:
 		explicit InputLayout(std::vector<VertexAttributeDesc> attributes)
@@ -30,6 +30,6 @@ namespace light::rhi
 		std::vector<VertexAttributeDesc> attributes_;
 	};
 
-	using InputLayoutHandle = Handle<InputLayout>;
+	using InputLayoutHandle = Ref<InputLayout>;
 
 }

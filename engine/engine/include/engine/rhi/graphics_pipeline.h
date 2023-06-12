@@ -1,8 +1,7 @@
 #pragma once
 
-#include "base.h"
 #include "types.h"
-#include "resource.h"
+#include "engine/core/base.h"
 #include "render_target.h"
 #include "shader.h"
 #include "input_layout.h"
@@ -27,7 +26,7 @@ namespace light::rhi
 		DepthStencilDesc depth_stencil_state;
 	};
 
-	class GraphicsPipeline : public Resource
+	class GraphicsPipeline : public RefCounter
 	{
 	public:
 		GraphicsPipeline(const GraphicsPipelineDesc& desc)
@@ -41,6 +40,6 @@ namespace light::rhi
 		GraphicsPipelineDesc desc_;
 	};
 
-	using GraphicsPipelineHandle = Handle<GraphicsPipeline>;
+	using GraphicsPipelineHandle = Ref<GraphicsPipeline>;
 	
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "engine/scene/scene.h"
 
 #include "entt/entt.hpp"

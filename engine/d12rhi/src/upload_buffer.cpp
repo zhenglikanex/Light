@@ -68,7 +68,7 @@ namespace light::rhi
 	{
 		size_t align_bytes = Align(bytes, alignment);
 
-		Handle<ID3D12Resource> upload_resource;
+		Ref<ID3D12Resource> upload_resource;
 
 		CD3DX12_HEAP_PROPERTIES heap_properties(D3D12_HEAP_TYPE_UPLOAD);
 

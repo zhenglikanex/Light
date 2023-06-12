@@ -41,7 +41,7 @@ namespace light::rhi
 		HWND hwnd_;
 		uint32_t width_;
 		uint32_t height_;
-		Handle<IDXGISwapChain4> dxgi_swap_chain_;
+		Ref<IDXGISwapChain4> dxgi_swap_chain_;
 		TextureHandle back_buffer_textures_[kBufferCount];
 		uint32_t current_back_buffer_index_;
 		uint64_t fence_values_[kBufferCount];

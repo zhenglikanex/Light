@@ -97,8 +97,8 @@ namespace light::rhi
 				}
 			}
 
-			Handle<ID3DBlob> serialized_rs = nullptr;
-			Handle<ID3DBlob> error_blob = nullptr;
+			Ref<ID3DBlob> serialized_rs = nullptr;
+			Ref<ID3DBlob> error_blob = nullptr;
 
 			D3D12_ROOT_SIGNATURE_FLAGS flag = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 			if (allow_input_layout)
@@ -120,8 +120,8 @@ namespace light::rhi
 		}
 		else
 		{
-			Handle<ID3DBlob> serialized_rs = nullptr;
-			Handle<ID3DBlob> error_blob = nullptr;
+			Ref<ID3DBlob> serialized_rs = nullptr;
+			Ref<ID3DBlob> error_blob = nullptr;
 
 			D3D12_ROOT_SIGNATURE_FLAGS flag = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 			if (allow_input_layout)

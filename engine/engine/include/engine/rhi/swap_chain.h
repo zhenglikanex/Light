@@ -1,15 +1,14 @@
 #pragma once
 
 #include "types.h"
-#include "base.h"
-#include "resource.h"
+#include "engine/core/base.h"
 #include "render_target.h"
 
 namespace light::rhi
 {
 	class Device;
 
-	class SwapChain : public Resource
+	class SwapChain : public RefCounter
 	{
 	public:
 		static constexpr uint32_t kBufferCount = 2;
@@ -28,5 +27,5 @@ namespace light::rhi
 		virtual void SetVSync(bool vsync) = 0;
 	};
 
-	using SwapChainHandle = Handle<SwapChain>;
+	using SwapChainHandle = Ref<SwapChain>;
 }

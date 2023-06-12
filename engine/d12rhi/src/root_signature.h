@@ -2,14 +2,13 @@
 
 #include <d3d12.h>
 
-#include "engine/rhi/resource.h"
 #include "engine/rhi/binding_layout.h"
 
 namespace light::rhi
 {
 	class D12Device;
 
-	class RootSignature final : public Resource
+	class RootSignature final : public RefCounter
 	{
 	public:
 		RootSignature(D12Device* device, size_t hash,BindingLayoutHandle binding_layout,bool allow_input_layout);
@@ -33,7 +32,7 @@ namespace light::rhi
 	private:
 		D12Device* device_;
 
-		Handle<ID3D12RootSignature> root_signature_;
+		Ref<ID3D12RootSignature> root_signature_;
 
 		size_t hash_;
 
@@ -48,5 +47,5 @@ namespace light::rhi
 		uint32_t sampler_table_bit_mask_;
 	};
 
-	using RootSignatureHandle = Handle<RootSignature>;
+	using RootSignatureHandle = Ref<RootSignature>;
 }

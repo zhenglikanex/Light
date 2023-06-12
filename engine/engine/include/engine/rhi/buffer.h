@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "resource.h"
+#include "engine/core/base.h"
 #include "types.h"
 
 namespace light::rhi
@@ -19,7 +19,7 @@ namespace light::rhi
 		std::string debug_name;
 	};
 
-	class Buffer : public Resource
+	class Buffer : public RefCounter
 	{
 	public:
 		explicit Buffer(const BufferDesc& desc)
@@ -39,5 +39,5 @@ namespace light::rhi
 		bool permanent_state_;
 	};
 
-	using BufferHandle = Handle<Buffer>;
+	using BufferHandle = Ref<Buffer>;
 }

@@ -2,7 +2,7 @@
 
 #include "light_pch.h"
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "engine/renderer/material.h"
 #include "engine/rhi/buffer.h"
 

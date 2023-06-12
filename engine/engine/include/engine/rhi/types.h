@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "base.h"
+#include "engine/core/base.h"
 
 namespace light::rhi
 {
@@ -42,7 +42,7 @@ namespace light::rhi
 		kVideoEncodeWrite = 0x800000
 	};
 
-	RHI_ENUM_CLASS_FLAG_OPERATORS(ResourceStates)
+	ENUM_CLASS_FLAG_OPERATORS(ResourceStates)
 
 	enum class CpuAccess : uint8_t
 	{
@@ -338,7 +338,7 @@ namespace light::rhi
 		kClearFlagStencil	= 0x2
 	};
 
-	RHI_ENUM_CLASS_FLAG_OPERATORS(ClearFlags);
+	ENUM_CLASS_FLAG_OPERATORS(ClearFlags);
 
 	enum class PrimitiveTopology : uint8_t
 	{

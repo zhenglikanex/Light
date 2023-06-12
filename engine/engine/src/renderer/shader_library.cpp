@@ -1,5 +1,5 @@
 #include "engine/renderer/shader_library.h"
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "engine/core/application.h"
 #include "engine/rhi/shader.h"
 

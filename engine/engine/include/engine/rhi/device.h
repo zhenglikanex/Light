@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base.h"
-#include "resource.h"
+#include "engine/core/base.h"
 #include "shader.h"
 #include "buffer.h"
 #include "texture.h"
@@ -15,7 +14,7 @@
 
 namespace light::rhi
 {
-	class Device : public Resource
+	class Device : public RefCounter
 	{
 	public:
 		virtual GraphicsApi GetGraphicsApi() const = 0;
@@ -36,7 +35,7 @@ namespace light::rhi
 		virtual void Flush() = 0;
 	};
 
-	using DeviceHandle = Handle<Device>;
+	using DeviceHandle = Ref<Device>;
 
 	//------------------------------------------------------------------------------------------------
 	inline uint32_t CalcSubresource(uint32_t mip_level, uint32_t array_slice, uint32_t mip_levels)

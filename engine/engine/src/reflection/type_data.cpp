@@ -1,6 +1,6 @@
 #include "engine/reflection/type_data.h"
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 
 namespace light::meta
 {

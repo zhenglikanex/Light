@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "resource.h"
+#include "engine/core/base.h"
 #include "types.h"
 
 namespace light::rhi
@@ -20,7 +20,7 @@ namespace light::rhi
 		std::string debug_name;
 	};
 
-	class Texture : public Resource
+	class Texture : public RefCounter
 	{
 	public:
 		explicit Texture(const TextureDesc& desc)
@@ -44,5 +44,5 @@ namespace light::rhi
 		bool permanent_state_;
 	};
 
-	using TextureHandle = Handle<Texture>;
+	using TextureHandle = Ref<Texture>;
 }

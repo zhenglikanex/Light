@@ -48,10 +48,10 @@ namespace light::rhi
 		};
 
 		D12Device* device_;
-		Handle<ID3D12CommandQueue> queue_;
-		ThreadSafeQueue<Handle<CommandList>> available_command_lists_;
+		Ref<ID3D12CommandQueue> queue_;
+		ThreadSafeQueue<Ref<CommandList>> available_command_lists_;
 		ThreadSafeQueue<CommandListEntry> flight_command_lists_;
-		Handle<ID3D12Fence> fence_;
+		Ref<ID3D12Fence> fence_;
 		std::atomic_uint64_t fence_value_;
 		bool run_;
 		std::mutex mutex_;

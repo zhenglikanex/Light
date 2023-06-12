@@ -18,7 +18,7 @@ namespace light::rhi
 		ID3D12PipelineState* GetNative() { return pipeline_state_; }
 		RootSignature* GetRootSignature() { return root_signature_; }
 	private:
-		Handle<ID3D12PipelineState> pipeline_state_;
+		Ref<ID3D12PipelineState> pipeline_state_;
 		RootSignatureHandle root_signature_;
 	};
 }

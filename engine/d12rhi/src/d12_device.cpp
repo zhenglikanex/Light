@@ -31,7 +31,7 @@ namespace light::rhi
 	{
 #if defined(DEBUG) || defined(_DEBUG)
 		{
-			Handle<ID3D12Debug> debug_controller;
+			Ref<ID3D12Debug> debug_controller;
 			
 			ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller)));
 			debug_controller->EnableDebugLayer();
@@ -53,15 +53,15 @@ namespace light::rhi
 		if (FAILED(rt))
 		{
 			// 回退到软渲染器
-			Handle<IDXGIAdapter> warp_adapter;
+			Ref<IDXGIAdapter> warp_adapter;
 			ThrowIfFailed(dxgi_factory_->EnumWarpAdapter(IID_PPV_ARGS(&warp_adapter)));
 
 			ThrowIfFailed(D3D12CreateDevice(warp_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device_)));
 		}
 
-		queues_[static_cast<size_t>(CommandListType::kDirect)] = MakeHandle<D12CommandQueue>(this, CommandListType::kDirect);
-		queues_[static_cast<size_t>(CommandListType::kCompute)] = MakeHandle<D12CommandQueue>(this, CommandListType::kCompute);
-		queues_[static_cast<size_t>(CommandListType::kCopy)] = MakeHandle<D12CommandQueue>(this, CommandListType::kCopy);
+		queues_[static_cast<size_t>(CommandListType::kDirect)] = MakeRef<D12CommandQueue>(this, CommandListType::kDirect);
+		queues_[static_cast<size_t>(CommandListType::kCompute)] = MakeRef<D12CommandQueue>(this, CommandListType::kCompute);
+		queues_[static_cast<size_t>(CommandListType::kCopy)] = MakeRef<D12CommandQueue>(this, CommandListType::kCopy);
 
 		ThrowIfFailed(device_->GetDeviceRemovedReason());
 
@@ -79,7 +79,7 @@ namespace light::rhi
 
 	SwapChainHandle D12Device::CreateSwapChain()
 	{
-		return MakeHandle<D12SwapChain>(this, hwnd_);
+		return MakeRef<D12SwapChain>(this, hwnd_);
 	}
 
 	ShaderHandle D12Device::CreateShader(ShaderType type, std::vector<char> bytecode)
@@ -87,7 +87,7 @@ namespace light::rhi
 		ShaderDesc desc;
 		desc.type = type;
 
-		return MakeHandle<D12Shader>(this, desc, std::move(bytecode));
+		return MakeRef<D12Shader>(this, desc, std::move(bytecode));
 	}
 
 	ShaderHandle D12Device::CreateShader(ShaderType type, std::string_view filename, std::string_view entry_point, std::string_view target)
@@ -101,8 +101,8 @@ namespace light::rhi
 		std::wstring wfilename(filename.cbegin(), filename.cend());
 
 		HRESULT hr = S_OK;
-		Handle<ID3DBlob> byte_code = nullptr;
-		Handle<ID3DBlob> errors;
+		Ref<ID3DBlob> byte_code = nullptr;
+		Ref<ID3DBlob> errors;
 		// todo:加入shader_macro
 		hr = D3DCompileFromFile(wfilename.c_str(),nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			entry_point.data(), target.data(), compile_flags, 0, &byte_code, &errors);
@@ -125,34 +125,34 @@ namespace light::rhi
 			desc.size_in_bytes = Align(desc.size_in_bytes, kConstantAlignSize);
 		}
 
-		return MakeHandle<D12Buffer>(this,desc);
+		return MakeRef<D12Buffer>(this,desc);
 	}
 
 	TextureHandle D12Device::CreateTexture(const TextureDesc& desc,const ClearValue* clear_value)
 	{
-		return MakeHandle<D12Texture>(this, desc,clear_value);
+		return MakeRef<D12Texture>(this, desc,clear_value);
 	}
 
 	TextureHandle D12Device::CreateTextureForNative(const TextureDesc& desc, void* resource)
 	{
-		auto tex = MakeHandle<D12Texture>(this, desc, static_cast<ID3D12Resource*>(resource));
+		auto tex = MakeRef<D12Texture>(this, desc, static_cast<ID3D12Resource*>(resource));
 		return tex;
 	}
 
 	SamplerHandle D12Device::CreateSampler(const SamplerDesc& desc)
 	{
-		auto sampler = MakeHandle<D12Sampler>(this, desc);
+		auto sampler = MakeRef<D12Sampler>(this, desc);
 		return sampler;
 	}
 
 	InputLayoutHandle D12Device::CreateInputLayout(std::vector<VertexAttributeDesc> attributes)
 	{
-		return MakeHandle<D12InputLayout>(this, std::move(attributes));
+		return MakeRef<D12InputLayout>(this, std::move(attributes));
 	}
 
 	GraphicsPipelineHandle D12Device::CreateGraphicsPipeline(GraphicsPipelineDesc desc, const RenderTarget& render_target)
 	{
-		return MakeHandle<D12GraphicsPipeline>(this, desc, render_target, GetRootSignature(desc.binding_layout,desc.input_layout != nullptr));
+		return MakeRef<D12GraphicsPipeline>(this, desc, render_target, GetRootSignature(desc.binding_layout,desc.input_layout != nullptr));
 	}
 
 	CommandQueue* D12Device::GetCommandQueue(CommandListType type)
@@ -177,7 +177,7 @@ namespace light::rhi
 			return handle;
 		} 
 
-		return MakeHandle<RootSignature>(this, hash, binding_layout, allow_input_layout);
+		return MakeRef<RootSignature>(this, hash, binding_layout, allow_input_layout);
 	}
 
 	DescriptorAllocation D12Device::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t num_descriptors)

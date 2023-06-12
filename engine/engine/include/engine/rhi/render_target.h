@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "types.h"
 #include "texture.h"
 
@@ -85,18 +85,18 @@ struct std::hash<light::rhi::RenderTarget>
 		using namespace rhi;
 
 		size_t hash = 0;
-		rhi::HashCombine(hash, render_target.GetNumColors());
+		HashCombine(hash, render_target.GetNumColors());
 		for (auto& attachment : render_target.GetAttachments())
 		{
 			if (attachment.texture)
 			{
-				rhi::HashCombine(hash, static_cast<uint32_t>(attachment.texture->GetDesc().format));
+				HashCombine(hash, static_cast<uint32_t>(attachment.texture->GetDesc().format));
 			}
 		}
 
 		SampleDesc sample_desc = render_target.GetSampleDesc();
-		rhi::HashCombine(hash,sample_desc.count);
-		rhi::HashCombine(hash, sample_desc.quality);
+		HashCombine(hash,sample_desc.count);
+		HashCombine(hash, sample_desc.quality);
 
 		return hash;
 	}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 #include "engine/renderer/camera.h"
 #include "engine/renderer/editor_camera.h"
 #include "engine/rhi/buffer.h"

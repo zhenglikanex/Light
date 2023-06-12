@@ -124,7 +124,7 @@ namespace light::rhi
 	{
 		for (uint32_t i = 0; i < kBufferCount; ++i)
 		{
-			Handle<ID3D12Resource> back_buffer;
+			Ref<ID3D12Resource> back_buffer;
 			ThrowIfFailed(dxgi_swap_chain_->GetBuffer(i, IID_PPV_ARGS(&back_buffer)));
 
 			TextureDesc desc{};

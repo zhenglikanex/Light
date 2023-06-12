@@ -1,12 +1,12 @@
 #pragma once
 
 #include "types.h"
-#include "resource.h"
+#include "engine/core/base.h"
 #include "command_list.h"
 
 namespace light::rhi
 {
-	class CommandQueue : public Resource
+	class CommandQueue : public RefCounter
 	{
 	public:
 		explicit CommandQueue(CommandListType command_list_type)
@@ -33,5 +33,5 @@ namespace light::rhi
 		CommandListType command_list_type_;
 	};
 
-	using CommandQueueHandle = Handle<CommandQueue>;
+	using CommandQueueHandle = Ref<CommandQueue>;
 }

@@ -159,9 +159,9 @@ namespace light::rhi
 		}
 	}
 
-	Handle<ID3D12DescriptorHeap> DynamicDescriptorHeap::CreateDescriptorHeap()
+	Ref<ID3D12DescriptorHeap> DynamicDescriptorHeap::CreateDescriptorHeap()
 	{
-		Handle<ID3D12DescriptorHeap> heap;
+		Ref<ID3D12DescriptorHeap> heap;
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc{};
 		desc.Type = heap_type_;

@@ -86,11 +86,11 @@ namespace light::rhi
 
 	CommandListHandle D12CommandQueue::GetCommandList()
 	{
-		Handle<CommandList> command_list = nullptr;
+		Ref<CommandList> command_list = nullptr;
 		
 		if(!available_command_lists_.TryPop(command_list))
 		{
-			command_list = MakeHandle<D12CommandList>(device_, command_list_type_,this);
+			command_list = MakeRef<D12CommandList>(device_, command_list_type_,this);
 		}
 
 		return command_list;

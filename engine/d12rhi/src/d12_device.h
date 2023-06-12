@@ -78,9 +78,9 @@ namespace light::rhi
 		uint32_t GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const;
 	private:
 		HWND hwnd_;
-		Handle<ID3D12Device> device_;
+		Ref<ID3D12Device> device_;
 		Microsoft::WRL::ComPtr<IDXGIFactory5> dxgi_factory_;
-		std::array<Handle<D12CommandQueue>, static_cast<size_t>(CommandListType::kCopy) + 1> queues_;
+		std::array<Ref<D12CommandQueue>, static_cast<size_t>(CommandListType::kCopy) + 1> queues_;
 		std::unordered_map<size_t, RootSignature*> root_signature_cache_;
 		std::array<std::unique_ptr<DescriptorAllocator>, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES> descriptor_allocators_;
 	};

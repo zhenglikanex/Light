@@ -4,9 +4,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "engine/core/core.h"
+#include "engine/core/base.h"
 
-#include "resource.h"
+#include "engine/core/base.h"
 #include "types.h"
 
 namespace light::rhi
@@ -37,7 +37,7 @@ namespace light::rhi
 		ShaderType type = ShaderType::kNone;
 	};
 
-	class Shader : public Resource
+	class Shader : public RefCounter
 	{
 	public:
 		inline static const std::string kSceneDataName = "cbSceneData";
@@ -64,7 +64,7 @@ namespace light::rhi
 		ShaderParamDeclarationMap param_declaractions_;
 	};
 
-	using ShaderHandle = Handle<Shader>;
+	using ShaderHandle = Ref<Shader>;
 }
 
 template<>

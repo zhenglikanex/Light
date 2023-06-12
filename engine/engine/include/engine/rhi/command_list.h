@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "types.h"
-#include "resource.h"
 #include "render_target.h"
 #include "buffer.h"
 
@@ -16,7 +15,7 @@ namespace light::rhi
 	class CommandQueue;
 	
 
-	class CommandList : public Resource
+	class CommandList : public RefCounter
 	{
 	public:
 		CommandList(CommandListType type,CommandQueue* queue)
@@ -114,7 +113,7 @@ namespace light::rhi
 
 	protected:
 
-		virtual void TrackResource(Resource* resource) = 0;
+		virtual void TrackResource(RefCounter* resource) = 0;
 
 		virtual void FlushResourceBarriers() = 0;
 
@@ -122,5 +121,5 @@ namespace light::rhi
 		CommandQueue* queue_;
 	};
 
-	using CommandListHandle = Handle<CommandList>;
+	using CommandListHandle = Ref<CommandList>;
 }
