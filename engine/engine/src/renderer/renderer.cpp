@@ -13,7 +13,6 @@ namespace light
 {
 	Renderer::SceneData Renderer::s_scene_data = {};
 	Renderer::RenderData* Renderer::s_render_data = nullptr;
-	ShaderLibrary Renderer::s_shader_library = {};
 
 	void Renderer::Init()
 	{

@@ -1,6 +1,8 @@
 #include "scene_hierarchy_panel.h"
 #include "../editor_event.h"
 
+#include "engine/editor/imgui_utils.h"
+
 namespace light::editor
 {
 	void SceneHierarchyPanel::SetScene(Scene* scene)

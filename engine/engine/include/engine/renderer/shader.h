@@ -3,6 +3,7 @@
 #include "light_pch.h"
 
 #include "engine/core/base.h"
+#include "engine/asset/asset.h"
 
 #include "engine/rhi/shader.h"
 #include "engine/rhi/binding_layout.h"
@@ -16,10 +17,12 @@ namespace light
 		uint32_t offset;
 	};
 
-	class Shader : public RefCounter
+	class Shader : public Asset
 	{
 	public:
-		Shader(std::string_view filepath,rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
+		Shader(rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
+
+		AssetType GetAssetType() const override { return AssetType::kShader; }
 
 		void SetCullMode(rhi::CullMode cull_mode) { cull_mode_ = cull_mode; }
 
@@ -52,8 +55,6 @@ namespace light
 		void Set(const std::string& name, rhi::TextureHandle texture);
 		void Set(const std::string& name, rhi::Texture* texture);
 
-		const std::string& GetFilePath() const { return filepath_; }
-
 		rhi::Shader* GetVS() const { return vs_; }
 		rhi::Shader* GetGS() const { return gs_; }
 		rhi::Shader* GetPS() const { return ps_; }
@@ -81,8 +82,6 @@ namespace light
 		const std::unordered_map<std::string, ShaderBindingTable>& GetSamplerBindingTables() const { return sampler_binding_tables_; }
 	private:
 		rhi::BindingLayoutHandle CreateBindingLayout() const;
-
-		std::string filepath_;
 
 		rhi::ShaderHandle vs_;
 		rhi::ShaderHandle gs_;

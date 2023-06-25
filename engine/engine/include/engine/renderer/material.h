@@ -3,20 +3,21 @@
 #include "light_pch.h"
 
 #include "engine/core/base.h"
-#include "engine/renderer/shader.h"
+#include "engine/asset/asset.h"
 
+#include "engine/renderer/shader.h"
 #include "engine/rhi/texture.h"
 
 namespace light
 {
-	class Material : public RefCounter
+	class Material : public Asset
 	{
 	public:
 		Material() = default;
 		explicit Material(Shader* shader);
-	
-		void SetFilePath(std::string_view filepath) { filepath_ = filepath; }
 
+		AssetType GetAssetType() const override { return AssetType::kMaterial; }
+	
 		void SetShader(Shader* shader);
 
 		const Shader* GetShader() const { return shader_; }
@@ -36,8 +37,6 @@ namespace light
 
 			memcpy(params_buffer_.data() + decl->offset, &value, sizeof(T));
 		}
-
-		const std::string& GetFilePath() const { return filepath_; }
 
 		template<typename T>
 		T Get(const std::string& name) const
@@ -59,7 +58,6 @@ namespace light
 
 		const std::unordered_map<std::string, rhi::TextureHandle>& GetTextures() const { return textures_; };
 	private:
-		std::string filepath_;
 		Ref<Shader> shader_;
 		std::vector<uint8_t> params_buffer_;
 		std::unordered_map<std::string,rhi::TextureHandle> textures_;

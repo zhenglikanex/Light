@@ -324,4 +324,15 @@ namespace light
         auto ptr = new T(std::forward<Args>(args)...);
         return Ref<T>::Create(ptr);
     }
+
+    template<class T> requires(std::is_base_of_v<RefCounter,T>)
+    Ref<T> CastRef(RefCounter* ref)
+    {
+        if (ref)
+        {
+            return Ref<T>(static_cast<T*>(ref));
+        }
+
+        return nullptr;
+    }
 }

@@ -90,6 +90,5 @@ namespace light
 
 		static SceneData s_scene_data;
 		static RenderData* s_render_data;
-		static ShaderLibrary s_shader_library;
 	};
 }

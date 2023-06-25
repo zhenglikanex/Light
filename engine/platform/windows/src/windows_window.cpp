@@ -131,6 +131,17 @@ namespace light
 			windows_window->OnEvent(e);
 		});
 
+		glfwSetDropCallback(window_, [](GLFWwindow* window, int path_count, const char* paths[])
+			{
+				auto* windows_window = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
+				WindowFileDropedEvent e;
+				for (int i = 0; i < path_count; ++i)
+				{
+					e.files.emplace_back(paths[i]);
+				}
+				windows_window->OnEvent(e);
+			});
+
 		if(ImGui::GetCurrentContext())
 		{
 			ImGui_ImplGlfw_InitForOther(window_, true);

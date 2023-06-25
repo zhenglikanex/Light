@@ -4,9 +4,12 @@
 #include "engine/renderer/renderer.h"
 #include "engine/renderer/render_pass.h"
 #include "engine/renderer/shader_library.h"
-#include "engine/core/application.h"
-#include "engine/rhi/types.h"
 
+#include "engine/asset/asset_manager.h"
+
+#include "engine/core/application.h"
+
+#include "engine/rhi/types.h"
 #include "engine/rhi/buffer.h"
 
 #include "glm/glm.hpp"
@@ -26,7 +29,7 @@ namespace light
 
 		SetViewportSize(width, height);
 
-		s_instance->shadow_shader_ = ShaderLibrary::Get().Get("shadow");
+		s_instance->shadow_shader_ = AssetManager::LoadAsset<Shader>("shaders/shadow.shader");
 		s_instance->shadow_material_ = MakeRef<Material>(s_instance->shadow_shader_);
 		s_instance->shadow_material_->SetCullMode(rhi::CullMode::kFront);
 	}
@@ -259,7 +262,7 @@ namespace light
 	{
 		Renderer::BeginRenderPass(command_list, s_instance->s_instance->final_pass_);
 
-	 	Shader* hdr_shader = ShaderLibrary::Get().Get("hdr");
+	 	Shader* hdr_shader = AssetManager::LoadAsset<Shader>("shaders/hdr.shader");
 		
 		hdr_shader->Set("gSourceMap", s_instance->geometry_pass_->GetResources().render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture);
 		Renderer::DrawQuad(command_list, hdr_shader);

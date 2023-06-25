@@ -4,6 +4,7 @@
 #include "engine/math/math.h"
 #include "engine/utils/platform_utils.h"
 
+#include "engine/editor/imgui_utils.h"
 #include "imguizmo/ImGuizmo.h"
 
 namespace light::editor
@@ -17,6 +18,8 @@ namespace light::editor
 	void EditorLayer::OnAttach()
 	{
 		Random::Init();
+		
+
 		texture_ = texture_library_.LoadTexture("assets/textures/warchessMap_4.jpg");
 
 		viewport_size_ = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
@@ -24,6 +27,8 @@ namespace light::editor
 
 		active_secne_ = MakeRef<Scene>();
 		scene_hierarchy_panel_.SetScene(active_secne_);
+		asset_browser_panel_.Init();
+		
 
 		class CameraController : public Script
 		{
@@ -258,24 +263,8 @@ namespace light::editor
 
 		scene_hierarchy_panel_.OnImguiRender();
 		property_panel_.OnImguiRender();
-
-		if (selected_entity)
-		{
-			if (selected_entity.HasComponent<MeshComponent>())
-			{
-				auto& mesh_comp = selected_entity.GetComponent<MeshComponent>();
-				if (mesh_comp.mesh)
-				{
-					Material* material = mesh_comp.mesh->GetMaterial(0);
-					if (material)
-					{
-						material_panel_.SelectMaterial(material);
-					}
-				}
-			}
-			
-			material_panel_.OnImguiRender();
-		}
+		asset_browser_panel_.OnImguiRender();
+		material_panel_.OnImguiRender();
 	}
 
 	void EditorLayer::OnEvent(Event& e)
@@ -284,6 +273,7 @@ namespace light::editor
 		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_1(&EditorLayer::OnKeyPressedEvent, this));
 
 		property_panel_.OnEvent(e);
+		asset_browser_panel_.OnEvent(e);
 	}
 
 	void EditorLayer::OnKeyPressedEvent(const KeyPressedEvent& e)

@@ -2,9 +2,8 @@
 
 namespace light
 {
-	Shader::Shader(std::string_view filepath, rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs)
-		: filepath_(filepath)
-		, vs_(vs)
+	Shader::Shader(rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs)
+		: vs_(vs)
 		, gs_(gs)
 		, ps_(ps)
 		, cull_mode_(rhi::CullMode::kBack)

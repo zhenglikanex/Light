@@ -27,25 +27,28 @@ namespace light
 		uint32_t material_index;
 	};
 
-	class Mesh : public RefCounter
+	class Mesh : public Asset
 	{
 	public:
 		Mesh(std::string_view filename);
 
+		AssetType GetAssetType() const override { return AssetType::kMesh; }
+
 		void SetMaterial(uint32_t index, Material* material);
 
-		const std::string& GetFileName() const { return filename_; }
-
 		rhi::Buffer* GetVertexBuffer() const { return vertex_buffer_; }
+
 		rhi::Buffer* GetIndexBuffer() const { return index_buffer_; }
+
 		Material* GetMaterial(uint32_t index) const { return materials_[index]; }
+
 		const SubMesh& GetSubMesh(uint32_t index) const { return sub_meshes_[index]; }
+
 		uint32_t GetNumSubMesh() const { return sub_meshes_.size(); }
 
 		auto begin() const { return sub_meshes_.begin(); }
 		auto end() const { return sub_meshes_.end(); }
 	private:
-		std::string filename_;
 		std::vector<Vertex> vertices_;
 		std::vector<uint32_t> indices_;
 		rhi::BufferHandle vertex_buffer_;

@@ -1,6 +1,6 @@
 #include "engine/serializer/material_serializer.h"
 #include "engine/serializer/serializer_utils.h"
-#include "engine/renderer/shader_library.h"
+#include "engine/asset/asset_manager.h"
 
 #include <format>
 #include <fstream>
@@ -18,58 +18,62 @@ namespace light
 		YAML::Emitter out;
 
 		out << YAML::BeginMap;
-		out << YAML::Key << "Material" << YAML::Value << "Untitled";
-		out << YAML::Key << "Shader" << YAML::Value << material_->GetShader()->GetFilePath();
-		if(material_->GetShader()->GetParamDeclarations().size() > 0)
-		{
-			out << YAML::Key << "Params" << YAML::BeginSeq;
-			for (auto& [name, decl] : material_->GetShader()->GetParamDeclarations())
-			{
-				out << YAML::BeginMap;
+		out << YAML::Key << "Material" << YAML::Value << filepath;
+		out << YAML::Key << "Shader" << YAML::Value << (material_->GetShader() ? material_->GetShader()->GetUuidString() : "");
 
-				out << YAML::Key << "Name" << YAML::Value << name;
-				out << YAML::Key << "Type" << YAML::Value << decl.type;
-				
-				out << YAML::Key << "Value";
-				if (decl.type == "float")
+		if (material_->GetShader())
+		{
+			if (material_->GetShader()->GetParamDeclarations().size() > 0)
+			{
+				out << YAML::Key << "Params" << YAML::BeginSeq;
+				for (auto& [name, decl] : material_->GetShader()->GetParamDeclarations())
 				{
-					out << YAML::Value << material_->Get<float>(name);
-				} 
-				else if (decl.type == "float2")
-				{
-					out << YAML::Value << material_->Get<glm::vec2>(name);
+					out << YAML::BeginMap;
+
+					out << YAML::Key << "Name" << YAML::Value << name;
+					out << YAML::Key << "Type" << YAML::Value << decl.type;
+
+					out << YAML::Key << "Value";
+					if (decl.type == "float")
+					{
+						out << YAML::Value << material_->Get<float>(name);
+					}
+					else if (decl.type == "float2")
+					{
+						out << YAML::Value << material_->Get<glm::vec2>(name);
+					}
+					else if (decl.type == "float3")
+					{
+						out << YAML::Value << material_->Get<glm::vec3>(name);
+					}
+					else if (decl.type == "float4")
+					{
+						out << YAML::Value << material_->Get<glm::vec4>(name);
+					}
+					else if (decl.type == "int")
+					{
+						out << YAML::Value << material_->Get<int>(name);
+					}
+					else if (decl.type == "int2")
+					{
+						out << YAML::Value << material_->Get<glm::ivec2>(name);
+					}
+					else if (decl.type == "int3")
+					{
+						out << YAML::Value << material_->Get<glm::ivec3>(name);
+					}
+					else if (decl.type == "int4")
+					{
+						out << YAML::Value << material_->Get<glm::ivec4>(name);
+					}
+					else
+					{
+						LIGHT_ASSERT(false, std::format("{} : Not Supported Type!", decl.type));
+					}
+					out << YAML::EndMap;
 				}
-				else if (decl.type == "float3")
-				{
-					out << YAML::Value << material_->Get<glm::vec3>(name);
-				}
-				else if (decl.type == "float4")
-				{
-					out << YAML::Value << material_->Get<glm::vec4>(name);
-				}
-				else if(decl.type == "int") 
-				{
-					out << YAML::Value << material_->Get<int>(name);
-				}
-				else if (decl.type == "int2")
-				{
-					out << YAML::Value << material_->Get<glm::ivec2>(name);
-				}
-				else if(decl.type == "int3")
-				{
-					out << YAML::Value << material_->Get<glm::ivec3>(name);
-				}
-				else if (decl.type == "int4")
-				{
-					out << YAML::Value << material_->Get<glm::ivec4>(name);
-				}
-				else
-				{
-					LIGHT_ASSERT(false, std::format("{} : Not Supported Type!", decl.type));
-				}
-				out << YAML::EndMap;
+				out << YAML::EndSeq;
 			}
-			out << YAML::EndSeq;
 		}
 
 		out << YAML::EndMap;
@@ -89,18 +93,18 @@ namespace light
 		if (!data["Material"])
 			return false;
 		
-		material_->SetFilePath(filepath);
-
-		std::string shader_file = data["Shader"].as<std::string>();
-		
-		Shader* shader;
-		if (!ShaderLibrary::Get().Exist(shader_file))
+		std::optional<UUID> result = uuid::FromString(data["Shader"].as<std::string>());
+		if (!result.has_value())
 		{
-			shader = ShaderLibrary::Get().Load(shader_file, shader_file);
+			LOG_ENGINE_WARN("Material Shader Miss : {}", filepath);
+			return false;
 		}
-		else
+
+		Ref<Shader> shader = AssetManager::LoadAsset<Shader>(result.value());
+		if (!shader)
 		{
-			shader = ShaderLibrary::Get().Get(shader_file);
+			LOG_ENGINE_WARN("Material Shader Miss : {}", filepath);
+			return false;
 		}
 
 		material_->SetShader(shader);

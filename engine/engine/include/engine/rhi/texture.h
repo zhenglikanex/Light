@@ -3,6 +3,7 @@
 #include <string>
 
 #include "engine/core/base.h"
+#include "engine/asset/asset.h"
 #include "types.h"
 
 namespace light::rhi
@@ -20,7 +21,7 @@ namespace light::rhi
 		std::string debug_name;
 	};
 
-	class Texture : public RefCounter
+	class Texture : public Asset
 	{
 	public:
 		explicit Texture(const TextureDesc& desc)
@@ -29,6 +30,8 @@ namespace light::rhi
 		{
 
 		}
+
+		AssetType GetAssetType() const override { return AssetType::kTexture; }
 
 		const TextureDesc& GetDesc() const { return desc_; }
 

@@ -12,6 +12,7 @@
 #include "engine/profile/profile.h"
 #include "engine/reflection/meta.h"
 
+#include "engine/asset/asset_manager.h"
 
 #include "imgui.h"
 
@@ -136,8 +137,8 @@ namespace light
 			imgui_renderer_->Init(device_);
 		}
 
+		AssetManager::Init();
 		Renderer::Init();
-		ShaderLibrary::Get().Init();
 		Renderer2D::Init();
 		SceneRenderer::Init();
 
@@ -149,10 +150,10 @@ namespace light
 
 	void Application::Shutdown()
 	{
-		ShaderLibrary::Get().Shutdown();
 		SceneRenderer::Shutdown();
 		Renderer2D::Shutdown();
 		Renderer::Shutdown();
+		AssetManager::Shutdown();
 
 		imgui_renderer_->Shutdown();
 	}

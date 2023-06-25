@@ -7,12 +7,13 @@ namespace light::editor
 	class MaterialPanel
 	{
 	public:
+		static void ShowMaterial(Material* material);
+
 		MaterialPanel() = default;
-
-		void SelectMaterial(Material* material);
-
+	
 		void OnImguiRender();
 	private:
-		Ref<Material> material_;
+		static Ref<Material> material_;
+		static bool open_;
 	};
 }

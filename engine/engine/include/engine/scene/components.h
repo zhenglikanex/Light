@@ -95,18 +95,7 @@ namespace light
 		MeshComponent(const Ref<Mesh>& mesh)
 			: mesh(mesh)
 		{
-			Ref<Shader> shader = ShaderLibrary::Get().Get("simplepbr");
 
-			auto material = MakeRef<Material>(shader);
-			
-			material->Set("cbAlbedoColor", glm::vec3(1.0f,0.0f,0.0f));
-			material->Set("cbMetalness",0.5f);
-			material->Set("cbRoughness", 0.3f);
-
-			for (uint32_t i = 0; i < mesh->GetNumSubMesh(); ++i)
-			{
-				mesh->SetMaterial(i,material);
-			}
 		}
 
 		void ImGuiDrawProperty();

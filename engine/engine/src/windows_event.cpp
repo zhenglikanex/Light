@@ -1,5 +1,6 @@
 #include "engine/event/windows_event.h"
-#include "spdlog/fmt/fmt.h"
+
+#include <format>
 
 namespace light
 {
@@ -17,6 +18,11 @@ namespace light
 
 	std::string WindowResizedEvent::ToString() const
 	{
-		return fmt::format("{}: width = {} height = {}", GetName(), width, height);
+		return std::format("{}: width = {} height = {}", GetName(), width, height);
+	}
+
+	std::string WindowFileDropedEvent::ToString() const
+	{
+		return GetName();
 	}
 }

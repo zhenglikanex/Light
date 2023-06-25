@@ -28,6 +28,7 @@ namespace light
 		kWindowsResized,
 		kWindowsClosed,
 		kWindowsMoved,
+		kWindowsFileDroped,
 		kSelectEntity,
 	};
 

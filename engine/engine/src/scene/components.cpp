@@ -1,11 +1,11 @@
 #include "engine/scene/components.h"
 
+#include "engine/asset/asset_manager.h"
+
 #include "engine/utils/platform_utils.h"
 #include "engine/serializer/material_serializer.h"
 
-#ifdef LIGHT_EDITOR
-#include "imgui.h"
-#endif
+#include "engine/editor/imgui_utils.h"
 
 #include "yaml-cpp/yaml.h"
 
@@ -15,18 +15,12 @@ namespace light
 	{
 #ifdef LIGHT_EDITOR
 		ImGui::Text("Mesh");
-		std::string mesh_file = mesh != nullptr ? mesh->GetFileName() : "null";
-		ImGui::Text(mesh_file.c_str());
-		ImGui::SameLine();
-		if (ImGui::Button("Select"))
+		
+		if (Asset* select_asset = ImGuiEditor::InputAsset(AssetType::kMesh, mesh))
 		{
-			std::string file = FileDialogs::OpenFile("Mesh\0 *.obj;*.fbx\0");
-			if (!file.empty())
-			{
-				mesh = MakeRef<Mesh>(file);
-			}
+			mesh = CheckedCast<Mesh*>(select_asset);
 		}
-
+		
 		if (ImGui::TreeNode("Materials"))
 		{
 			if (mesh)
@@ -34,22 +28,16 @@ namespace light
 				for (uint32_t i = 0; i < mesh->GetNumSubMesh(); ++i)
 				{
 					Material* mat = mesh->GetMaterial(i);
-					std::string label = mat != nullptr ? std::format("{}.{}", i, mat->GetFilePath()) : std::format("{}.null", i);
-					ImGui::Text(label.c_str());
+					ImGui::PushID(i);
+					ImGui::Text("%d.", i + 1);
 					ImGui::SameLine();
-					if (ImGui::Button("Select"))
+					if (Asset* select_asset = ImGuiEditor::InputAsset(AssetType::kMaterial, mat))
 					{
-						std::string file = FileDialogs::OpenFile("Material\0 *.mtl\0");
-						if (!file.empty())
-						{
-							Ref<Material> material = MakeRef<Material>();
-							MaterialSerializer serializer(material);
-							serializer.DeserializeText(file);
-
-							mesh->SetMaterial(i, material);
-						}
+						mesh->SetMaterial(i, CheckedCast<Material*>(select_asset));
 					}
+					ImGui::PopID();
 				}
+
 				ImGui::TreePop();
 			}
 		}
@@ -58,28 +46,49 @@ namespace light
 
 	void MeshComponent::SerializeText(YAML::Emitter* out)
 	{
-		*out << YAML::Key << "mesh" << YAML::Value << mesh->GetFileName();
+		*out << YAML::Key << "mesh" << YAML::Value << mesh->GetUuidString();
 		*out << YAML::Key << "materials" << YAML::Value << YAML::BeginSeq;
 		for (int i = 0; i < mesh->GetNumSubMesh(); ++i)
 		{
 			Material* mat = mesh->GetMaterial(i);
-			*out << mat->GetFilePath();
+			*out << mat->GetUuidString();
 		}
 		*out << YAML::EndSeq;
 	}
 
 	void MeshComponent::DeserializeText(YAML::Node node)
 	{
-		std::string mesh_file = node["mesh"].as<std::string>();
-		mesh = MakeRef<Mesh>(mesh_file);
+		std::optional<UUID> result = uuid::FromString(node["mesh"].as<std::string>());
+		if (!result.has_value())
+		{
+			LOG_ENGINE_WARN("Mesh Miss");
+			return;
+		}
+
+		mesh = AssetManager::LoadAsset<Mesh>(result.value());
+		if (!mesh)
+		{
+			LOG_ENGINE_WARN("Entity Mesh Miss");
+			return;
+		}
 
 		uint32_t i = 0;
 		for (auto mat_node : node["materials"])
 		{
-			Ref<Material> material = MakeRef<Material>();
-			std::string mat_file = mat_node.as<std::string>();
-			MaterialSerializer serializer(material);
-			serializer.DeserializeText(mat_file);
+			std::optional<UUID> result = uuid::FromString(mat_node.as<std::string>());
+			if (!result.has_value())
+			{
+				LOG_ENGINE_WARN("Entity Material Miss");
+				continue;
+			}
+
+			Material* material = AssetManager::LoadAsset<Material>(result.value());
+
+			if (!result.has_value())
+			{
+				LOG_ENGINE_WARN("Entity Material Miss");
+				continue;
+			}
 
 			mesh->SetMaterial(i++, material);
 		}

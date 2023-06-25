@@ -5,7 +5,7 @@ Entities:
       - Type: light::TransformComponent
         Fields:
           position: [0, 0, 0]
-          rotation: [24, 0, 0]
+          rotation: [90, 0, 1]
           scale: [1, 1, 1]
       - Type: light::TagComponent
         Fields:
@@ -13,33 +13,18 @@ Entities:
       - Type: light::LightComponent
         Fields:
           color: [1, 1, 1]
-  - Entity: 1
-    Components:
-      - Type: light::TransformComponent
-        Fields:
-          position: [0, -1, 0]
-          rotation: [0, 0, 0]
-          scale: [10, 1, 10]
-      - Type: light::TagComponent
-        Fields:
-          tag: Plane
-      - Type: light::MeshComponent
-        Fields:
-          mesh: assets/models/Plane.fbx
-          materials:
-            - ""
   - Entity: 0
     Components:
       - Type: light::TransformComponent
         Fields:
-          position: [4.2621274, 0.0796228051, 0]
-          rotation: [0, -0, 0]
-          scale: [1, 1, 1]
+          position: [-0.200000003, 0, 0]
+          rotation: [0, 0, 0]
+          scale: [10, 1, 10]
       - Type: light::TagComponent
         Fields:
           tag: Cube
       - Type: light::MeshComponent
         Fields:
-          mesh: C:\project\Light\assets\models\Plane.fbx
+          mesh: e9668d13-bd22-4ace-8e94-a00a8d803565
           materials:
-            - ""
+            - 21c75116-c3b2-466f-9e83-36cda91695e0

@@ -72,7 +72,7 @@ namespace light
 
 		LIGHT_ASSERT(vs && ps, "shader error!");
 
-		Ref<Shader> shader = MakeRef<Shader>(filepath, vs, ps, gs);
+		Ref<Shader> shader = MakeRef<Shader>(vs, ps, gs);
 		Add(name, shader);
 
 		return shader;

@@ -23,7 +23,6 @@ namespace light
 	}
 
 	Mesh::Mesh(std::string_view filename)
-		: filename_(filename)
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(filename.data(), ImportFlags);

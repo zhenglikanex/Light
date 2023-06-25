@@ -22,4 +22,15 @@ namespace light
 
 		EVENT_IMPL(WindowResizedEvent, EventType::kWindowsResized, EventCategory::kWindows)
 	};
+
+	struct WindowFileDropedEvent : public Event
+	{
+		std::vector<std::string> files;
+
+		WindowFileDropedEvent() = default;
+
+		std::string ToString() const override;
+
+		EVENT_IMPL(WindowFileDropedEvent, EventType::kWindowsFileDroped, EventCategory::kWindows)
+	};
 }

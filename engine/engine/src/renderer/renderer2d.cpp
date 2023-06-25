@@ -388,8 +388,8 @@ namespace light
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kTextures), tex_param);
 		tex_binding_layout->Add(static_cast<uint32_t>(ParameterIndex::kSampler), sampler_param);
 
-		rhi::ShaderHandle texture_vertex_shader = device->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.hlsl", "VsMain", "vs_5_1");
-		rhi::ShaderHandle texture_pixel_shader = device->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/texture.hlsl", "PsMain", "ps_5_1");
+		rhi::ShaderHandle texture_vertex_shader = device->CreateShader(rhi::ShaderType::kVertex, "assets/shaders/texture.shader", "VsMain", "vs_5_1");
+		rhi::ShaderHandle texture_pixel_shader = device->CreateShader(rhi::ShaderType::kPixel, "assets/shaders/texture.shader", "PsMain", "ps_5_1");
 
 		rhi::GraphicsPipelineDesc pso_desc;
 		pso_desc.input_layout = device->CreateInputLayout(vertex_attributes);
