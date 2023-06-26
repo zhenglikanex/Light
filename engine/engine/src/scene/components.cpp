@@ -28,18 +28,21 @@ namespace light
 				for (uint32_t i = 0; i < mesh->GetNumSubMesh(); ++i)
 				{
 					Material* mat = mesh->GetMaterial(i);
-					ImGui::PushID(i);
-					ImGui::Text("%d.", i + 1);
-					ImGui::SameLine();
-					if (Asset* select_asset = ImGuiEditor::InputAsset(AssetType::kMaterial, mat))
+					if (mat)
 					{
-						mesh->SetMaterial(i, CheckedCast<Material*>(select_asset));
+						ImGui::PushID(i);
+						ImGui::Text("%d.", i + 1);
+						ImGui::SameLine();
+						if (Asset* select_asset = ImGuiEditor::InputAsset(AssetType::kMaterial, mat))
+						{
+							mesh->SetMaterial(i, CheckedCast<Material*>(select_asset));
+						}
+						ImGui::PopID();
 					}
-					ImGui::PopID();
 				}
-
-				ImGui::TreePop();
 			}
+
+			ImGui::TreePop();
 		}
 #endif
 	}
