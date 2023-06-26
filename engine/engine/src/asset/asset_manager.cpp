@@ -35,6 +35,7 @@ namespace light
 	void AssetManager::Shutdown()
 	{
 		// todo
+		s_loaded_assets_.clear();
 	}
 
 	std::filesystem::path AssetManager::GetAssetAbsolutePath(const std::filesystem::path& path)
