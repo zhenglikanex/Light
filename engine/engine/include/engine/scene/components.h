@@ -83,19 +83,21 @@ namespace light
 	{
 		NOT_PROPERTY()
 		Ref<Mesh> mesh;
+		
+		NOT_PROPERTY();
+		std::vector<Ref<Material>> materials;
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent& other) = default;
-		MeshComponent(std::string_view mesh_file)
-			: mesh(MakeRef<Mesh>(mesh_file))
-		{
-
-		}
 
 		MeshComponent(const Ref<Mesh>& mesh)
 			: mesh(mesh)
+			
 		{
-
+			if (mesh)
+			{
+				materials.resize(mesh->GetNumSubMesh());
+			}
 		}
 
 		void ImGuiDrawProperty();

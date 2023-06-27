@@ -150,6 +150,8 @@ namespace light
 
 	void Application::Shutdown()
 	{
+		device_->Flush();
+
 		SceneRenderer::Shutdown();
 		Renderer2D::Shutdown();
 		Renderer::Shutdown();

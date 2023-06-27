@@ -24,7 +24,7 @@ namespace light
 					const auto& [transform, mesh] = group.get<TransformComponent, MeshComponent>(e);
 					if (mesh.mesh)
 					{
-						SceneRenderer::SubmitMesh(mesh.mesh, transform.GetTransform());
+						SceneRenderer::SubmitMesh(mesh.mesh,mesh.materials,transform.GetTransform());
 					}
 				};
 			}

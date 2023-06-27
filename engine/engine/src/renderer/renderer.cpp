@@ -78,7 +78,7 @@ namespace light
 
 	void Renderer::EndScene(rhi::CommandList* command_list)
 	{
-		
+		s_scene_data.num_light = 0;
 	}
 
 	void Renderer::BeginRenderPass(rhi::CommandList* command_list, RenderPass* render_pass)
@@ -128,7 +128,10 @@ namespace light
 
 	void Renderer::SetupLight(Light light)
 	{
-		s_scene_data.light = light;
+		if (s_scene_data.num_light < kMaxLight)
+		{
+			s_scene_data.light[s_scene_data.num_light++] = light;
+		}
 	}
 
 	void Renderer::SetupRenderTarget(rhi::CommandList* command_list, const rhi::RenderTarget& render_target)

@@ -93,7 +93,14 @@ namespace light
 		if (!data["Material"])
 			return false;
 		
-		std::optional<UUID> result = uuid::FromString(data["Shader"].as<std::string>());
+		std::string uuid = data["Shader"].as<std::string>();
+
+		if (uuid.empty())
+		{
+			return true;
+		}
+
+		std::optional<UUID> result = uuid::FromString(uuid);
 		if (!result.has_value())
 		{
 			LOG_ENGINE_WARN("Material Shader Miss : {}", filepath);

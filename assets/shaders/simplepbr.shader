@@ -9,14 +9,16 @@ struct Light
     float4x4 ViewProjectionMatrix;
 };
 
+#define kMaxLight 32
+
 cbuffer cbSceneData : register(b0)
 {
 	float4x4 cbProjectionMatrix;
 	float4x4 cbViewMatrix;
 	float4x4 cbViewProjectionMatrix;
     float3 cbCameraPosition;
-    float padding1;
-    Light light;
+    int cbNumLight;
+    Light cbLights[kMaxLight];
 };
 
 cbuffer cbPerDrawConstants : register(b1)
@@ -136,7 +138,7 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-float IsShadow(float3 position,float cosTheta)
+float IsShadow(Light light,float3 position,float cosTheta)
 {   
     float4 posLight = mul(light.ViewProjectionMatrix,float4(position,1.0));
     float2 shadowUV = posLight.xy * 0.5 + 0.5;
@@ -148,7 +150,7 @@ float IsShadow(float3 position,float cosTheta)
     return posLight.z > shadow + 0.0005 ? 0.5 : 1;
 }
 
-float3 Lighting(float3 worldPosition, float3 F0)
+float3 Lighting(Light light,float3 worldPosition, float3 F0)
 {
     float3 result = 0.0;
 
@@ -166,9 +168,13 @@ float3 Lighting(float3 worldPosition, float3 F0)
     // Cook-TorranceBRDF
     float3 specularBRDF = F * D * G / max(kEpsilon,4.0 * cosLi * gParams.NdotV);
 
-    result = specularBRDF * Lradinace * cosLi + float3(0.5,0.5,0.5);
+    float3 ks = F;
+    float3 kd = float3(1.0,1.0,1.0) - ks;
+    kd *= 1.0 - gParams.Metalness;
+    
+    result = kd * gParams.Albedo / kPI * Lradinace + specularBRDF * Lradinace * cosLi;
      
-    result *= IsShadow(worldPosition,cosLi);
+    result *= IsShadow(light,worldPosition,cosLi);
 
     return result;
 }
@@ -186,7 +192,14 @@ float4 PsMain(VertexOut vsInput) : SV_Target
 
     float3 F0 = lerp(kFdielectric,gParams.Albedo,gParams.Metalness);
 
-    float3 color = Lighting(vsInput.WorldPosition, F0);
+    float3 color = float3(0,0,0);
+    for(int i = 0;i<cbNumLight;++i)
+    {
+        color += Lighting(cbLights[i],vsInput.WorldPosition, F0);
+    }
+
+    color = color / (color + float3(1.0,1.0,1.0));
+    color = pow(color, 1.0/2.2);  
 
     return float4(color,1.0f);
 }

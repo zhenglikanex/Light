@@ -15,7 +15,6 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-
 namespace light
 {
 	SceneRenderer* SceneRenderer::s_instance = nullptr;
@@ -111,11 +110,17 @@ namespace light
 		s_instance->lights_.emplace_back(light);
 	}
 
-	void SceneRenderer::SubmitMesh(Mesh* mesh,const glm::mat4& transform)
+	void SceneRenderer::SubmitMesh(const Mesh* mesh, const std::vector<Ref<Material>>& materials, const glm::mat4& transform)
 	{
 		for (const auto& sub_mesh : *mesh)
 		{
-			if (mesh->GetMaterial(sub_mesh.material_index))
+			Material* material = materials[sub_mesh.material_index];
+			if (!material)
+			{
+				material = mesh->GetMaterial(sub_mesh.material_index);
+			}
+
+			if (material)
 			{
 				DrawItem& render_item = s_instance->draw_items_.emplace_back();
 
@@ -124,7 +129,7 @@ namespace light
 				render_item.base_vertex = sub_mesh.base_vertex;
 				render_item.base_index = sub_mesh.base_index;
 				render_item.index_count = sub_mesh.index_count;
-				render_item.material = mesh->GetMaterial(sub_mesh.material_index);
+				render_item.material = material;
 				render_item.model_matrix = transform;
 			}
 		}
@@ -225,15 +230,19 @@ namespace light
 
 		Renderer::BeginScene(command_list, s_instance->camera_);
 
-		if (s_instance->lights_.size())
+		int num_light = std::min(s_instance->lights_.size(), (size_t)Renderer::kMaxLight);
+
+		for (int i = 0; i < num_light; ++i)
 		{
+			const Light& scene_light = s_instance->lights_[i];
+
 			Renderer::Light light;
-			light.color = s_instance->lights_.back().color;
-			light.direction = s_instance->lights_.back().direction;
+			light.color = scene_light.color;
+			light.direction = scene_light.direction;
 
 			float aspect = GetSetting().shadow_setting.width / GetSetting().shadow_setting.height;
 			glm::mat4 projection = glm::orthoLH_ZO(-50.0f, 50.0f, -50.0f, 50.0f, -50.0f, 50.0f);
-			light.view_projection_matrix = projection * glm::inverse(s_instance->lights_.back().transform);
+			light.view_projection_matrix = projection * glm::inverse(scene_light.transform);
 			Renderer::SetupLight(light);
 		}
 

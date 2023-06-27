@@ -48,7 +48,7 @@ namespace light
 		static void EndScene(rhi::CommandList* command_list);
 		
 		static void SubmitLight(const glm::vec3& direction, const glm::vec3& color,const glm::mat4& transform);
-		static void SubmitMesh(Mesh* mesh,const glm::mat4& transform);
+		static void SubmitMesh(const Mesh* mesh,const std::vector<Ref<Material>>& materials,const glm::mat4& transform);
 
 		static void Draw(rhi::CommandList* command_list);
 	private:

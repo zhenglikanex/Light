@@ -14,6 +14,7 @@ namespace light::editor
 	{
 	public:
 		EditorLayer();
+		~EditorLayer() override { }
 
 		void OnAttach() override;
 		void OnDetach() override;

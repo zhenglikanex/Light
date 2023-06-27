@@ -195,7 +195,7 @@ namespace light
 			return;
 		}
 
-		meta.path = new_path.generic_string();
+		meta.path = GetAssetRelativePath(new_path).generic_string();
 
 		s_asset_meta_by_uuid_map_[meta.uuid] = meta;
 		s_asset_meta_by_path_map_[meta.path] = meta;

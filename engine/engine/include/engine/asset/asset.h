@@ -25,7 +25,7 @@ namespace light
 		{
 			return AssetType::kTexture;
 		}
-		else if (ext == ".obj" || ext == ".fbx")
+		else if (ext == ".obj" || ext == ".fbx" || ext == ".blend")
 		{
 			return AssetType::kMesh;
 		}

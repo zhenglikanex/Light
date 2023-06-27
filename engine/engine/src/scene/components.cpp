@@ -19,6 +19,7 @@ namespace light
 		if (Asset* select_asset = ImGuiEditor::InputAsset(AssetType::kMesh, mesh))
 		{
 			mesh = CheckedCast<Mesh*>(select_asset);
+			materials.resize(mesh->GetNumSubMesh());
 		}
 		
 		if (ImGui::TreeNode("Materials"))
@@ -27,18 +28,24 @@ namespace light
 			{
 				for (uint32_t i = 0; i < mesh->GetNumSubMesh(); ++i)
 				{
-					Material* mat = mesh->GetMaterial(i);
-					if (mat)
+					if (materials.size() <= i)
 					{
-						ImGui::PushID(i);
-						ImGui::Text("%d.", i + 1);
-						ImGui::SameLine();
-						if (Asset* select_asset = ImGuiEditor::InputAsset(AssetType::kMaterial, mat))
-						{
-							mesh->SetMaterial(i, CheckedCast<Material*>(select_asset));
-						}
-						ImGui::PopID();
+						materials.resize(i + 1);
 					}
+
+					Material* mat = materials[i];
+					ImGui::PushID(i);
+					ImGui::Text("%d.", i + 1);
+					ImGui::SameLine();
+					if (Asset* select_asset = ImGuiEditor::InputAsset(AssetType::kMaterial, mat))
+					{
+						if (materials.size() <= i)
+						{
+							materials.resize(i + 1);
+						}
+						materials[i] = CheckedCast<Material*>(select_asset);
+					}
+					ImGui::PopID();
 				}
 			}
 
@@ -49,13 +56,21 @@ namespace light
 
 	void MeshComponent::SerializeText(YAML::Emitter* out)
 	{
-		*out << YAML::Key << "mesh" << YAML::Value << mesh->GetUuidString();
+		*out << YAML::Key << "mesh" << YAML::Value << (mesh ? mesh->GetUuidString() : "");
 		*out << YAML::Key << "materials" << YAML::Value << YAML::BeginSeq;
-		for (int i = 0; i < mesh->GetNumSubMesh(); ++i)
+
+		for (auto material : materials)
 		{
-			Material* mat = mesh->GetMaterial(i);
-			*out << mat->GetUuidString();
+			if (material)
+			{
+				*out << material->GetUuidString();
+			}
+			else
+			{
+				*out << "";
+			}
 		}
+
 		*out << YAML::EndSeq;
 	}
 
@@ -75,6 +90,8 @@ namespace light
 			return;
 		}
 
+		materials.resize(node["materials"].size());
+
 		uint32_t i = 0;
 		for (auto mat_node : node["materials"])
 		{
@@ -93,7 +110,7 @@ namespace light
 				continue;
 			}
 
-			mesh->SetMaterial(i++, material);
+			materials[i++] = material;
 		}
 	}
 }

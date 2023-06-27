@@ -18,6 +18,8 @@ namespace light
 	class Renderer
 	{
 	public:
+		static constexpr uint32_t kMaxLight = 32;
+
 		struct QuadVertex
 		{
 			glm::vec3 position;
@@ -39,8 +41,8 @@ namespace light
 			glm::mat4 view_matrix;
 			glm::mat4 view_projection_matrix;
 			glm::vec3 camera_position;
-			float padding1;
-			Light light;
+			int num_light;
+			Light light[kMaxLight];
 		};
 
 		struct RenderData

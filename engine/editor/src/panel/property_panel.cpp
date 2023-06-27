@@ -75,7 +75,7 @@ namespace light::editor
 			name_ref = name_ref.substr(name_ref.find_last_of(':') + 1);
 		}
 
-		bool open_tree = ImGui::TreeNodeEx(instance.GetType().GetName().data(), ImGuiTreeNodeFlags_OpenOnArrow, name_ref.data());
+		bool open_tree = ImGui::TreeNodeEx(instance.GetType().GetName().data(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen, name_ref.data());
 		if(open_tree)
 		{
 			const meta::Method& method = instance.GetType().GetMethod("ImGuiDrawProperty");
@@ -159,6 +159,8 @@ namespace light::editor
 		if (ImGui::DragFloat("##Z", &values.z, 0.1f))
 
 		ImGui::PopItemWidth();
+		ImGui::PopItemWidth();
+		ImGui::PopItemWidth();
 		ImGui::PopStyleVar();
 		ImGui::Columns(1);
 		ImGui::PopID();
@@ -220,7 +222,17 @@ namespace light::editor
 			else if (field_type == meta::Type::Get<glm::vec3>())
 			{
 				glm::vec3& value = field.GetRefValue(instance).Cast<glm::vec3>();
-				DrawVec3Control(field.GetName(), value);
+
+				if (field.GetName().find("color") != std::string::npos
+					|| field.GetName().find("Color") != std::string::npos)
+				{
+					float width = ImGui::GetColumnWidth(0);
+					ImGui::ColorEdit3(field.GetName().data(), glm::value_ptr(value));
+				}
+				else 
+				{
+					DrawVec3Control(field.GetName(), value);
+				}
 			}
 			else if (field_type.IsEnum())
 			{
@@ -269,7 +281,7 @@ namespace light::editor
 			else
 			{
 				meta::Any value = field.GetRefValue(instance);
-				bool open_tree = ImGui::TreeNodeEx(value.Cast<void*>(), ImGuiTreeNodeFlags_OpenOnArrow, field.GetName().data());
+				bool open_tree = ImGui::TreeNodeEx(value.Cast<void*>(), ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen, field.GetName().data());
 				if (open_tree)
 				{
 					DrawTypeProperty(value);
