@@ -9,6 +9,7 @@
 #include "engine/renderer/mesh.h"
 
 #include "engine/serializer/material_serializer.h"
+#include "engine/utils/string_utils.h"
 
 #include <filesystem>
 
@@ -191,6 +192,9 @@ namespace light
 
 	Ref<Asset> ShaderLoader::Load(const AssetMeta& meta)
 	{
+		static std::string s_PropertiesTag = "#Properties";
+		static std::string s_ShaderTag = "#Shader";
+
 		std::string path = AssetManager::GetAssetAbsolutePath(meta.path).string();
 
 		std::fstream fs(path);
@@ -199,32 +203,69 @@ namespace light
 		sstream << fs.rdbuf();
 
 		fs.close();
-
+		
 		std::string source = sstream.str();
+
+		Ref<Shader> shader;
 
 		rhi::ShaderHandle vs;
 		rhi::ShaderHandle ps;
 		rhi::ShaderHandle gs;
 
-		if (FindSubShader(source, rhi::ShaderType::kVertex))
+		if (source.find(s_PropertiesTag) == std::string::npos)
 		{
-			vs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, path, kVsShaderEntryPoint, "vs_5_1");
+			if (FindSubShader(source, rhi::ShaderType::kVertex))
+			{
+				vs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, path, kVsShaderEntryPoint, "vs_5_1");
+			}
+
+			if (FindSubShader(source, rhi::ShaderType::kPixel))
+			{
+				ps = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, path, kPsShaderEntryPoint, "ps_5_1");
+			}
+
+			if (FindSubShader(source, rhi::ShaderType::kGeometry))
+			{
+				gs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kGeometry, path, kGsShaderEntryPoint, "gs_5_1");
+			}
+
+			LIGHT_ASSERT(vs && ps, "shader error!");
+			shader = MakeRef<Shader>(vs, ps, gs);
+		}
+		else
+		{
+			uint32_t properties_pos = source.find(s_PropertiesTag);
+			uint32_t shader_pos = source.find(s_ShaderTag);
+			std::string properties_source(source.data() + properties_pos + s_PropertiesTag.size(), source.data() + shader_pos);
+			
+ 			std::vector<ShaderProperty> properties = ParseShaderProperties(properties_source);
+
+			const char* data = source.data() + shader_pos + s_ShaderTag.size();
+			uint32_t size = source.size() - shader_pos - s_ShaderTag.size();
+
+			if (FindSubShader(source, rhi::ShaderType::kVertex))
+			{
+				vs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, path,data,size, kVsShaderEntryPoint, "vs_5_1");
+			}
+
+			if (FindSubShader(source, rhi::ShaderType::kPixel))
+			{
+				ps = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, path, data, size, kPsShaderEntryPoint, "ps_5_1");
+			}
+
+			if (FindSubShader(source, rhi::ShaderType::kGeometry))
+			{
+				gs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kGeometry, path, data, size, kGsShaderEntryPoint, "gs_5_1");
+			}
+
+			LIGHT_ASSERT(vs && ps, "shader error!");
+			shader = MakeRef<Shader>(std::move(properties), vs, ps, gs);
 		}
 
-		if (FindSubShader(source, rhi::ShaderType::kPixel))
+		if (shader)
 		{
-			ps = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kPixel, path, kPsShaderEntryPoint, "ps_5_1");
+			shader->uuid = meta.uuid;
 		}
-
-		if (FindSubShader(source, rhi::ShaderType::kGeometry))
-		{
-			gs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kGeometry, path, kGsShaderEntryPoint, "gs_5_1");
-		}
-
-		LIGHT_ASSERT(vs && ps, "shader error!");
-
-		Ref<Shader> shader = MakeRef<Shader>(vs, ps, gs);
-		shader->uuid = meta.uuid;
 
 		return shader;
 	}
@@ -244,5 +285,264 @@ namespace light
 		}
 
 		return false;
+	}
+
+	const char* ShaderLoader::SkipWhiteSpaces(const char* ch)
+	{
+		while (*ch)
+		{
+			
+			if (strncmp(ch, "\r\n",2) == 0 || strncmp(ch, "\n\r",2) == 0)
+			{
+				ch += 2;
+			}
+
+			switch (*ch)
+			{
+			case '\t':
+			case '\n':
+			case '\v':
+			case '\r':
+			case '\f':
+			case ' ':
+				++ch;
+			default:
+				return ch;
+			}
+		}
+
+		return ch;
+	}
+
+	std::vector<ShaderProperty> ShaderLoader::ParseShaderProperties(const std::string& source)
+	{
+		std::vector<ShaderProperty> properties;
+		
+		const char* ch = source.c_str();
+
+		while (ch && *ch)
+		{
+			ShaderProperty property;
+			ch = SkipWhiteSpaces(ch);
+
+			if (!*ch)
+			{
+				return properties;
+			}
+
+			const char* p = nullptr;
+			if (*ch == '_' || *ch >= 'a' && *ch <= 'z' || *ch >= 'A' && *ch <= 'Z')
+			{
+				p = ch;
+				// scan 
+				while (*ch == '_' || *ch >= 'a' && *ch <= 'z' || *ch >= 'A' && *ch <= 'Z' || *ch >= '0' && *ch <= '9')
+				{
+					++ch;
+				}
+			}
+
+			property.variable_name = std::string(p, ch);
+
+			ch = SkipWhiteSpaces(ch);
+
+			if (*ch++ != '(')
+			{
+				LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+				return properties;
+			}
+
+			if (*ch++ != '"')
+			{
+				LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+				return properties;
+			}
+
+			p = ch;
+
+			while (*ch != '"')
+			{
+				++ch;
+			}
+
+			property.editor_name = std::string(p, ch++);
+
+			ch = SkipWhiteSpaces(ch);
+			
+			if (*ch++ != ',')
+			{
+				LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+				return properties;
+			}
+
+			ch = SkipWhiteSpaces(ch);
+
+			if (strncmp(ch, "Color", 5) == 0)
+			{
+				ch += 5;
+				property.type = ShaderPropertyType::kColor;
+			}
+			else if (strncmp(ch, "2D", 2) == 0)
+			{
+				ch += 2;
+				property.type = ShaderPropertyType::kTexture2D;
+			}
+			else if (strncmp(ch, "Range(", 6) == 0)
+			{
+				property.type = ShaderPropertyType::kNumber;
+
+				ch += 6;
+
+				ch = SkipWhiteSpaces(ch);
+				const char* first = ch;
+
+				while (*ch == '.' || *ch >= '0' && *ch <= '9')
+				{
+					++ch;
+				}
+
+				const char* end = ch;
+
+				double min = 0;
+				auto result = std::from_chars(first, end, min);
+				if (result.ec != std::errc())
+				{
+					LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+					return properties;
+				}
+
+				ch = SkipWhiteSpaces(ch);
+
+				if (*ch++ != ',')
+				{
+					LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+					return properties;
+				}
+
+				ch = SkipWhiteSpaces(ch);
+
+				first = ch;
+				while (*ch == '.' || *ch >= '0' && *ch <= '9')
+				{
+					++ch;
+				}
+
+				end = ch;
+				
+				double max = 0;
+				result = std::from_chars(first, end, max);
+				if (result.ec != std::errc())
+				{
+					LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+					return properties;
+				}
+
+				ch = SkipWhiteSpaces(ch);
+
+				if (*ch++ != ')')
+				{
+					LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+					return properties;
+				}
+
+				property.range.min = min;
+				property.range.max = max;
+			}
+
+			ch = SkipWhiteSpaces(ch);
+			
+			if (*ch++ != ')')
+			{
+				LIGHT_ASSERT(false,"Shader Properties Parse Error!");
+				return properties;
+			}
+
+			ch = SkipWhiteSpaces(ch);
+
+			if (*ch++ != '=')
+			{
+				LIGHT_ASSERT(false,"Shader Properties Parse Error!");
+				return properties;
+			}
+
+			ch = SkipWhiteSpaces(ch);
+			
+			if (property.type == ShaderPropertyType::kColor)
+			{
+				if (*ch++ != '(')
+				{
+					LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+					return properties;
+				}
+
+				for (int i = 0; i < 3; ++i)
+				{
+					ch = SkipWhiteSpaces(ch);
+					p = ch;
+					while (*ch == '.' || *ch >= '0' && *ch <= '9')
+					{
+						++ch;
+					}
+
+					float number = 0;
+					auto result = std::from_chars(p, ch, number);
+					if (result.ec != std::errc())
+					{
+						LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+						return properties;
+					}
+
+					property.color[i] = number;
+
+					ch = SkipWhiteSpaces(ch);
+					if (*ch != ',' && *ch != ')')
+					{
+						LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+						return properties;
+					}
+
+					++ch;
+				}
+			}
+			else if (property.type == ShaderPropertyType::kNumber)
+			{
+				p = ch;
+				
+				while (*ch == '.' || *ch >= '0' && *ch <= '9')
+				{
+					++ch;
+				}
+
+				float number = 0;
+				auto result = std::from_chars(p, ch, number);
+				if (result.ec != std::errc())
+				{
+					LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+					return properties;
+				}
+
+				property.number = number;
+			}
+			else if (property.type == ShaderPropertyType::kTexture2D)
+			{
+				if (*ch++ != '"')
+				{
+					LIGHT_ASSERT(false, "Shader Properties Parse Error!");
+					return properties;
+				}
+				p = ch;
+				while (*ch != '"')
+				{
+					++ch;
+				}
+
+				property.texture = std::string(p, ch++);
+			}
+
+			ch = SkipWhiteSpaces(ch);
+
+			properties.push_back(property);
+		}
+
+		return properties;
 	}
 }

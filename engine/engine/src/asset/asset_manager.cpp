@@ -54,6 +54,17 @@ namespace light
 		return UUID();
 	}
 
+	bool AssetManager::HasAsset(const std::string& path)
+	{
+		const AssetMeta& meta = GetAssetMeta(path);
+		if (meta.IsVaild())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	Ref<Asset> AssetManager::LoadAsset(const AssetMeta& meta)
 	{
 		if (s_loaded_assets_.find(meta.uuid) != s_loaded_assets_.end())

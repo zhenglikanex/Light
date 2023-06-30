@@ -1,5 +1,6 @@
 #include "material_panel.h"
 
+#include "engine/core/application.h"
 #include "engine/asset/asset_manager.h"
 #include "engine/serializer/material_serializer.h"
 #include "engine/utils/platform_utils.h"
@@ -41,101 +42,61 @@ namespace light::editor
 
 				if (material_->GetShader() && material_->GetShader()->GetParamDeclarations().size() > 0)
 				{
-					ImGui::Text("Material Parameter");
+					ImGui::Text("Material Properties");
 
-					for (auto& [name, decl] : material_->GetShader()->GetParamDeclarations())
+					for (auto& property : material_->GetShader()->GetProperties())
 					{
-						if (decl.type == "float")
+						if (property.type == ShaderPropertyType::kNumber)
 						{
-							float value = material_->Get<float>(name);
-							if (ImGui::DragFloat(name.c_str(), &value, 0.01f))
+							float value = material_->Get<float>(property.variable_name);
+							if (ImGui::DragFloat(property.editor_name.c_str(), &value, 0.01f,property.range.min,property.range.max))
 							{
-								material_->Set(name, value);
+								material_->Set(property.variable_name, value);
 							}
 						}
-						else if (decl.type == "float2")
+						else if (property.type == ShaderPropertyType::kColor)
 						{
-							glm::vec2 value = material_->Get<glm::vec2>(name);
-							if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(value), 0.01f))
+							glm::vec3 value = material_->Get<glm::vec3>(property.variable_name);
+							if (ImGui::ColorEdit3(property.editor_name.c_str(), glm::value_ptr(value)))
 							{
-								material_->Set(name, value);
+								material_->Set(property.variable_name, value);
 							}
 						}
-						else if (decl.type == "float3")
+						else if (property.type == ShaderPropertyType::kTexture2D)
 						{
-							glm::vec3 value = material_->Get<glm::vec3>(name);
+							rhi::Texture* texture = material_->Get(property.variable_name);
+							if (texture)
+							{
+								auto commnad_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
+								commnad_list->TransitionBarrier(texture, rhi::ResourceStates::kPixelShaderResource);
+								commnad_list->ExecuteCommandList();
 
-							if (name.find("color") != std::string::npos
-								|| name.find("Color") != std::string::npos)
-							{
-								if (ImGui::ColorEdit3(name.c_str(), glm::value_ptr(value), 0.01f))
-								{
-									material_->Set(name, value);
-								}
+								ImGui::Text(property.editor_name.c_str());
+								ImGui::SameLine();
+								ImGui::Image(texture->GetTextureID(), ImVec2(50, 50));
 							}
 							else
 							{
-								if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(value), 0.01f))
-								{
-									material_->Set(name, value);
-								}
+								ImGui::Text(property.editor_name.c_str());
+								ImGui::SameLine();
+								ImGui::Button(" ", ImVec2(50, 50));
 							}
-						}
-						else if (decl.type == "float4")
-						{
-							glm::vec4 value = material_->Get<glm::vec4>(name);
 
-							if (name.find("color") != std::string::npos
-								|| name.find("Color") != std::string::npos)
+							if (ImGui::BeginDragDropTarget())
 							{
-								if (ImGui::ColorEdit4(name.c_str(), glm::value_ptr(value), 0.01f))
+								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ImGuiEditor::kAssetMetaDragId))
 								{
-									material_->Set(name, value);
-								}
-							}
-							else
-							{
-								if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(value), 0.01f))
-								{
-									material_->Set(name, value);
-								}
-							}
-						}
-						else if (decl.type == "int")
-						{
-							int value = material_->Get<int>(name);
-							if (ImGui::DragInt(name.c_str(), &value))
-							{
-								material_->Set(name, value);
-							}
-						}
-						else if (decl.type == "int2")
-						{
-							glm::ivec2 value = material_->Get<glm::ivec2>(name);
-							if (ImGui::DragInt2(name.c_str(), glm::value_ptr(value)))
-							{
-								material_->Set(name, value);
-							}
-						}
-						else if (decl.type == "int3")
-						{
-							glm::ivec3 value = material_->Get<glm::ivec3>(name);
-							if (ImGui::DragInt3(name.c_str(), glm::value_ptr(value)))
-							{
-								material_->Set(name, value);
-							}
-						}
-						else if (decl.type == "int4")
-						{
-							glm::ivec4 value = material_->Get<glm::ivec4>(name);
-							if (ImGui::DragInt4(name.c_str(), glm::value_ptr(value)))
-							{
-								material_->Set(name, value);
-							}
-						}
-						else
-						{
+									size_t* meta_address = (size_t*)payload->Data;
+									AssetMeta* meta = (AssetMeta*)*meta_address;
 
+									if (meta->IsVaild() && AssetType::kTexture == meta->type)
+									{
+										auto texture = CastRef<rhi::Texture>(AssetManager::LoadAsset(*meta));
+										material_->Set(property.variable_name, texture);
+									}
+								}
+								ImGui::EndDragDropTarget();
+							}
 						}
 					}
 				}

@@ -1,5 +1,7 @@
 #include "engine/renderer/shader.h"
 
+#include "engine/renderer/renderer.h"
+
 namespace light
 {
 	Shader::Shader(rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs)
@@ -71,6 +73,29 @@ namespace light
 		binding_layout_ = CreateBindingLayout();
 	}
 
+	Shader::Shader(std::vector<ShaderProperty> properties, rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs)
+		: Shader(vs, ps, gs)
+	{
+		properties_ = std::move(properties);
+
+		for (auto& property : properties_)
+		{
+			if (property.type == ShaderPropertyType::kNumber)
+			{
+				Set(property.variable_name, property.number);
+			}
+			else if (property.type == ShaderPropertyType::kColor)
+			{
+				Set(property.variable_name, property.color);
+			}
+			else if (property.type == ShaderPropertyType::kTexture2D)
+			{
+				rhi::Texture* texture = Renderer::GetBuiltinTexture(property.texture);
+				Set(property.variable_name, texture);
+			}
+		}
+	}
+
 	void Shader::Set(const std::string& name, rhi::TextureHandle texture)
 	{
 		textures_[name] = texture;
@@ -129,7 +154,7 @@ namespace light
 	{
 		bool has_volatile_tex_range = false;
 		uint32_t index = 0;
-		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(bind_resources_.size());
+		rhi::BindingLayout* binding_layout = new rhi::BindingLayout(0);
 
 		for (auto& bind_resource : bind_resources_)
 		{

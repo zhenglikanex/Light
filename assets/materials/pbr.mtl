@@ -6,7 +6,7 @@ Params:
     Value: [1, 0, 0]
   - Name: cbMetalness
     Type: float
-    Value: 0.400000006
+    Value: 0.75
   - Name: cbRoughness
     Type: float
-    Value: 0.449999988
+    Value: 0.419999987

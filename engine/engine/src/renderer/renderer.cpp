@@ -19,7 +19,6 @@ namespace light
 		s_render_data = new RenderData();
 
 		rhi::Device* device = Application::Get().GetDevice();
-
 		auto command_list = device->GetCommandList(rhi::CommandListType::kCopy);
 
 		std::array<QuadVertex, 4> vertices =
@@ -47,17 +46,45 @@ namespace light
 		s_render_data->quad_index_buffer = device->CreateBuffer(index_buffer_desc);
 		command_list->WriteBuffer(s_render_data->quad_index_buffer, reinterpret_cast<uint8_t*>(indices.data()), index_buffer_desc.size_in_bytes);
 
-		command_list->ExecuteCommandList();
-
 		rhi::SamplerDesc sampler_desc;
 		sampler_desc.filter = rhi::SamplerFilter::kMIN_MAG_MIP_POINT;
 		s_render_data->sampler = device->CreateSampler(sampler_desc);
+
+		
+		// 内置textures
+		rhi::TextureDesc white_desc;
+		white_desc.width = 1;
+		white_desc.height = 1;
+		white_desc.format = rhi::Format::RGBA8_UNORM;
+
+		rhi::TextureHandle white_texture = device->CreateTexture(white_desc);
+		uint32_t data = 0xffffffff;
+		std::vector<rhi::TextureSubresourceData> texture_data(1);
+		texture_data[0].data = (char*)&data;
+		texture_data[0].data_size = sizeof(data);
+		texture_data[0].row_pitch = 4;
+		command_list->WriteTexture(white_texture, 0, 1, texture_data);
+
+		s_render_data->builtin_textures.emplace("white", white_texture);
+
+		command_list->ExecuteCommandList();
 	}
 
 	void Renderer::Shutdown()
 	{
 		delete s_render_data;
 		s_render_data = nullptr;
+	}
+
+	rhi::Texture* Renderer::GetBuiltinTexture(const std::string& name)
+	{
+		auto it = s_render_data->builtin_textures.find(name);
+		if (it != s_render_data->builtin_textures.end())
+		{
+			return it->second;
+		}
+
+		return nullptr;
 	}
 
 	void Renderer::BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform)

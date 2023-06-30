@@ -4,6 +4,7 @@
 #include "d12_sampler.h"
 
 #include <codecvt>
+#include <filesystem>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // For HRESULT
@@ -104,7 +105,35 @@ namespace light::rhi
 		Ref<ID3DBlob> byte_code = nullptr;
 		Ref<ID3DBlob> errors;
 		// todo:加入shader_macro
+		
 		hr = D3DCompileFromFile(wfilename.c_str(),nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+			entry_point.data(), target.data(), compile_flags, 0, &byte_code, &errors);
+
+		if (errors != nullptr)
+			OutputDebugStringA((char*)errors->GetBufferPointer());
+
+		ThrowIfFailed(hr);
+
+		std::vector<char> vbyte_code(byte_code->GetBufferSize());
+		memcpy(vbyte_code.data(), byte_code->GetBufferPointer(), vbyte_code.size());
+
+		return CreateShader(type, std::move(vbyte_code));
+	}
+
+	ShaderHandle D12Device::CreateShader(ShaderType type, std::string_view filename, const char* data, uint32_t size, std::string_view entry_point, std::string_view target)
+	{
+		UINT compile_flags = 0;
+#if defined(DEBUG) || defined(_DEBUG)  
+		compile_flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+		compile_flags |= D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES;
+
+		HRESULT hr = S_OK;
+		Ref<ID3DBlob> byte_code = nullptr;
+		Ref<ID3DBlob> errors;
+		// todo:加入shader_macro
+		// todo path 对吗？
+		hr = D3DCompile(data, size, filename.data(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 			entry_point.data(), target.data(), compile_flags, 0, &byte_code, &errors);
 
 		if (errors != nullptr)

@@ -2,6 +2,7 @@
 
 #include "engine/asset/asset.h"
 #include "engine/asset/asset_meta.h"
+#include "engine/renderer/shader.h"
 
 #include "engine/rhi/shader.h"
 
@@ -43,5 +44,9 @@ namespace light
 
 	private:
 		bool FindSubShader(const std::string& source, rhi::ShaderType type);
+
+		std::vector<ShaderProperty> ParseShaderProperties(const std::string& source);
+
+		const char* SkipWhiteSpaces(const char* ch);
 	};
 }

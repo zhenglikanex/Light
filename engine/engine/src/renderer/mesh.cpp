@@ -2,6 +2,7 @@
 
 #include "engine/core/application.h"
 #include "engine/renderer/renderer.h"
+#include "engine/asset/asset_manager.h"
 
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
@@ -87,6 +88,64 @@ namespace light
 					indices_.emplace_back(face.mIndices[j]);
 				}
 			}
+
+			// todo 改用内置shader
+			Ref<Material> material = MakeRef<Material>(AssetManager::LoadAsset<Shader>("shaders/simplepbr.shader"));
+			if (scene->HasMaterials())
+			{
+				std::filesystem::path path = filename;
+				path = path.parent_path();
+				path = AssetManager::GetAssetRelativePath(path);
+
+				aiMaterial* ai_material = scene->mMaterials[mesh->mMaterialIndex];
+				
+				aiColor3D base_color;
+				if (ai_material->Get(AI_MATKEY_BASE_COLOR, base_color) == aiReturn_SUCCESS)
+				{
+					material->Set("cbAlbedoColor", glm::vec3(base_color.r, base_color.g, base_color.b));
+				}
+
+				aiString base_color_tex;
+				if (ai_material->GetTexture(AI_MATKEY_BASE_COLOR_TEXTURE, &base_color_tex) == aiReturn_SUCCESS)
+				{
+					if (auto texture = AssetManager::LoadAsset<rhi::Texture>((path / base_color_tex.C_Str()).generic_string()))
+					{
+						material->Set("gAbledoMap", texture);
+					}
+				}
+
+				ai_real metallic = 0;
+				if (ai_material->Get(AI_MATKEY_METALLIC_FACTOR, metallic) == aiReturn_SUCCESS)
+				{
+					material->Set("cbMetalness", metallic);
+				}
+
+				aiString metallic_tex;
+				if (ai_material->GetTexture(AI_MATKEY_METALLIC_TEXTURE, &metallic_tex) == aiReturn_SUCCESS)
+				{
+					if (auto texture = AssetManager::LoadAsset<rhi::Texture>((path / metallic_tex.C_Str()).generic_string()))
+					{
+						material->Set("gMetalnessMap", texture);
+					}
+				}
+
+				ai_real roughness;
+				if (ai_material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness) == aiReturn_SUCCESS)
+				{
+					material->Set("cbRoughness", roughness);
+				}
+
+				aiString roughness_tex;
+				if (ai_material->GetTexture(AI_MATKEY_ROUGHNESS_TEXTURE, &roughness_tex) == aiReturn_SUCCESS)
+				{
+					if (auto texture = AssetManager::LoadAsset<rhi::Texture>((path / roughness_tex.C_Str()).generic_string()))
+					{
+						material->Set("gRoughnessMap", texture);
+					}
+				}
+			}
+
+			materials_[mesh_index] = material;
 		}
 		
 		rhi::Device* device = Application::Get().GetDevice();

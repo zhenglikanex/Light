@@ -1,3 +1,14 @@
+#Properties
+gAbledoMap ("Albedo Map", 2D) = "white"
+cbAlbedoColor ("Abledo Color", Color) = (1,1,1)
+
+gMetalnessMap("Metalness Map",2D) = "white"
+cbMetalness ("Metalness", Range(0,1)) = 0.5
+
+gRoughnessMap("Roughness Map",2D) = "white"
+cbRoughness ("Roughness", Range(0,1)) = 0.0
+
+#Shader
 #include "lighting.hlsl"
 
 struct Light
@@ -34,6 +45,10 @@ cbuffer cbMaterialConstants : register(b2)
 }
 
 Texture2D gShadowMap : register(t0);
+Texture2D gAbledoMap : register(t1);
+Texture2D gMetalnessMap : register(t2);
+Texture2D gRoughnessMap : register(t3);
+
 SamplerState gSamplerPointWarp : register(s0);
 
 static const float kPI = 3.1415926;
@@ -181,9 +196,9 @@ float3 Lighting(Light light,float3 worldPosition, float3 F0)
 
 float4 PsMain(VertexOut vsInput) : SV_Target
 {
-    gParams.Albedo = cbAlbedoColor;
-    gParams.Metalness = cbMetalness;
-    gParams.Roughness = cbRoughness;
+    gParams.Albedo =  gAbledoMap.Sample(gSamplerPointWarp,vsInput.TexCoord).rgb * cbAlbedoColor;
+    gParams.Metalness = gMetalnessMap.Sample(gSamplerPointWarp,vsInput.TexCoord).r * cbMetalness;
+    gParams.Roughness = gRoughnessMap.Sample(gSamplerPointWarp,vsInput.TexCoord).r * cbRoughness;
 
     gParams.Normal = normalize(mul(vsInput.WorldNormalMatrix,vsInput.Normal));
 

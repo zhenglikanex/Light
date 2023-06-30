@@ -103,7 +103,7 @@ namespace light
 
 		static void ResetStats();
 		static Statistics GetStats();
-	private:
+	public:
 		static rhi::GraphicsPipeline* GetGraphicsPipleline(const rhi::RenderTarget& render_target);
 		static rhi::GraphicsPipelineHandle CreateGraphicsPipleline(const rhi::RenderTarget& render_target);
 		static Data* s_renderer_data;

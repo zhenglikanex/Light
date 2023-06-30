@@ -28,6 +28,8 @@ namespace light
 
 		static UUID GetAssetUUID(const std::string& path);
 
+		static bool HasAsset(const std::string& path);
+
 		template<typename T> requires(std::is_base_of_v<Asset, T>)
 			static Ref<T> LoadAsset(UUID uuid)
 		{

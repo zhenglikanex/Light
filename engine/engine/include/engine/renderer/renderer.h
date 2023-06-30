@@ -54,12 +54,15 @@ namespace light
 			rhi::SamplerHandle sampler;
 			//todo:
 			std::unordered_map<std::string, rhi::SamplerHandle> samplers;
+			std::unordered_map<std::string, rhi::TextureHandle> builtin_textures;
 		};
 
 		constexpr static uint32_t kMaxTextures = 32;
 
 		static void Init();
 		static void Shutdown();
+
+		static rhi::Texture* GetBuiltinTexture(const std::string& name);
 
 		// 设置当前帧统一变量,如相机，光源，环境参数
 		static void BeginScene(rhi::CommandList* command_list,const Camera& camera, const glm::mat4& transform);

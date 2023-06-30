@@ -9,6 +9,8 @@
 #include "engine/rhi/binding_layout.h"
 #include "engine/rhi/texture.h"
 
+#include "glm/glm.hpp"
+
 namespace light
 {
 	struct ShaderBindingTable
@@ -17,12 +19,45 @@ namespace light
 		uint32_t offset;
 	};
 
+	enum class ShaderPropertyType
+	{
+		kNumber,
+		kColor,
+		kTexture2D,
+	};
+
+	struct ShaderProperty
+	{
+		ShaderPropertyType type = ShaderPropertyType::kNumber;
+
+		union 
+		{
+			float number;
+			glm::vec3 color;
+		};
+		std::string texture;
+
+		std::string variable_name;
+		std::string editor_name;
+		
+		struct Range
+		{
+			double max;
+			double min;
+		};
+
+		Range range;
+	};
+
 	class Shader : public Asset
 	{
 	public:
 		Shader(rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
+		Shader(std::vector<ShaderProperty> properties, rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs);
 
 		AssetType GetAssetType() const override { return AssetType::kShader; }
+
+		const std::vector<ShaderProperty>& GetProperties() const { return properties_; }
 
 		void SetCullMode(rhi::CullMode cull_mode) { cull_mode_ = cull_mode; }
 
@@ -82,6 +117,8 @@ namespace light
 		const std::unordered_map<std::string, ShaderBindingTable>& GetSamplerBindingTables() const { return sampler_binding_tables_; }
 	private:
 		rhi::BindingLayoutHandle CreateBindingLayout() const;
+
+		std::vector<ShaderProperty> properties_;
 
 		rhi::ShaderHandle vs_;
 		rhi::ShaderHandle gs_;

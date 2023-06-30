@@ -46,6 +46,8 @@ namespace light::rhi
 		
 		ShaderHandle CreateShader(ShaderType type, std::string_view filename,std::string_view entry_point,std::string_view target) override;
 
+		ShaderHandle CreateShader(ShaderType type, std::string_view filename,const char* data, uint32_t size, std::string_view entry_point, std::string_view target) override;
+
 		BufferHandle CreateBuffer(BufferDesc desc) override;
 
 		TextureHandle CreateTexture(const TextureDesc& desc,const ClearValue* clear_value = nullptr) override;

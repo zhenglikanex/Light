@@ -52,6 +52,10 @@ namespace light
 
 		void Set(const std::string& name, rhi::Texture* texture);
 
+		void Set(const std::string& name, rhi::TextureHandle texture);
+
+		rhi::Texture* Get(const std::string& name) const;
+
 		void SetParamsBuffer(std::vector<uint8_t> buffer) { params_buffer_ = std::move(buffer); }
 
 		const std::vector<uint8_t>& GetParamsBuffer() const { return params_buffer_; }
