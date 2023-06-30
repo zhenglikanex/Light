@@ -175,6 +175,9 @@ namespace light::rhi
 					memcpy(dest_address, src_address, std::min(layouts[i].Footprint.RowPitch, data[i].row_pitch));
 				}
 			}
+
+			// 加上在upload_buffer中分配的resource的偏移
+			layouts[i].Offset += allocation.offset;
 		}
 
 		for (uint32_t i = 0; i < num_subresources; ++i)
