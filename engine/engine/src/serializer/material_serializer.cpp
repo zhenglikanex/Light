@@ -23,55 +23,37 @@ namespace light
 
 		if (material_->GetShader())
 		{
-			if (material_->GetShader()->GetParamDeclarations().size() > 0)
+			if (material_->GetShader()->GetProperties().size() > 0)
 			{
 				out << YAML::Key << "Params" << YAML::BeginSeq;
-				for (auto& [name, decl] : material_->GetShader()->GetParamDeclarations())
+				for (auto& property : material_->GetShader()->GetProperties())
 				{
 					out << YAML::BeginMap;
 
-					out << YAML::Key << "Name" << YAML::Value << name;
-					out << YAML::Key << "Type" << YAML::Value << decl.type;
+					out << YAML::Key << "Name" << YAML::Value << property.editor_name;
+					out << YAML::Key << "Type" << YAML::Value << static_cast<uint32_t>(property.type);
 
 					out << YAML::Key << "Value";
-					if (decl.type == "float")
+					if (property.type == ShaderPropertyType::kNumber)
 					{
-						out << YAML::Value << material_->Get<float>(name);
+						out << YAML::Value << material_->Get<float>(property.variable_name);
 					}
-					else if (decl.type == "float2")
+					else if(property.type == ShaderPropertyType::kColor) 
 					{
-						out << YAML::Value << material_->Get<glm::vec2>(name);
+						out << YAML::Value << material_->Get<glm::vec3>(property.variable_name);
 					}
-					else if (decl.type == "float3")
+					else if (property.type == ShaderPropertyType::kTexture2D)
 					{
-						out << YAML::Value << material_->Get<glm::vec3>(name);
+						out << YAML::Value << material_->Get(property.variable_name)->GetUuidString();
 					}
-					else if (decl.type == "float4")
+					else 
 					{
-						out << YAML::Value << material_->Get<glm::vec4>(name);
+						LIGHT_ASSERT(false, std::format("{} : Not Supported Type!",static_cast<uint32_t>(property.type)));
 					}
-					else if (decl.type == "int")
-					{
-						out << YAML::Value << material_->Get<int>(name);
-					}
-					else if (decl.type == "int2")
-					{
-						out << YAML::Value << material_->Get<glm::ivec2>(name);
-					}
-					else if (decl.type == "int3")
-					{
-						out << YAML::Value << material_->Get<glm::ivec3>(name);
-					}
-					else if (decl.type == "int4")
-					{
-						out << YAML::Value << material_->Get<glm::ivec4>(name);
-					}
-					else
-					{
-						LIGHT_ASSERT(false, std::format("{} : Not Supported Type!", decl.type));
-					}
+
 					out << YAML::EndMap;
 				}
+
 				out << YAML::EndSeq;
 			}
 		}
@@ -119,50 +101,34 @@ namespace light
 		for (const auto& node : data["Params"])
 		{
 			std::string name = node["Name"].as<std::string>();
-			std::string type = node["Type"].as<std::string>();
-			if (type == "float")
+			ShaderPropertyType type = static_cast<ShaderPropertyType>(node["Type"].as<uint32_t>());
+			if (type == ShaderPropertyType::kNumber)
 			{
 				float value = node["Value"].as<float>();
 				material_->Set(name, value);
 			}
-			else if (type == "float2")
+			else if (type == ShaderPropertyType::kColor)
 			{
-				glm::vec2 value = node["Value"].as<glm::vec2>();
+				glm::vec2 value = node["Value"].as<glm::vec3>();
 				material_->Set(name, value);
 			}
-			else if (type == "float3")
+			else if (type == ShaderPropertyType::kTexture2D)
 			{
-				glm::vec3 value = node["Value"].as<glm::vec3>();
-				material_->Set(name, value);
-			}
-			else if (type == "float4")
-			{
-				glm::vec4 value = node["Value"].as<glm::vec4>();
-				material_->Set(name, value);
-			}
-			else if (type == "int")
-			{
-				int value = node["Value"].as<int>();
-				material_->Set(name, value);
-			}
-			else if (type == "int2")
-			{
-				glm::ivec2 value = node["Value"].as<glm::ivec2>();
-				material_->Set(name, value);
-			}
-			else if (type == "int3")
-			{
-				glm::ivec3 value = node["Value"].as<glm::ivec3>();
-				material_->Set(name, value);
-			}
-			else if (type == "int4")
-			{
-				glm::ivec4 value = node["Value"].as<glm::ivec4>();
-				material_->Set(name, value);
+				std::string value = node["Value"].as<std::string>();
+				auto result = uuid::FromString(value);
+				if (result)
+				{
+					rhi::Texture* texture = AssetManager::LoadAsset<rhi::Texture>(value);
+					material_->Set(name, texture);
+				}
+				else 
+				{
+					LOG_ENGINE_WARN("Material Textures Miss : {} ,Texture Name : {}", filepath, name);
+				}
 			}
 			else
 			{
-				LIGHT_ASSERT(false, std::format("{} : Not Supported Type!", type));
+				LIGHT_ASSERT(false, std::format("{} : Not Supported Type!", static_cast<uint32_t>(type)));
 			}
 		}
 

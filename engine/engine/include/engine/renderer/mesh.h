@@ -30,6 +30,16 @@ namespace light
 	class Mesh : public Asset
 	{
 	public:
+		static AssetType StaticType()
+		{
+			return AssetType::kMesh;
+		}
+
+		static const char* StaticName()
+		{
+			return "Mesh";
+		}
+
 		Mesh(std::string_view filename);
 
 		AssetType GetAssetType() const override { return AssetType::kMesh; }

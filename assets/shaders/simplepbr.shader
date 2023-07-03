@@ -10,6 +10,7 @@ cbRoughness ("Roughness", Range(0,1)) = 0.0
 
 #Shader
 #include "lighting.hlsl"
+#include "utils.hlsl"
 
 struct Light
 {
@@ -196,9 +197,9 @@ float3 Lighting(Light light,float3 worldPosition, float3 F0)
 
 float4 PsMain(VertexOut vsInput) : SV_Target
 {
-    gParams.Albedo =  gAbledoMap.Sample(gSamplerPointWarp,vsInput.TexCoord).rgb * cbAlbedoColor;
-    gParams.Metalness = gMetalnessMap.Sample(gSamplerPointWarp,vsInput.TexCoord).r * cbMetalness;
-    gParams.Roughness = gRoughnessMap.Sample(gSamplerPointWarp,vsInput.TexCoord).r * cbRoughness;
+    gParams.Albedo =  gAbledoMap.Sample(gSamplerPointWarp,GetTexcoord(vsInput.TexCoord)).rgb * cbAlbedoColor;
+    gParams.Metalness = gMetalnessMap.Sample(gSamplerPointWarp,GetTexcoord(vsInput.TexCoord)).r * cbMetalness;
+    gParams.Roughness = gRoughnessMap.Sample(gSamplerPointWarp,GetTexcoord(vsInput.TexCoord)).r * cbRoughness;
 
     gParams.Normal = normalize(mul(vsInput.WorldNormalMatrix,vsInput.Normal));
 

@@ -179,7 +179,12 @@ namespace light::editor
 
 		if (!std::filesystem::exists(parent_path))
 		{
-			std::filesystem::create_directory(parent_path);
+			std::error_code code;
+			if (!std::filesystem::create_directories(parent_path, code))
+			{
+				return;
+			}
+			
 		}
 
 		if (std::filesystem::copy_file(entry.path(), target_path))

@@ -1,0 +1,21 @@
+Material: C:/project/Light/assets/materials/dagger_pbr.mtl
+Shader: 8f49dc28-a9e6-47e4-8c57-e3da16c5de7d
+Params:
+  - Name: Albedo Map
+    Type: 2
+    Value: ""
+  - Name: Abledo Color
+    Type: 1
+    Value: [0.248108387, 0.598731995, 0.877637148]
+  - Name: Metalness Map
+    Type: 2
+    Value: ""
+  - Name: Metalness
+    Type: 0
+    Value: 0.370000005
+  - Name: Roughness Map
+    Type: 2
+    Value: ""
+  - Name: Roughness
+    Type: 0
+    Value: 0.330000013

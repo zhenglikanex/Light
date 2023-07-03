@@ -2,6 +2,7 @@
 
 #include "engine/core/application.h"
 #include "engine/asset/asset_manager.h"
+#include "engine/renderer/renderer.h"
 #include "engine/serializer/material_serializer.h"
 #include "engine/utils/platform_utils.h"
 #include "engine/editor/imgui_utils.h"
@@ -74,6 +75,15 @@ namespace light::editor
 								ImGui::Text(property.editor_name.c_str());
 								ImGui::SameLine();
 								ImGui::Image(texture->GetTextureID(), ImVec2(50, 50));
+								if (ImGui::BeginPopupContextWindow(0, ImGuiPopupFlags_MouseButtonRight))
+								{
+									if (ImGui::MenuItem("Reset"))
+									{
+										material_->Set(property.variable_name, Renderer::GetBuiltinTexture(property.texture));
+									}
+
+									ImGui::EndPopup();
+								}
 							}
 							else
 							{

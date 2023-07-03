@@ -24,6 +24,16 @@ namespace light::rhi
 	class Texture : public Asset
 	{
 	public:
+		static AssetType StaticType()
+		{
+			return AssetType::kTexture;
+		}
+
+		static const char* StaticName()
+		{
+			return "Texture";
+		}
+
 		explicit Texture(const TextureDesc& desc)
 			: desc_(desc)
 			, permanent_state_(false)

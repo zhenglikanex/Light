@@ -1,12 +1,2 @@
-Material: C:/project/Light/assets/materials/pbr.mtl
-Shader: 8f49dc28-a9e6-47e4-8c57-e3da16c5de7d
-Params:
-  - Name: cbAlbedoColor
-    Type: float3
-    Value: [1, 0, 0]
-  - Name: cbMetalness
-    Type: float
-    Value: 0.75
-  - Name: cbRoughness
-    Type: float
-    Value: 0.419999987
+Material: C:\project\Light\assets\materials\test.mtl
+Shader: ""

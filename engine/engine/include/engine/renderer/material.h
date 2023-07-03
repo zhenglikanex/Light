@@ -13,6 +13,16 @@ namespace light
 	class Material : public Asset
 	{
 	public:
+		static AssetType StaticType()
+		{
+			return AssetType::kMaterial;
+		}
+
+		static const char* StaticName()
+		{
+			return "Material";
+		}
+
 		Material() = default;
 		explicit Material(Shader* shader);
 

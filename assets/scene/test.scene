@@ -1,0 +1,30 @@
+Scene: Untitled
+Entities:
+  - Entity: 1
+    Components:
+      - Type: light::TransformComponent
+        Fields:
+          position: [9.53674316e-07, 0, 0]
+          rotation: [0, -0, 0]
+          scale: [0.00999999978, 0.00999999978, 0.00999999978]
+      - Type: light::TagComponent
+        Fields:
+          tag: Entity
+      - Type: light::MeshComponent
+        Fields:
+          mesh: ad095d88-c488-4c84-902b-99f8f2dcc6fc
+          materials:
+            - dfdfc914-992e-46da-b0f9-06dde10073cb
+  - Entity: 0
+    Components:
+      - Type: light::TransformComponent
+        Fields:
+          position: [0, 0, 0]
+          rotation: [0, 0, 0]
+          scale: [1, 1, 1]
+      - Type: light::TagComponent
+        Fields:
+          tag: Entity
+      - Type: light::LightComponent
+        Fields:
+          color: [1, 1, 1]

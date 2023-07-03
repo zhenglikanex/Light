@@ -52,6 +52,16 @@ namespace light
 	class Shader : public Asset
 	{
 	public:
+		static AssetType StaticType()
+		{
+			return AssetType::kShader;
+		}
+
+		static const char* StaticName()
+		{
+			return "Shader";
+		}
+
 		Shader(rhi::Shader* vs,rhi::Shader* ps,rhi::Shader* gs);
 		Shader(std::vector<ShaderProperty> properties, rhi::Shader* vs, rhi::Shader* ps, rhi::Shader* gs);
 

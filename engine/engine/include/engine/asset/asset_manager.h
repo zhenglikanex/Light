@@ -36,7 +36,7 @@ namespace light
 			const AssetMeta& meta = GetAssetMeta(uuid);
 			if (meta.uuid.is_nil())
 			{
-				LOG_ENGINE_WARN("Asset Load Fialed!");
+				LOG_ENGINE_WARN("{} Asset Load Fialed!",T::StaticName());
 				return nullptr;
 			}
 
