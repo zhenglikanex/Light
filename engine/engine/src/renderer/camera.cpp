@@ -32,7 +32,4 @@ namespace light
 		view_matrix_ = glm::inverse(transform);
 		view_projection_matrx_ = projection_matrix_ * view_matrix_;
 	}
-
-	
-
 }

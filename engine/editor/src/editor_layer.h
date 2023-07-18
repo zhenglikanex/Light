@@ -1,12 +1,14 @@
 #pragma once
 
 #include "engine/light.h"
+#include "engine/renderer/cube_map.h"
 #include "engine/renderer/editor_camera.h"
 
 #include "panel/scene_hierarchy_panel.h"
 #include "panel/property_panel.h"
 #include "panel/material_panel.h"
 #include "panel/asset_browser_panel.h"
+#include "panel/cubemap_panel.h"
 
 namespace light::editor
 {
@@ -45,6 +47,7 @@ namespace light::editor
 		SceneHierarchyPanel scene_hierarchy_panel_;
 		PropertyPanel property_panel_;
 		MaterialPanel material_panel_;
+		CubeMapPanel cubemap_panel_;
 		AssetBrowserPanel asset_browser_panel_;
 
 		int guizmo_type_;

@@ -53,7 +53,7 @@ namespace light::rhi
 
 		void AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture);
 
-		void AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture, uint32_t mip_level,uint32_t array_slice = 0);
+		void AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture, uint32_t mip_level,uint32_t array_slice,uint32_t num_array_slice);
 
 		Attachment GetAttachment(AttachmentPoint attachment_point) const;
 

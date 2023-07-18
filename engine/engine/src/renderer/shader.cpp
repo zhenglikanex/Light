@@ -9,6 +9,8 @@ namespace light
 		, gs_(gs)
 		, ps_(ps)
 		, cull_mode_(rhi::CullMode::kBack)
+		, depth_enable_(true)
+		, depth_func_(rhi::ComparisonFunc::kLess)
 	{
 		if (ps_)
 		{

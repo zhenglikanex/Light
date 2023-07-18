@@ -4,6 +4,7 @@
 
 #include "engine/event/windows_event.h"
 #include "engine/serializer/material_serializer.h"
+#include "engine/serializer/cube_map_serializer.h"
 
 #include "yaml-cpp/yaml.h"
 
@@ -25,6 +26,7 @@ namespace light
 		s_asset_loaders_[static_cast<uint32_t>(AssetType::kMesh)] = new MeshLoader();
 		s_asset_loaders_[static_cast<uint32_t>(AssetType::kMaterial)] = new MaterialLoader();
 		s_asset_loaders_[static_cast<uint32_t>(AssetType::kShader)] = new ShaderLoader();
+		s_asset_loaders_[static_cast<uint32_t>(AssetType::kCubeMap)] = new CubeMapLoader();
 
 		s_asset_path_ = std::filesystem::current_path() / "assets";
 
@@ -112,26 +114,37 @@ namespace light
 
 	std::optional<std::filesystem::directory_entry> AssetManager::CreateAsset(AssetType type, const std::filesystem::path& path, std::string_view filename)
 	{
+		std::string ext = ToExtString(type);
+
+		std::filesystem::path full_path = path / filename;
+		full_path.replace_extension(ext);
+
+		if (full_path.is_relative())
+		{
+			full_path = GetAssetAbsolutePath(full_path.generic_string());
+		}
+
+		if (std::filesystem::exists(full_path))
+		{
+			return {};
+		}
+
 		if (type == AssetType::kMaterial)
 		{
-			std::string ext = ToExtString(type);
-
-			std::filesystem::path full_path = path / filename;
-			full_path.replace_extension(ext);
-
-			if (full_path.is_relative())
-			{
-				full_path = GetAssetAbsolutePath(full_path.generic_string());
-			}
-
-			if (std::filesystem::exists(full_path))
-			{
-				return {};
-			}
-
+			
 			Ref<Material> material = MakeRef<Material>();
 			MaterialSerializer ms(material);
 			ms.SerializeText(full_path.string());
+
+			ImportAsset(GetAssetRelativePath(full_path));
+
+			return std::make_optional<std::filesystem::directory_entry>(full_path);
+		}
+		else if (type == AssetType::kCubeMap)
+		{
+			Ref<CubeMap> cubemap = MakeRef<CubeMap>();
+			CubeMapSerializer cs(cubemap);
+			cs.SerializeText(full_path.string());
 
 			ImportAsset(GetAssetRelativePath(full_path));
 

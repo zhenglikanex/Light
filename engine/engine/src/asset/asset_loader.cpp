@@ -7,8 +7,10 @@
 #include "engine/core/application.h"
 
 #include "engine/renderer/mesh.h"
+#include "engine/renderer/cube_map.h"
 
 #include "engine/serializer/material_serializer.h"
+#include "engine/serializer/cube_map_serializer.h"
 #include "engine/utils/string_utils.h"
 
 #include <filesystem>
@@ -44,6 +46,7 @@ namespace light
 		}
 		else
 		{
+			stbi_set_flip_vertically_on_load(true);
 			std::ifstream fin(AssetManager::GetAssetAbsolutePath(meta.path), std::ios_base::binary);
 			if (fin.is_open())
 			{
@@ -167,11 +170,11 @@ namespace light
 	Ref<Asset> MeshLoader::Load(const AssetMeta& meta)
 	{
 		std::string path = AssetManager::GetAssetAbsolutePath(meta.path).string();
-		if(path.empty())
+		if (path.empty())
 		{
 			return nullptr;
 		}
-		
+
 		Ref<Asset> asset = MakeRef<Mesh>(path);
 		asset->uuid = meta.uuid;
 
@@ -181,7 +184,7 @@ namespace light
 	Ref<Asset> MaterialLoader::Load(const AssetMeta& meta)
 	{
 		std::string path = AssetManager::GetAssetAbsolutePath(meta.path).string();
-		
+
 		Ref<Material> material = MakeRef<Material>();
 		MaterialSerializer ms(material);
 		ms.DeserializeText(path);
@@ -203,7 +206,7 @@ namespace light
 		sstream << fs.rdbuf();
 
 		fs.close();
-		
+
 		std::string source = sstream.str();
 
 		Ref<Shader> shader;
@@ -237,15 +240,15 @@ namespace light
 			uint32_t properties_pos = source.find(s_PropertiesTag);
 			uint32_t shader_pos = source.find(s_ShaderTag);
 			std::string properties_source(source.data() + properties_pos + s_PropertiesTag.size(), source.data() + shader_pos);
-			
- 			std::vector<ShaderProperty> properties = ParseShaderProperties(properties_source);
+
+			std::vector<ShaderProperty> properties = ParseShaderProperties(properties_source);
 
 			const char* data = source.data() + shader_pos + s_ShaderTag.size();
 			uint32_t size = source.size() - shader_pos - s_ShaderTag.size();
 
 			if (FindSubShader(source, rhi::ShaderType::kVertex))
 			{
-				vs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, path,data,size, kVsShaderEntryPoint, "vs_5_1");
+				vs = Application::Get().GetDevice()->CreateShader(rhi::ShaderType::kVertex, path, data, size, kVsShaderEntryPoint, "vs_5_1");
 			}
 
 			if (FindSubShader(source, rhi::ShaderType::kPixel))
@@ -291,8 +294,8 @@ namespace light
 	{
 		while (*ch)
 		{
-			
-			if (strncmp(ch, "\r\n",2) == 0 || strncmp(ch, "\n\r",2) == 0)
+
+			if (strncmp(ch, "\r\n", 2) == 0 || strncmp(ch, "\n\r", 2) == 0)
 			{
 				ch += 2;
 			}
@@ -317,7 +320,7 @@ namespace light
 	std::vector<ShaderProperty> ShaderLoader::ParseShaderProperties(const std::string& source)
 	{
 		std::vector<ShaderProperty> properties;
-		
+
 		const char* ch = source.c_str();
 
 		while (ch && *ch)
@@ -367,7 +370,7 @@ namespace light
 			property.editor_name = std::string(p, ch++);
 
 			ch = SkipWhiteSpaces(ch);
-			
+
 			if (*ch++ != ',')
 			{
 				LIGHT_ASSERT(false, "Shader Properties Parse Error!");
@@ -427,7 +430,7 @@ namespace light
 				}
 
 				end = ch;
-				
+
 				double max = 0;
 				result = std::from_chars(first, end, max);
 				if (result.ec != std::errc())
@@ -449,10 +452,10 @@ namespace light
 			}
 
 			ch = SkipWhiteSpaces(ch);
-			
+
 			if (*ch++ != ')')
 			{
-				LIGHT_ASSERT(false,"Shader Properties Parse Error!");
+				LIGHT_ASSERT(false, "Shader Properties Parse Error!");
 				return properties;
 			}
 
@@ -460,12 +463,12 @@ namespace light
 
 			if (*ch++ != '=')
 			{
-				LIGHT_ASSERT(false,"Shader Properties Parse Error!");
+				LIGHT_ASSERT(false, "Shader Properties Parse Error!");
 				return properties;
 			}
 
 			ch = SkipWhiteSpaces(ch);
-			
+
 			if (property.type == ShaderPropertyType::kColor)
 			{
 				if (*ch++ != '(')
@@ -506,7 +509,7 @@ namespace light
 			else if (property.type == ShaderPropertyType::kNumber)
 			{
 				p = ch;
-				
+
 				while (*ch == '.' || *ch >= '0' && *ch <= '9')
 				{
 					++ch;
@@ -544,5 +547,20 @@ namespace light
 		}
 
 		return properties;
+	}
+
+	Ref<Asset> CubeMapLoader::Load(const AssetMeta& meta)
+	{
+		std::filesystem::path path = meta.path;
+
+		Ref<CubeMap> cubemap = MakeRef<CubeMap>();
+
+		CubeMapSerializer cs(cubemap);
+		if (cs.DeserializeText(AssetManager::GetAssetAbsolutePath(meta.path).string()))
+		{
+			return cubemap;
+		}
+
+		return nullptr;
 	}
 }

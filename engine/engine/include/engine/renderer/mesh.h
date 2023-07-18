@@ -5,6 +5,7 @@
 #include "engine/core/base.h"
 #include "engine/renderer/material.h"
 #include "engine/rhi/buffer.h"
+#include "engine/renderer/vertex_buffer.h"
 
 #include "glm/glm.hpp"
 
@@ -46,7 +47,7 @@ namespace light
 
 		void SetMaterial(uint32_t index, Material* material);
 
-		rhi::Buffer* GetVertexBuffer() const { return vertex_buffer_; }
+		VertexBuffer* GetVertexBuffer() const { return vertex_buffer_; }
 
 		rhi::Buffer* GetIndexBuffer() const { return index_buffer_; }
 
@@ -57,11 +58,12 @@ namespace light
 		uint32_t GetNumSubMesh() const { return sub_meshes_.size(); }
 
 		auto begin() const { return sub_meshes_.begin(); }
+
 		auto end() const { return sub_meshes_.end(); }
 	private:
 		std::vector<Vertex> vertices_;
 		std::vector<uint32_t> indices_;
-		rhi::BufferHandle vertex_buffer_;
+		Ref<VertexBuffer> vertex_buffer_;
 		rhi::BufferHandle index_buffer_;
 		std::vector<Ref<Material>> materials_;
 		std::vector<SubMesh> sub_meshes_;

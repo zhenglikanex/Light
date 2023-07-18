@@ -18,6 +18,7 @@ namespace light
 	class Material;
 	class RenderPass;
 	class EditorCamera;
+	class VertexBuffer;
 
 	struct META() SceneRendererSetting
 	{
@@ -27,6 +28,8 @@ namespace light
 			uint32_t width = 8192;
 			uint32_t height = 8192;
 		};
+
+		rhi::TextureHandle equirectangular_map;
 
 		ShadowSetting shadow_setting;
 	};
@@ -61,7 +64,7 @@ namespace light
 
 		struct DrawItem
 		{
-			rhi::Buffer* vertex_buffer;
+			VertexBuffer* vertex_buffer;
 			rhi::Buffer* index_buffer;
 
 			uint32_t base_vertex;
@@ -92,6 +95,11 @@ namespace light
 
 		Ref<Shader> shadow_shader_;
 		Ref<Material> shadow_material_;
+
+		Ref<Shader> skybox_shader_;
+		Ref<Material> skybox_material_;
+		rhi::TextureHandle environment_map_;
+		rhi::Texture* equirectangular_map_;
 
 		Ref<RenderPass> shadow_pass_;
 		Ref<RenderPass> geometry_pass_;

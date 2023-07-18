@@ -26,7 +26,7 @@ namespace light::rhi
 
 			ShaderBindResourceDeclaration bind_res_desc;
 			bind_res_desc.name = d12_bind_desc.Name;
-
+			// todo处理根常量
 			switch (d12_bind_desc.Type)
 			{
 			case D3D_SIT_CBUFFER:

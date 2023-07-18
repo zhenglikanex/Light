@@ -70,7 +70,7 @@ namespace light::rhi
 
 		virtual void SetShaderResourceView(uint32_t parameter_index, uint32_t descriptor_offset, Texture* texture,
 			Format format = Format::UNKNOWN,
-			TextureDimension dimension = TextureDimension::kTexture2D,
+			TextureDimension dimension = TextureDimension::kUnknown,
 			uint32_t mip_level = 0, uint32_t num_mip_levels = -1,
 			uint32_t array_slice = 0, uint32_t num_array_slices = -1,
 			ResourceStates state_after = ResourceStates::kPixelShaderResource | ResourceStates::kNonPixelShaderResource) = 0;

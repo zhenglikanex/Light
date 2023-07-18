@@ -6,6 +6,7 @@
 #include "engine/renderer/material.h"
 #include "engine/renderer/render_pass.h"
 #include "engine/renderer/shader_library.h"
+#include "engine/renderer/vertex_buffer.h"
 
 #include "engine/rhi/command_list.h"
 #include "engine/rhi/graphics_pipeline.h"
@@ -47,7 +48,7 @@ namespace light
 
 		struct RenderData
 		{
-			rhi::BufferHandle quad_vertex_buffer;
+			Ref<VertexBuffer> quad_vertex_buffer;
 			rhi::BufferHandle quad_index_buffer;
 			std::unordered_map<size_t, rhi::GraphicsPipelineHandle> pso_cache;
 			rhi::RenderTarget render_target;
@@ -55,6 +56,10 @@ namespace light
 			//todo:
 			std::unordered_map<std::string, rhi::SamplerHandle> samplers;
 			std::unordered_map<std::string, rhi::TextureHandle> builtin_textures;
+
+			Ref<Shader> equirectangular_to_cubemap_shader;
+			Ref<VertexBuffer> cube_vertex_buffer;
+			rhi::BufferHandle cube_index_buffer;
 		};
 
 		constexpr static uint32_t kMaxTextures = 32;
@@ -63,6 +68,9 @@ namespace light
 		static void Shutdown();
 
 		static rhi::Texture* GetBuiltinTexture(const std::string& name);
+
+		// 从等距柱状2D纹理生成cube纹理
+		static rhi::TextureHandle CreateEnvironmentMap(rhi::CommandList* command_list,rhi::Texture* equirectangular);
 
 		// 设置当前帧统一变量,如相机，光源，环境参数
 		static void BeginScene(rhi::CommandList* command_list,const Camera& camera, const glm::mat4& transform);
@@ -80,7 +88,7 @@ namespace light
 		static void Draw(
 			rhi::CommandList* command_list,
 			const Material* material,
-			rhi::Buffer* vertex_buffer,
+			VertexBuffer* vertex_buffer,
 			rhi::Buffer* index_buffer,
 			const glm::mat4& model_matrix,
 			uint32_t index_count,
@@ -88,10 +96,12 @@ namespace light
 			uint32_t base_index = 0);
 
 		static void DrawQuad(rhi::CommandList* command_list, const Shader* shader, glm::vec2 position = glm::vec2(0), glm::vec2 scale = glm::vec2(1));
-	private:
-		static rhi::GraphicsPipeline* GetGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target,size_t vertex_type);
 
-		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target,size_t vertex_type);
+		static void DrawSkybox(rhi::CommandList* command_list, const Material* material);
+	private:
+		static rhi::GraphicsPipeline* GetGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target,rhi::InputLayout* input_layout);
+
+		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target, rhi::InputLayout* input_layout);
 
 		static SceneData s_scene_data;
 		static RenderData* s_render_data;

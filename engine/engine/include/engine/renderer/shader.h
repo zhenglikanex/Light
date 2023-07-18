@@ -71,6 +71,10 @@ namespace light
 
 		void SetCullMode(rhi::CullMode cull_mode) { cull_mode_ = cull_mode; }
 
+		void SetDepthEnable(bool depth_enable) { depth_enable_ = depth_enable; }
+
+		void SetDepthFunc(rhi::ComparisonFunc depth_func) { depth_func_ = depth_func; }
+
 		template<typename T>
 		void Set(const std::string& name, const T& value)
 		{
@@ -120,6 +124,10 @@ namespace light
 
 		rhi::CullMode GetCullMode() const { return cull_mode_; }
 
+		bool IsDepthEnable() const { return depth_enable_; }
+
+		rhi::ComparisonFunc GetDepthFunc() const { return depth_func_; }
+
 		const std::vector<uint8_t>& GetParamsBuffer() const { return params_buffer_; }
 
 		const std::unordered_map<std::string, rhi::TextureHandle>& GetTextures() const { return textures_; };
@@ -143,6 +151,8 @@ namespace light
 		mutable std::unordered_map<std::string, ShaderBindingTable> sampler_binding_tables_;
 
 		rhi::CullMode cull_mode_;
+		bool depth_enable_;
+		rhi::ComparisonFunc depth_func_;
 		std::vector<uint8_t> params_buffer_;
 		std::unordered_map<std::string, rhi::TextureHandle> textures_;
 	};

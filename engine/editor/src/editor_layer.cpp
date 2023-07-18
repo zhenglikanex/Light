@@ -3,6 +3,8 @@
 
 #include "engine/math/math.h"
 #include "engine/utils/platform_utils.h"
+#include "engine/editor/imgui_utils.h"
+#include "engine/renderer/scene_renderer.h"
 
 #include "engine/editor/imgui_utils.h"
 #include "imguizmo/ImGuizmo.h"
@@ -94,6 +96,8 @@ namespace light::editor
 			PROFILE_SCOPE("Renderer ExecuteCommandList");
 			command_list->ExecuteCommandList();
 		}
+
+		Application::Get().GetDevice()->Flush();
 	}
 
 	void EditorLayer::OnImGuiRender(const light::Timestep& ts)
@@ -200,11 +204,22 @@ namespace light::editor
 
 		ImGui::End();
 
-		ImGui::Begin("SceneRenderSettings");
+		//SceneRenderSettings
+		{
+			ImGui::Begin("SceneRenderSettings");
 
+			ImGui::Text("Lighting");
+
+			ImGui::Text("EnvironmentMap");
+
+			if (Asset* asset = ImGuiEditor::InputAsset(AssetType::kTexture, SceneRenderer::GetSetting().equirectangular_map))
+			{
+				SceneRenderer::GetSetting().equirectangular_map = CheckedCast<rhi::Texture*>(asset);
+			}
+
+			ImGui::End();
+		}
 		
-
-		ImGui::End();
 
 		ImGui::Begin("Profile");
 		for (auto& [name, dt] : Profile::GetProfileResults())
@@ -265,6 +280,7 @@ namespace light::editor
 		property_panel_.OnImguiRender();
 		asset_browser_panel_.OnImguiRender();
 		material_panel_.OnImguiRender();
+		cubemap_panel_.OnImguiRender();
 	}
 
 	void EditorLayer::OnEvent(Event& e)

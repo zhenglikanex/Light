@@ -11,7 +11,19 @@ namespace light::rhi
 		, resource_(nullptr)
 	{
 		auto heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-		auto res_desc = CD3DX12_RESOURCE_DESC::Tex2D(GetDxgiFormatMapping(desc.format).rtv_format, desc.width, desc.height, desc.array_size, desc.mip_levels);
+
+
+		CD3DX12_RESOURCE_DESC res_desc;
+
+		switch (desc.dimension)
+		{
+		case TextureDimension::kTexture2D:
+			res_desc = CD3DX12_RESOURCE_DESC::Tex2D(GetDxgiFormatMapping(desc.format).rtv_format, desc.width, desc.height, desc.array_size, desc.mip_levels);
+			break;
+		case TextureDimension::kTextureCube:
+			res_desc = CD3DX12_RESOURCE_DESC::Tex2D(GetDxgiFormatMapping(desc.format).rtv_format, desc.width, desc.height, 6, desc.mip_levels);
+			break;
+		}
 
 		if(desc.is_render_target)
 		{
@@ -259,6 +271,7 @@ namespace light::rhi
 		uint32_t num_array_slices)
 	{
 		format = format == Format::UNKNOWN ? desc_.format : format;
+		dimension = dimension == TextureDimension::kUnknown ? desc_.dimension : dimension;
 
 		size_t hash = 0;
 

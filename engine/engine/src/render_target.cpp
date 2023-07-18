@@ -11,12 +11,13 @@ namespace light::rhi
 	}
 
 	void RenderTarget::AttachAttachment(AttachmentPoint attachment_point, TextureHandle texture, uint32_t mip_level,
-		uint32_t array_slice)
+		uint32_t array_slice, uint32_t num_array_slice)
 	{
 		Attachment attachment;
 		attachment.texture = texture;
 		attachment.mip_level = mip_level;
 		attachment.array_slice = array_slice;
+		attachment.num_array_slice = num_array_slice;
 
 		attachments_[static_cast<uint32_t>(attachment_point)] = attachment;
 	}

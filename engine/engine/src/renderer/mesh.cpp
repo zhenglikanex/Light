@@ -23,6 +23,8 @@ namespace light
 			aiProcess_ValidateDataStructure;
 	}
 
+	static rhi::InputLayoutHandle s_mesh_input_layout;
+
 	Mesh::Mesh(std::string_view filename)
 	{
 		Assimp::Importer importer;
@@ -155,7 +157,7 @@ namespace light
 		vertex_buffer_desc.size_in_bytes = vertices_.size() * sizeof(Vertex);
 		vertex_buffer_desc.stride = sizeof(Vertex);
 
-		vertex_buffer_ = device->CreateBuffer(vertex_buffer_desc);
+		rhi::BufferHandle vertex_buffer = device->CreateBuffer(vertex_buffer_desc);
 
 		rhi::BufferDesc index_buffer_desc;
 		index_buffer_desc.format = rhi::Format::R32_UINT;
@@ -166,9 +168,27 @@ namespace light
 		index_buffer_ = device->CreateBuffer(index_buffer_desc);
 
 		auto command_list = device->GetCommandList(rhi::CommandListType::kCopy);
-		command_list->WriteBuffer(vertex_buffer_, (uint8_t*)vertices_.data(), vertices_.size() * sizeof(Vertex));
+		command_list->WriteBuffer(vertex_buffer, (uint8_t*)vertices_.data(), vertices_.size() * sizeof(Vertex));
 		command_list->WriteBuffer(index_buffer_, (uint8_t*)indices_.data(), indices_.size() * sizeof(uint32_t));
 		command_list->ExecuteCommandList();
+
+		if (!s_mesh_input_layout)
+		{
+			std::vector<rhi::VertexAttributeDesc> vertex_attributes;
+			vertex_attributes.reserve(5);
+
+			vertex_attributes = {
+				{ "POSITION",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,position),false},
+				{ "NORMAL",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,normal),false },
+				{ "TANGENT",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,tangent),false },
+				{ "BINORMAL",0,rhi::Format::RGB32_FLOAT,0,offsetof(Vertex,bitangent),false },
+				{ "TEXCOORD",0,rhi::Format::RG32_FLOAT,0,offsetof(Vertex,texcoord),false},
+			};
+
+			s_mesh_input_layout = Application::Get().GetDevice()->CreateInputLayout(std::move(vertex_attributes));
+		}
+
+		vertex_buffer_ = MakeRef<VertexBuffer>(s_mesh_input_layout, vertex_buffer);
 	}
 
 	void Mesh::SetMaterial(uint32_t index, Material* material)

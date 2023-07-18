@@ -28,9 +28,15 @@ namespace light
 
 		SetViewportSize(width, height);
 
+		// todo:引擎内部应该换个加载方式?
 		s_instance->shadow_shader_ = AssetManager::LoadAsset<Shader>("shaders/shadow.shader");
+		s_instance->skybox_shader_ = AssetManager::LoadAsset<Shader>("shaders/skybox.shader");
+		s_instance->skybox_shader_->SetDepthFunc(rhi::ComparisonFunc::kLessEqual);
+
 		s_instance->shadow_material_ = MakeRef<Material>(s_instance->shadow_shader_);
 		s_instance->shadow_material_->SetCullMode(rhi::CullMode::kFront);
+
+		s_instance->skybox_material_ = MakeRef<Material>(s_instance->skybox_shader_);
 	}
 
 	void SceneRenderer::Shutdown()
@@ -50,11 +56,9 @@ namespace light
 		rhi::Device* device = Application::Get().GetDevice();
 		const SceneRendererSetting& setting = GetSetting();
 
-
 		rhi::ClearValue clear_value;
 		clear_value.depth_stencil.depth = 1;
 		clear_value.depth_stencil.stencil = 0;
-
 
 		rhi::TextureDesc direction_shadow_tex_desc;
 		direction_shadow_tex_desc.format = rhi::Format::D32;
@@ -137,6 +141,12 @@ namespace light
 
 	void SceneRenderer::Draw(rhi::CommandList* command_list)
 	{
+		if (GetSetting().equirectangular_map && s_instance->equirectangular_map_ != GetSetting().equirectangular_map)
+		{
+			s_instance->equirectangular_map_ = GetSetting().equirectangular_map;
+			s_instance->environment_map_ = Renderer::CreateEnvironmentMap(command_list, s_instance->equirectangular_map_);
+		}
+
 		ShadowPass(command_list);
 		GeometryPass(command_list);
 		FinalPass(command_list);
@@ -260,6 +270,12 @@ namespace light
 				draw_item.index_count,
 				draw_item.base_vertex,
 				draw_item.base_index);
+		}
+
+		if (s_instance->environment_map_)
+		{
+			s_instance->skybox_material_->Set("gEnvironmentMap", s_instance->environment_map_);
+			Renderer::DrawSkybox(command_list, s_instance->skybox_material_);
 		}
 
 		Renderer::EndScene(command_list);

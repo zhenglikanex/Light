@@ -12,6 +12,7 @@ namespace light
 		kMesh,
 		kMaterial,
 		kShader,
+		kCubeMap,
 		kInvalid
 	};
 
@@ -21,7 +22,7 @@ namespace light
 		{
 			return AssetType::kScene;
 		}
-		else if (ext == ".png" || ext == ".jpg")
+		else if (ext == ".png" || ext == ".jpg" || ext == ".hdr")
 		{
 			return AssetType::kTexture;
 		}
@@ -36,6 +37,10 @@ namespace light
 		else if (ext == ".shader")
 		{
 			return AssetType::kShader;
+		}
+		else if (ext == ".cubemap")
+		{
+			return AssetType::kCubeMap;
 		}
 
 		return AssetType::kInvalid;
@@ -55,6 +60,8 @@ namespace light
 			return ".mtl";
 		case AssetType::kShader:
 			return ".shader";
+		case AssetType::kCubeMap:
+			return ".cubemap";
 		default:
 			LIGHT_ASSERT(false, "Invaild Type");
 			return "";

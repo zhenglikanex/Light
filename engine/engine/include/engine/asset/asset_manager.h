@@ -56,6 +56,19 @@ namespace light
 			return CastRef<T>(LoadAsset(meta));
 		}
 
+		template<typename T> requires(std::is_base_of_v<Asset, T>)
+			static Ref<T> LoadAssetByPath(const std::filesystem::path& path)
+		{
+			if (path.is_absolute())
+			{
+				return LoadAsset<T>(GetAssetRelativePath(path).generic_string());
+			}
+			else
+			{
+				return LoadAsset<T>(path.generic_string());
+			}
+		}
+
 		static Ref<Asset> LoadAsset(const AssetMeta& meta);
 
 		static const AssetMeta& GetAssetMeta(UUID uuid);

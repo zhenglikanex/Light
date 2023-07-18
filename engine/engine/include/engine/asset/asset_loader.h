@@ -49,4 +49,10 @@ namespace light
 
 		const char* SkipWhiteSpaces(const char* ch);
 	};
+
+	class CubeMapLoader : public AssetLoader
+	{
+	public:
+		Ref<Asset> Load(const AssetMeta& meta) override;
+	};
 }

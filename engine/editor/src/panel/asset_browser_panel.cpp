@@ -1,7 +1,11 @@
 #include "asset_browser_panel.h"
 
-#include "material_panel.h"
 #include "engine/editor/imgui_utils.h"
+#include "engine/renderer/cube_map.h"
+
+#include "material_panel.h"
+#include "cubemap_panel.h"
+
 
 
 namespace light::editor
@@ -28,9 +32,19 @@ namespace light::editor
 		{
 			if (ImGui::BeginMenu("Create Asset"))
 			{
+				if (ImGui::MenuItem("Directory"))
+				{
+					//std::filesystem::create_directory(current_path_ / "directory");
+				}
+
 				if (ImGui::MenuItem("Material"))
 				{
-					AssetManager::CreateAsset(AssetType::kMaterial,current_path_,"test");
+					AssetManager::CreateAsset(AssetType::kMaterial,current_path_,"unnamed");
+				}
+
+				if (ImGui::MenuItem("CubeMap"))
+				{
+					AssetManager::CreateAsset(AssetType::kCubeMap, current_path_, "unnamed");
 				}
 
 				ImGui::EndMenu();
@@ -199,7 +213,7 @@ namespace light::editor
 		ImGui::BeginGroup();
 		ImGui::PushStyleColor(ImGuiCol_Button, select_entry_ == entry ? ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered) : ImVec4{ 0, 0, 0, 0 });
 
-		ImGui::ImageButton(entry.is_directory() ? folder_icon_->GetTextureID() : file_icon_->GetTextureID(), ImVec2(kIconSize, kIconSize));
+		ImGui::ImageButton(entry.is_directory() ? folder_icon_->GetTextureID() : file_icon_->GetTextureID(), ImVec2(kIconSize, kIconSize), { 0.0f, 1.0f }, { 1.0f, 0.0f });
 		if (ImGui::IsItemClicked(0))
 		{
 			select_entry_ = entry;
@@ -213,15 +227,21 @@ namespace light::editor
 				else 
 				{
 					std::string ext = entry.path().extension().string();
-					
-					if (ToAssetType(ext) == AssetType::kMaterial)
+					AssetType type = ToAssetType(ext);
+					if (type == AssetType::kMaterial)
 					{
-						std::filesystem::path path = AssetManager::GetAssetRelativePath(entry.path());
-
-						Material* material = AssetManager::LoadAsset<Material>(path.generic_string());
+						Material* material = AssetManager::LoadAssetByPath<Material>(entry.path());
 						if (material)
 						{
 							MaterialPanel::ShowMaterial(material);
+						}
+					}
+					else if (type == AssetType::kCubeMap)
+					{
+						CubeMap* cubemap = AssetManager::LoadAssetByPath<CubeMap>(entry.path());
+						if (cubemap)
+						{
+							CubeMapPanel::ShowCubeMap(cubemap);
 						}
 					}
 				}
