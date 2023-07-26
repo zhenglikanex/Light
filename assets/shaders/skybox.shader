@@ -32,6 +32,11 @@ VertexOut VsMain(VertexIn vin)
 
 float4 PsMain(VertexOut pin) : SV_Target
 {
-    float4 color = float4(gEnvironmentMap.Sample(gSamplerPointWarp,pin.Pos).rgb,1);
-    return color;
+    float3 color = gEnvironmentMap.SampleLevel(gSamplerPointWarp,pin.Pos,5).rgb;
+
+    color = color / (color + float3(1.0,1.0,1.0));
+    float gamma = 1.0/2.2;
+    color = pow(color, float3(gamma, gamma, gamma));
+
+    return float4(color,1);
 }

@@ -6,8 +6,6 @@
 #include "material_panel.h"
 #include "cubemap_panel.h"
 
-
-
 namespace light::editor
 {
 	void AssetBrowserPanel::Init()
@@ -178,7 +176,6 @@ namespace light::editor
 			return;
 		}
 		
-
 		if (ToAssetType(entry.path().extension().string()) == AssetType::kInvalid)
 		{
 			return;

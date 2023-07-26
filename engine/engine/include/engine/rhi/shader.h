@@ -18,6 +18,8 @@ namespace light::rhi
 		uint32_t bind_point = 0;
 		uint32_t bind_count = 0;
 		uint32_t space;          // Register space
+
+		uint32_t dimension = 0;      // Dimension (if texture)
 	};
 
 	using ShaderBindResourceDeclarationList = std::vector<ShaderBindResourceDeclaration>;
@@ -75,10 +77,11 @@ struct std::hash<light::rhi::ShaderBindResourceDeclaration>
 		using namespace light;
 
 		size_t hash = 0;
-		light::HashCombine(hash, static_cast<uint64_t>(bind_resource.type));
-		light::HashCombine(hash, bind_resource.bind_count);
-		light::HashCombine(hash, bind_resource.bind_point);
-		light::HashCombine(hash, bind_resource.space);
+		HashCombine(hash, static_cast<uint64_t>(bind_resource.type));
+		HashCombine(hash, bind_resource.bind_count);
+		HashCombine(hash, bind_resource.bind_point);
+		HashCombine(hash, bind_resource.space);
+		HashCombine(hash, bind_resource.dimension);
 
 		return hash;
 	}

@@ -50,6 +50,10 @@ Texture2D gAbledoMap : register(t1);
 Texture2D gMetalnessMap : register(t2);
 Texture2D gRoughnessMap : register(t3);
 
+TextureCube gIrradianceMap : register(t4);
+TextureCube gPrefilterMap : register(t5);
+Texture2D gBrdfLUTMap : register(t6);  
+
 SamplerState gSamplerPointWarp : register(s0);
 
 static const float kPI = 3.1415926;
@@ -105,8 +109,14 @@ VertexOut VsMain(VertexIn vin)
 // Shlick's approximation of the Fresnel factor.
 float3 fresnelSchlick(float3 F0, float cosTheta)
 {
-	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+	return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta,0.0,1.0), 5.0);
 }
+
+float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
+{
+    float value = 1.0 - roughness;
+    return F0 + (max(float3(value,value,value), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}   
 
 // GGX/Towbridge-Reitz normal distribution function.
 // Uses Disney's reparametrization of alpha = roughness^2
@@ -171,7 +181,7 @@ float3 Lighting(Light light,float3 worldPosition, float3 F0)
     float3 result = 0.0;
 
     float3 Li = -light.Direction;
-    float3 Lradinace = light.Color;
+    float3 Lradinace = light.Color * 3;
     float3 Lh = normalize(Li + gParams.View);
 
     float cosLi = max(0,dot(gParams.Normal,Li));
@@ -188,7 +198,7 @@ float3 Lighting(Light light,float3 worldPosition, float3 F0)
     float3 kd = float3(1.0,1.0,1.0) - ks;
     kd *= 1.0 - gParams.Metalness;
     
-    result = kd * gParams.Albedo / kPI * Lradinace + specularBRDF * Lradinace * cosLi;
+    result = (kd * gParams.Albedo / kPI  + specularBRDF) * Lradinace * cosLi;
      
     result *= IsShadow(light,worldPosition,cosLi);
 
@@ -197,9 +207,9 @@ float3 Lighting(Light light,float3 worldPosition, float3 F0)
 
 float4 PsMain(VertexOut vsInput) : SV_Target
 {
-    gParams.Albedo =  gAbledoMap.Sample(gSamplerPointWarp,GetTexcoord(vsInput.TexCoord)).rgb * cbAlbedoColor;
-    gParams.Metalness = gMetalnessMap.Sample(gSamplerPointWarp,GetTexcoord(vsInput.TexCoord)).r * cbMetalness;
-    gParams.Roughness = gRoughnessMap.Sample(gSamplerPointWarp,GetTexcoord(vsInput.TexCoord)).r * cbRoughness;
+    gParams.Albedo =  gAbledoMap.Sample(gSamplerPointWarp,vsInput.TexCoord).rgb * cbAlbedoColor;
+    gParams.Metalness = gMetalnessMap.Sample(gSamplerPointWarp,vsInput.TexCoord).r * cbMetalness;
+    gParams.Roughness = gRoughnessMap.Sample(gSamplerPointWarp,vsInput.TexCoord).r * cbRoughness;
 
     gParams.Normal = normalize(mul(vsInput.WorldNormalMatrix,vsInput.Normal));
 
@@ -214,6 +224,22 @@ float4 PsMain(VertexOut vsInput) : SV_Target
         color += Lighting(cbLights[i],vsInput.WorldPosition, F0);
     }
 
+    float3 R = reflect(-gParams.View,gParams.Normal);
+    
+    float F = fresnelSchlickRoughness(gParams.NdotV, F0, gParams.Roughness);
+    float ks = F;
+    float kd = 1 - ks;
+    kd *= 1.0 - gParams.Metalness;
+    float3 irradiance = gIrradianceMap.Sample(gSamplerPointWarp,gParams.Normal);
+    float3 diffuse = irradiance * gParams.Albedo;
+
+    float MAX_REFLECTION_LOD = 4.0;
+    float3 prefilteredColor = gPrefilterMap.SampleLevel(gSamplerPointWarp, R,  gParams.Roughness * MAX_REFLECTION_LOD).rgb;   
+    float2 envBRDF  = gBrdfLUTMap.Sample(gSamplerPointWarp,float2(gParams.NdotV,gParams.Roughness)).rg;
+    float3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+    float3 ambient = kd * diffuse + specular;
+
+    color += ambient;
     color = color / (color + float3(1.0,1.0,1.0));
     color = pow(color, 1.0/2.2);  
 

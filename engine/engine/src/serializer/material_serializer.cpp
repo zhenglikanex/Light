@@ -101,29 +101,41 @@ namespace light
 		for (const auto& node : data["Params"])
 		{
 			std::string name = node["Name"].as<std::string>();
+			const ShaderProperty* property = shader->GetProperty(name);
+			if (!property)
+			{
+				continue;
+			}
+
+			std::string var_name = property->variable_name;
+
 			ShaderPropertyType type = static_cast<ShaderPropertyType>(node["Type"].as<uint32_t>());
 			if (type == ShaderPropertyType::kNumber)
 			{
 				float value = node["Value"].as<float>();
-				material_->Set(name, value);
+				material_->Set(var_name, value);
 			}
 			else if (type == ShaderPropertyType::kColor)
 			{
-				glm::vec2 value = node["Value"].as<glm::vec3>();
-				material_->Set(name, value);
+				glm::vec3 value = node["Value"].as<glm::vec3>();
+				
+				material_->Set(var_name, value);
 			}
 			else if (type == ShaderPropertyType::kTexture2D)
 			{
 				std::string value = node["Value"].as<std::string>();
-				auto result = uuid::FromString(value);
-				if (result)
+				if (!value.empty())
 				{
-					rhi::Texture* texture = AssetManager::LoadAsset<rhi::Texture>(value);
-					material_->Set(name, texture);
-				}
-				else 
-				{
-					LOG_ENGINE_WARN("Material Textures Miss : {} ,Texture Name : {}", filepath, name);
+					auto result = uuid::FromString(value);
+					if (result)
+					{
+						rhi::Texture* texture = AssetManager::LoadAsset<rhi::Texture>(value);
+						material_->Set(var_name, texture);
+					}
+					else
+					{
+						LOG_ENGINE_WARN("Material Textures Miss : {} ,Texture Name : {}", filepath, name);
+					}
 				}
 			}
 			else

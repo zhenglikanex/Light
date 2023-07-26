@@ -276,7 +276,9 @@ namespace light::rhi
 		size_t hash = 0;
 
 		HashCombine(hash, static_cast<uint8_t>(format));
+		HashCombine(hash, static_cast<uint8_t>(dimension));
 		HashCombine(hash, mip_level);
+		HashCombine(hash, num_mip_levels);
 		HashCombine(hash, array_slice);
 		HashCombine(hash, num_array_slices);
 

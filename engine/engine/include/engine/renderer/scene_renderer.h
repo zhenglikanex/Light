@@ -98,8 +98,11 @@ namespace light
 
 		Ref<Shader> skybox_shader_;
 		Ref<Material> skybox_material_;
-		rhi::TextureHandle environment_map_;
 		rhi::Texture* equirectangular_map_;
+		rhi::TextureHandle environment_map_;
+		rhi::TextureHandle irradiance_map_;
+		rhi::TextureHandle prefilter_map_;
+		rhi::TextureHandle brdf_lut_map_;
 
 		Ref<RenderPass> shadow_pass_;
 		Ref<RenderPass> geometry_pass_;

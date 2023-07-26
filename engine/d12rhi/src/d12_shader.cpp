@@ -37,6 +37,7 @@ namespace light::rhi
 				break;
 			case D3D_SIT_TEXTURE:
 				bind_res_desc.type = ShaderBindResourceType::kTexture;
+				bind_res_desc.dimension = d12_bind_desc.Dimension;
 				break;
 			case D3D_SIT_SAMPLER:
 				bind_res_desc.type = ShaderBindResourceType::kSampler;

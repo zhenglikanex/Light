@@ -1,0 +1,21 @@
+Material: C:/project/Light/assets/materials/cerberus.mtl
+Shader: 8f49dc28-a9e6-47e4-8c57-e3da16c5de7d
+Params:
+  - Name: Albedo Map
+    Type: 2
+    Value: b2951376-e94f-4186-9751-917323fff66c
+  - Name: Abledo Color
+    Type: 1
+    Value: [1, 1, 1]
+  - Name: Metalness Map
+    Type: 2
+    Value: 9bc37480-03ee-4ae0-8925-3324ee877d49
+  - Name: Metalness
+    Type: 0
+    Value: 1
+  - Name: Roughness Map
+    Type: 2
+    Value: 1a54a703-31d3-4bb9-be1b-8a8253951102
+  - Name: Roughness
+    Type: 0
+    Value: 1

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "engine/core/base.h"
 #include "engine/core/uuid.h"
 
@@ -16,13 +18,15 @@ namespace light
 		kInvalid
 	};
 
-	inline AssetType ToAssetType(std::string_view ext)
+	inline AssetType ToAssetType(std::string ext)
 	{
+		std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
 		if (ext == ".scene")
 		{
 			return AssetType::kScene;
 		}
-		else if (ext == ".png" || ext == ".jpg" || ext == ".hdr")
+		else if (ext == ".png" || ext == ".jpg" || ext == ".hdr" || ext == ".tga")
 		{
 			return AssetType::kTexture;
 		}

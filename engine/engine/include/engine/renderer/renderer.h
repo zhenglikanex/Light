@@ -57,9 +57,13 @@ namespace light
 			std::unordered_map<std::string, rhi::SamplerHandle> samplers;
 			std::unordered_map<std::string, rhi::TextureHandle> builtin_textures;
 
-			Ref<Shader> equirectangular_to_cubemap_shader;
 			Ref<VertexBuffer> cube_vertex_buffer;
 			rhi::BufferHandle cube_index_buffer;
+
+			Ref<Shader> equirectangular_to_cubemap_shader;
+			Ref<Shader> irradiance_shader;
+			Ref<Shader> prefilter_shader;
+			Ref<Shader> brdf_lut_shader;
 		};
 
 		constexpr static uint32_t kMaxTextures = 32;
@@ -71,6 +75,15 @@ namespace light
 
 		// 从等距柱状2D纹理生成cube纹理
 		static rhi::TextureHandle CreateEnvironmentMap(rhi::CommandList* command_list,rhi::Texture* equirectangular);
+
+		// 生成辐照图贴图
+		static rhi::TextureHandle CreateIrradianceMap(rhi::CommandList* command_list, rhi::Texture* environment_map);
+
+		// 预滤波HDR环境贴图
+		static rhi::TextureHandle CreatePrefilterMap(rhi::CommandList* command_list, rhi::Texture* enviroment_map);
+
+		// 创建BRDF积分查找纹理
+		static rhi::TextureHandle CreateBrdfLutMap(rhi::CommandList* command_list);
 
 		// 设置当前帧统一变量,如相机，光源，环境参数
 		static void BeginScene(rhi::CommandList* command_list,const Camera& camera, const glm::mat4& transform);

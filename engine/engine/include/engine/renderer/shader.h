@@ -67,6 +67,8 @@ namespace light
 
 		AssetType GetAssetType() const override { return AssetType::kShader; }
 
+		const ShaderProperty* GetProperty(const std::string& name) const;
+
 		const std::vector<ShaderProperty>& GetProperties() const { return properties_; }
 
 		void SetCullMode(rhi::CullMode cull_mode) { cull_mode_ = cull_mode; }

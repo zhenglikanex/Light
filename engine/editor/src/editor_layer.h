@@ -34,7 +34,6 @@ namespace light::editor
 
 		ShaderLibrary shader_library_;
 		TextureLibrary texture_library_;
-		rhi::TextureHandle texture_;
 
 		rhi::TextureHandle rt_color_texture_;
 		//rhi::TextureHandle rt_color2_texture_;

@@ -1,2 +1,21 @@
-Material: C:\project\Light\assets\materials\test.mtl
-Shader: ""
+Material: C:/project/Light/assets/materials/pbr.mtl
+Shader: 8f49dc28-a9e6-47e4-8c57-e3da16c5de7d
+Params:
+  - Name: Albedo Map
+    Type: 2
+    Value: ""
+  - Name: Abledo Color
+    Type: 1
+    Value: [1, 1, 1]
+  - Name: Metalness Map
+    Type: 2
+    Value: ""
+  - Name: Metalness
+    Type: 0
+    Value: 0.189999998
+  - Name: Roughness Map
+    Type: 2
+    Value: ""
+  - Name: Roughness
+    Type: 0
+    Value: 0.129999995

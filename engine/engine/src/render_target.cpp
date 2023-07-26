@@ -35,7 +35,14 @@ namespace light::rhi
 			if (attachment.texture)
 			{
 				const TextureDesc& desc = attachment.texture->GetDesc();
-				width = std::max(width, desc.width);
+				if (attachment.mip_level != static_cast<uint32_t>(-1))
+				{
+					width = std::max(width, desc.width << attachment.mip_level);
+				}
+				else 
+				{
+					width = std::max(width, desc.width);
+				}
 			}
 		}
 
@@ -50,7 +57,14 @@ namespace light::rhi
 			if (attachment.texture)
 			{
 				const TextureDesc& desc = attachment.texture->GetDesc();
-				height = std::max(height, desc.height);
+				if (attachment.mip_level != static_cast<uint32_t>(-1))
+				{
+					height = std::max(height, desc.height >> attachment.mip_level);
+				}
+				else
+				{
+					height = std::max(height, desc.height);
+				}
 			}
 		}
 

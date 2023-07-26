@@ -4,12 +4,12 @@ Entities:
     Components:
       - Type: light::TransformComponent
         Fields:
-          position: [-3.32657933, 0, 0]
-          rotation: [0, -0, 0]
+          position: [0.554314256, 0.151851267, 0]
+          rotation: [48.0999985, 10.6000004, -121.800003]
           scale: [1, 1, 1]
       - Type: light::TagComponent
         Fields:
-          tag: "Light\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+          tag: Entity
       - Type: light::LightComponent
         Fields:
           color: [1, 1, 1]
@@ -17,60 +17,57 @@ Entities:
     Components:
       - Type: light::TransformComponent
         Fields:
-          position: [0, 0, 0]
+          position: [-0.178053766, 0, 0]
           rotation: [0, -0, 0]
           scale: [1, 1, 1]
       - Type: light::TagComponent
         Fields:
-          tag: "Sphere\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+          tag: Entity
       - Type: light::MeshComponent
         Fields:
           mesh: f5c313e4-6de8-455c-8265-2406afa5ef02
           materials:
-            - 21c75116-c3b2-466f-9e83-36cda91695e0
+            - e744a6b0-6fed-4d33-8e20-6f7ea4753df6
   - Entity: 2
     Components:
       - Type: light::TransformComponent
         Fields:
-          position: [2.77779865, 0, 0]
+          position: [0.744509876, -0.00339377671, 0]
           rotation: [0, -0, 0]
           scale: [1, 1, 1]
-      - Type: light::TagComponent
-        Fields:
-          tag: Entity
-      - Type: light::MeshComponent
-        Fields:
-          mesh: c5e09e61-41f8-49bc-9b40-f6d9ee779e64
-          materials:
-            - 968210de-aba0-478d-a4ff-45d00ea251a8
-            - 21c75116-c3b2-466f-9e83-36cda91695e0
-            - 21c75116-c3b2-466f-9e83-36cda91695e0
-            - 21c75116-c3b2-466f-9e83-36cda91695e0
-  - Entity: 1
-    Components:
-      - Type: light::TransformComponent
-        Fields:
-          position: [0, 0, 0]
-          rotation: [0, 0, 0]
-          scale: [1, 1, 1]
-      - Type: light::TagComponent
-        Fields:
-          tag: Entity
-      - Type: light::MeshComponent
-        Fields:
-          mesh: ""
-          materials:
-            []
-  - Entity: 0
-    Components:
-      - Type: light::TransformComponent
-        Fields:
-          position: [-1.65121436, 0, 0]
-          rotation: [34.9000015, 43.7000008, 20.6000004]
-          scale: [1, 0.999999762, 0.999999762]
       - Type: light::TagComponent
         Fields:
           tag: Entity
       - Type: light::LightComponent
         Fields:
-          color: [0, 1, 0]
+          color: [1, 1, 1]
+  - Entity: 1
+    Components:
+      - Type: light::TransformComponent
+        Fields:
+          position: [2.67532158, -0.111471176, 2.62699366]
+          rotation: [0, -0, 0]
+          scale: [1, 1, 1]
+      - Type: light::TagComponent
+        Fields:
+          tag: Entity
+      - Type: light::MeshComponent
+        Fields:
+          mesh: bfdc6deb-61c1-4fd1-962a-1052ab8011fa
+          materials:
+            - c86e165b-604a-4bd6-a529-8780a0d9180d
+  - Entity: 0
+    Components:
+      - Type: light::TransformComponent
+        Fields:
+          position: [5.67351103, 0.575673342, 0]
+          rotation: [0, -0, 0]
+          scale: [1, 1, 1]
+      - Type: light::TagComponent
+        Fields:
+          tag: Entity
+      - Type: light::MeshComponent
+        Fields:
+          mesh: f5c313e4-6de8-455c-8265-2406afa5ef02
+          materials:
+            - ""

@@ -218,6 +218,9 @@ namespace light
 			LOG_ENGINE_ERROR("RenameAsset Failed :{}", err.message());
 			return;
 		}
+	
+		// remove 
+		s_asset_meta_by_path_map_.erase(meta.path);
 
 		meta.path = GetAssetRelativePath(new_path).generic_string();
 

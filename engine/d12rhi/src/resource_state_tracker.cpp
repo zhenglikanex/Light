@@ -13,9 +13,10 @@ namespace light::rhi
 	{
 		if(barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
 		{
+			bool transition = false;
 			const D3D12_RESOURCE_TRANSITION_BARRIER& transition_barrier = barrier.Transition;
 
-			//¼ì²éÊÇ·ñ´æÔÚfinal¶ÓÁĞÖĞ£¬Èç¹û´æÔÚËµÃ÷ÔÚµ±Ç°ÃüÁîÁĞ±íÖĞÊ¹ÓÃ¹ı
+			//æ£€æŸ¥æ˜¯å¦å­˜åœ¨finalé˜Ÿåˆ—ä¸­ï¼Œå¦‚æœå­˜åœ¨è¯´æ˜åœ¨å½“å‰å‘½ä»¤åˆ—è¡¨ä¸­ä½¿ç”¨è¿‡
 			const auto iter = final_resource_state_.find(transition_barrier.pResource);
 			if(iter != final_resource_state_.end())
 			{
@@ -26,15 +27,16 @@ namespace light::rhi
 				{
 					for(auto subresource_state : resource_state.subresource_state)
 					{
-						// ÅĞ¶Ï×ÊÔ´×îºóµÄ×´Ì¬ÊÇ·ñ¾ÍÊÇ×îºóÒ»´ÎÊ¹ÓÃµÄ×´Ì¬
+						// åˆ¤æ–­èµ„æºæœ€åçš„çŠ¶æ€æ˜¯å¦å°±æ˜¯æœ€åä¸€æ¬¡ä½¿ç”¨çš„çŠ¶æ€
 						if(transition_barrier.StateAfter != subresource_state.second)
 						{
-							// ½«barrierµÄStateBeforeĞŞ¸ÄÎª¼ÇÂ¼µÄ×îºóµÄ×´Ì¬(barrierÖĞµÄStateBefore´«ÈëµÄÊ±ºòÊÇÎ´ÖªµÄ)
+							// å°†barrierçš„StateBeforeä¿®æ”¹ä¸ºè®°å½•çš„æœ€åçš„çŠ¶æ€(barrierä¸­çš„StateBeforeä¼ å…¥çš„æ—¶å€™æ˜¯æœªçŸ¥çš„)
 							D3D12_RESOURCE_BARRIER new_barrier = barrier;
 							new_barrier.Transition.Subresource = subresource_state.first;
 							new_barrier.Transition.StateBefore = subresource_state.second;
 
 							resource_barriers_.push_back(new_barrier);
+							transition = true;
 						}
 					}
 				}
@@ -43,26 +45,31 @@ namespace light::rhi
 					
 					auto final_state = resource_state.GetSubresourceState(transition_barrier.Subresource);
 
-					// ÅĞ¶Ï×ÊÔ´×îºóµÄ×´Ì¬ÊÇ·ñ¾ÍÊÇ×îºóÒ»´ÎÊ¹ÓÃµÄ×´Ì¬
+					// åˆ¤æ–­èµ„æºæœ€åçš„çŠ¶æ€æ˜¯å¦å°±æ˜¯æœ€åä¸€æ¬¡ä½¿ç”¨çš„çŠ¶æ€
 					if(transition_barrier.StateAfter != final_state)
 					{
-						// ½«barrierµÄStateBeforeĞŞ¸ÄÎª¼ÇÂ¼µÄ×îºóµÄ×´Ì¬(barrierÖĞµÄStateBefore´«ÈëµÄÊ±ºòÊÇÎ´ÖªµÄ)
+						// å°†barrierçš„StateBeforeä¿®æ”¹ä¸ºè®°å½•çš„æœ€åçš„çŠ¶æ€(barrierä¸­çš„StateBeforeä¼ å…¥çš„æ—¶å€™æ˜¯æœªçŸ¥çš„)
 						D3D12_RESOURCE_BARRIER new_barrier = barrier;
 						new_barrier.Transition.StateBefore = final_state;
 
 						resource_barriers_.push_back(new_barrier);
+						transition = true;
 					}
 				}
 			}
 			else
 			{
-				// Î´Ê¹ÓÃ¹ıµÄ×ÊÔ´,Ìí¼Óµ½pending¶ÓÁĞÖĞ,
-				// ĞèÒªÔÚÃüÁîÁĞ±íÖ´ĞĞÇ°Ìí¼Óµ½queue
+				// æœªä½¿ç”¨è¿‡çš„èµ„æº,æ·»åŠ åˆ°pendingé˜Ÿåˆ—ä¸­,
+				// éœ€è¦åœ¨å‘½ä»¤åˆ—è¡¨æ‰§è¡Œå‰æ·»åŠ åˆ°queue
 				pending_resource_barriers_.push_back(barrier);
+				transition = true;
 			}
 
-			final_resource_state_[transition_barrier.pResource].SetSubresourceState(transition_barrier.Subresource, 
-				transition_barrier.StateAfter);
+			if (transition)
+			{
+				final_resource_state_[transition_barrier.pResource].SetSubresourceState(transition_barrier.Subresource,
+					transition_barrier.StateAfter);
+			}
 		}
 		else
 		{
@@ -117,7 +124,7 @@ namespace light::rhi
 			}
 			else
 			{
-				// Ö±½ÓÊ¹ÓÃ³õÊ¼»¯µÄD3D12_RESOURCE_STATE_COMMONÇ°ÖÃ×´Ì¬
+				// ç›´æ¥ä½¿ç”¨åˆå§‹åŒ–çš„D3D12_RESOURCE_STATE_COMMONå‰ç½®çŠ¶æ€
 				if(pending_barrier.Transition.StateAfter != D3D12_RESOURCE_STATE_COMMON)
 				{
 					resource_barriers.push_back(pending_barrier);

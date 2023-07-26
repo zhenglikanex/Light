@@ -21,9 +21,6 @@ namespace light::editor
 	{
 		Random::Init();
 		
-
-		texture_ = texture_library_.LoadTexture("assets/textures/warchessMap_4.jpg");
-
 		viewport_size_ = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
 		RenderTargetResize(viewport_size_);
 
@@ -92,6 +89,7 @@ namespace light::editor
 				rhi::ClearFlags::kClearFlagDepth | rhi::ClearFlags::kClearFlagStencil, 1, 0);
 		}
 
+
 		{
 			PROFILE_SCOPE("Renderer ExecuteCommandList");
 			command_list->ExecuteCommandList();
@@ -102,9 +100,9 @@ namespace light::editor
 
 	void EditorLayer::OnImGuiRender(const light::Timestep& ts)
 	{
-		auto commnad_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
-		commnad_list->TransitionBarrier(rt_color_texture_, rhi::ResourceStates::kPixelShaderResource);
-		commnad_list->ExecuteCommandList();
+		auto command_list = Application::Get().GetDevice()->GetCommandList(rhi::CommandListType::kDirect);
+		command_list->TransitionBarrier(rt_color_texture_, rhi::ResourceStates::kPixelShaderResource);
+		command_list->ExecuteCommandList();
 
 		static bool show_dockspace = true;
 		static bool opt_fullscreen = true;

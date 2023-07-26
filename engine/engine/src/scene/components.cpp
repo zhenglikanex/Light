@@ -95,7 +95,13 @@ namespace light
 		uint32_t i = 0;
 		for (auto mat_node : node["materials"])
 		{
-			std::optional<UUID> result = uuid::FromString(mat_node.as<std::string>());
+			std::string uuid = mat_node.as<std::string>();
+			if (uuid.empty())
+			{
+				continue;
+			}
+
+			std::optional<UUID> result = uuid::FromString(uuid);
 			if (!result.has_value())
 			{
 				LOG_ENGINE_WARN("Entity Material Miss");
@@ -103,8 +109,7 @@ namespace light
 			}
 
 			Material* material = AssetManager::LoadAsset<Material>(result.value());
-
-			if (!result.has_value())
+			if (!material)
 			{
 				LOG_ENGINE_WARN("Entity Material Miss");
 				continue;

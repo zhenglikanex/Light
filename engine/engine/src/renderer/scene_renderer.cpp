@@ -65,7 +65,7 @@ namespace light
 		direction_shadow_tex_desc.array_size = setting.shadow_setting.num_direction_light;
 		direction_shadow_tex_desc.width = setting.shadow_setting.width;
 		direction_shadow_tex_desc.height = setting.shadow_setting.height;
-		direction_shadow_tex_desc.debug_name = "direction_shaow_map";
+		direction_shadow_tex_desc.debug_name = "DirectionShaowMap";
 
 		rhi::TextureHandle direction_shadow_tex = device->CreateTexture(direction_shadow_tex_desc, &clear_value);
 		
@@ -141,10 +141,22 @@ namespace light
 
 	void SceneRenderer::Draw(rhi::CommandList* command_list)
 	{
+		if (!GetSetting().equirectangular_map)
+		{
+			GetSetting().equirectangular_map = AssetManager::LoadAsset<rhi::Texture>("newport_loft.hdr");
+		}
+
+		if (!s_instance->brdf_lut_map_)
+		{
+			s_instance->brdf_lut_map_ = Renderer::CreateBrdfLutMap(command_list);
+		}
+		
 		if (GetSetting().equirectangular_map && s_instance->equirectangular_map_ != GetSetting().equirectangular_map)
 		{
 			s_instance->equirectangular_map_ = GetSetting().equirectangular_map;
 			s_instance->environment_map_ = Renderer::CreateEnvironmentMap(command_list, s_instance->equirectangular_map_);
+			s_instance->irradiance_map_ = Renderer::CreateIrradianceMap(command_list, s_instance->environment_map_);
+			s_instance->prefilter_map_ = Renderer::CreatePrefilterMap(command_list, s_instance->environment_map_);
 		}
 
 		ShadowPass(command_list);
@@ -261,6 +273,10 @@ namespace light
 			rhi::Texture* shadow_map = s_instance->shadow_pass_->GetResources().render_target.GetAttachment(rhi::AttachmentPoint::kDepthStencil).texture;
 			draw_item.material->Set("gShadowMap", shadow_map);
 
+			draw_item.material->Set("gIrradianceMap", s_instance->irradiance_map_);
+			draw_item.material->Set("gPrefilterMap", s_instance->prefilter_map_);
+			draw_item.material->Set("gBrdfLUTMap", s_instance->brdf_lut_map_);
+
 			Renderer::Draw(
 				command_list,
 				draw_item.material,
@@ -290,6 +306,7 @@ namespace light
 	 	Shader* hdr_shader = AssetManager::LoadAsset<Shader>("shaders/hdr.shader");
 		
 		hdr_shader->Set("gSourceMap", s_instance->geometry_pass_->GetResources().render_target.GetAttachment(rhi::AttachmentPoint::kColor0).texture);
+
 		Renderer::DrawQuad(command_list, hdr_shader);
 
 		Renderer::EndRenderPass(command_list, s_instance->s_instance->final_pass_);

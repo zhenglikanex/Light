@@ -448,7 +448,14 @@ namespace light::rhi
 			{
 				auto d12_texture = CheckedCast<D12Texture*>(attachment.texture.Get());
 
-				TransitionBarrier(d12_texture, ResourceStates::kRenderTarget);
+				if (attachment.IsAllSubresource())
+				{
+					TransitionBarrier(d12_texture, ResourceStates::kRenderTarget);
+				}
+				else
+				{
+					TransitionBarrier(d12_texture, ResourceStates::kRenderTarget, CalcSubresource(attachment.mip_level, attachment.array_slice, d12_texture->GetDesc().mip_levels));
+				}
 
 				if(attachment.IsAllSubresource())
 				{

@@ -98,6 +98,21 @@ namespace light
 		}
 	}
 
+	const ShaderProperty* Shader::GetProperty(const std::string& name) const
+	{
+		auto it = std::find_if(properties_.begin(), properties_.end(), [&](const ShaderProperty& value)
+			{
+				return value.editor_name == name;
+			});
+
+		if (it != properties_.end())
+		{
+			return &(*it);
+		}
+
+		return nullptr;
+	}
+
 	void Shader::Set(const std::string& name, rhi::TextureHandle texture)
 	{
 		textures_[name] = texture;

@@ -136,6 +136,9 @@ namespace light
 
 		{
 			rhi::SamplerDesc sampler_desc;
+			sampler_desc.u = rhi::SamplerMode::kCLAMP;
+			sampler_desc.v = rhi::SamplerMode::kCLAMP;
+			sampler_desc.w = rhi::SamplerMode::kCLAMP;
 			sampler_desc.filter = rhi::SamplerFilter::kMIN_MAG_MIP_LINEAR;
 			s_render_data->sampler = device->CreateSampler(sampler_desc);
 		}
@@ -161,9 +164,14 @@ namespace light
 		// shaders
 		{
 			s_render_data->equirectangular_to_cubemap_shader = AssetManager::LoadAsset<Shader>("shaders/equirectangular_to_cubemap.shader");
-			s_render_data->equirectangular_to_cubemap_shader->SetCullMode(rhi::CullMode::kBack);
+
+			s_render_data->irradiance_shader = AssetManager::LoadAsset<Shader>("shaders/irradiance.shader");
+
+			s_render_data->prefilter_shader = AssetManager::LoadAsset<Shader>("shaders/prefilter.shader");
+
+			s_render_data->brdf_lut_shader = AssetManager::LoadAsset<Shader>("shaders/brdf_lut.shader");
 		}
-		
+
 		command_list->ExecuteCommandList();
 	}
 
@@ -191,9 +199,10 @@ namespace light
 		rhi::TextureDesc env_tex_desc;
 		env_tex_desc.format = rhi::Format::RGBA32_FLOAT;
 		env_tex_desc.dimension = rhi::TextureDimension::kTextureCube;
-		env_tex_desc.width = 2048;
-		env_tex_desc.height = 2048;
+		env_tex_desc.width = 512;
+		env_tex_desc.height = 512;
 		env_tex_desc.is_render_target = true;
+		env_tex_desc.debug_name = "EnvironmentMap";
 
 		rhi::ClearValue clear_value;
 		clear_value.color[0] = 0;
@@ -202,6 +211,7 @@ namespace light
 		clear_value.color[3] = 1;
 
 		rhi::TextureHandle env_tex = device->CreateTexture(env_tex_desc,&clear_value);
+		command_list->TransitionBarrier(env_tex, rhi::ResourceStates::kRenderTarget);
 
 		glm::mat4 views[] =
 		{
@@ -262,6 +272,211 @@ namespace light
 		return env_tex;
 	}
 
+	rhi::TextureHandle Renderer::CreateIrradianceMap(rhi::CommandList* command_list, rhi::Texture* environment_map)
+	{
+		rhi::Device* device = Application::Get().GetDevice();
+
+		rhi::TextureDesc irrdiance_tex_desc;
+		irrdiance_tex_desc.format = rhi::Format::RGBA16_FLOAT;
+		irrdiance_tex_desc.dimension = rhi::TextureDimension::kTextureCube;
+		irrdiance_tex_desc.width = 32;
+		irrdiance_tex_desc.height = 32;
+		irrdiance_tex_desc.is_render_target = true;
+		irrdiance_tex_desc.debug_name = "IrradianceMap";
+
+		rhi::ClearValue clear_value;
+		clear_value.color[0] = 0;
+		clear_value.color[1] = 0;
+		clear_value.color[2] = 0;
+		clear_value.color[3] = 1;
+
+		rhi::TextureHandle irradiance_map = device->CreateTexture(irrdiance_tex_desc, &clear_value);
+		command_list->TransitionBarrier(irradiance_map, rhi::ResourceStates::kRenderTarget);
+
+		glm::mat4 views[] =
+		{
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 右 +x
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f,  0.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 左 -x
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f, 0.0f,  -1.0f)),	// 上 +y
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),	// 下 -y
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 前 +z
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 后 -z
+		};
+
+		struct Matrices
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+		};
+
+		Matrices matrices;
+		matrices.projection = glm::perspectiveLH_ZO(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+
+		for (int i = 0; i < 6; ++i)
+		{
+			rhi::RenderTarget render_target;
+			render_target.AttachAttachment(rhi::AttachmentPoint::kColor0, irradiance_map, 0, i, 1);
+
+			command_list->SetRenderTarget(render_target);
+			command_list->SetViewport(render_target.GetViewport());
+			command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+			command_list->ClearTexture(irradiance_map, 0, i, 1, irradiance_map->GetClearValue()->color);
+
+			command_list->SetGraphicsPipeline(GetGraphicsPipeline(s_render_data->irradiance_shader, render_target, s_render_data->cube_vertex_buffer->GetInputLayout()));
+
+			int32_t materix_data_index = s_render_data->irradiance_shader->FindConstantsBufferBindingIndex("cbInput");
+			if (materix_data_index >= 0)
+			{
+				matrices.view = views[i];
+				command_list->SetGraphicsDynamicConstantBuffer(materix_data_index, matrices);
+			}
+
+			auto table = s_render_data->irradiance_shader->FindTextureBindingTable("gEnvironmentMap");
+			if (table)
+			{
+				command_list->SetShaderResourceView(table->index, table->offset, environment_map);
+			}
+
+			for (const auto& sampler_binding_table : s_render_data->irradiance_shader->GetSamplerBindingTables() | std::views::values)
+			{
+				command_list->SetSampler(sampler_binding_table.index, sampler_binding_table.offset, s_render_data->sampler);
+			}
+
+			command_list->SetVertexBuffer(0, s_render_data->cube_vertex_buffer->GetBuffer());
+			command_list->SetIndexBuffer(s_render_data->cube_index_buffer);
+
+			command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
+			command_list->DrawIndexed(36, 1, 0, 0, 0);
+		}
+
+		return irradiance_map;
+	}
+
+	rhi::TextureHandle Renderer::CreatePrefilterMap(rhi::CommandList* command_list, rhi::Texture* enviroment_map)
+	{
+		rhi::Device* device = Application::Get().GetDevice();
+
+		rhi::TextureDesc perfilter_map_desc;
+		perfilter_map_desc.format = rhi::Format::RGBA16_FLOAT;
+		perfilter_map_desc.dimension = rhi::TextureDimension::kTextureCube;
+		perfilter_map_desc.width = 128;
+		perfilter_map_desc.height = 128;
+		perfilter_map_desc.is_render_target = true;
+		perfilter_map_desc.mip_levels = 5;
+		perfilter_map_desc.debug_name = "PrefilterMap";
+
+		rhi::ClearValue clear_value;
+		clear_value.color[0] = 0;
+		clear_value.color[1] = 0;
+		clear_value.color[2] = 0;
+		clear_value.color[3] = 1;
+
+		rhi::TextureHandle perfilter_map = device->CreateTexture(perfilter_map_desc, &clear_value);
+		command_list->TransitionBarrier(perfilter_map, rhi::ResourceStates::kRenderTarget);
+
+		glm::mat4 views[] =
+		{
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 右 +x
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f,  0.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 左 -x
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f, 0.0f,  -1.0f)),	// 上 +y
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),	// 下 -y
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 前 +z
+			glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, 1.0f,  0.0f)),	// 后 -z
+		};
+
+		struct Input
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+			float roughness;
+		};
+
+		Input input;
+		input.projection = glm::perspectiveLH_ZO(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+
+		for (uint32_t mip_level = 0; mip_level < perfilter_map_desc.mip_levels; ++mip_level)
+		{
+			rhi::Viewport viewport;
+			viewport.top_left_x = 0;
+			viewport.top_left_y = 0;
+			viewport.width = 128 >> mip_level;
+			viewport.height = 128 >> mip_level;
+			viewport.min_depth = 0;
+			viewport.max_depth = 1;
+			command_list->SetViewport(viewport);
+			command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
+
+			input.roughness = mip_level / (perfilter_map_desc.mip_levels - 1);
+
+			for (int i = 0; i < 6; ++i)
+			{
+				rhi::RenderTarget render_target;
+				render_target.AttachAttachment(rhi::AttachmentPoint::kColor0, perfilter_map,mip_level,i, 1);
+				command_list->SetRenderTarget(render_target);
+				command_list->ClearTexture(perfilter_map, mip_level, i, 1, perfilter_map->GetClearValue()->color);
+
+				command_list->SetGraphicsPipeline(GetGraphicsPipeline(s_render_data->prefilter_shader, render_target, s_render_data->cube_vertex_buffer->GetInputLayout()));
+
+				int32_t input_data_index = s_render_data->prefilter_shader->FindConstantsBufferBindingIndex("cbInput");
+				if (input_data_index >= 0)
+				{
+					input.view = views[i];
+					command_list->SetGraphicsDynamicConstantBuffer(input_data_index, input);
+				}
+
+				auto table = s_render_data->prefilter_shader->FindTextureBindingTable("gEnvironmentMap");
+				if (table)
+				{
+					command_list->SetShaderResourceView(table->index, table->offset, enviroment_map);
+				}
+
+				for (const auto& sampler_binding_table : s_render_data->prefilter_shader->GetSamplerBindingTables() | std::views::values)
+				{
+					// todo
+					command_list->SetSampler(sampler_binding_table.index, sampler_binding_table.offset, s_render_data->sampler);
+				}
+
+				command_list->SetVertexBuffer(0, s_render_data->cube_vertex_buffer->GetBuffer());
+				command_list->SetIndexBuffer(s_render_data->cube_index_buffer);
+
+				command_list->SetPrimitiveTopology(rhi::PrimitiveTopology::kTriangleList);
+				command_list->DrawIndexed(36, 1, 0, 0, 0);
+			}
+		}
+
+		return perfilter_map;
+	}
+
+	rhi::TextureHandle Renderer::CreateBrdfLutMap(rhi::CommandList* command_list)
+	{
+		rhi::Device* device = Application::Get().GetDevice();
+
+		rhi::TextureDesc brdf_lut_map_desc;
+		brdf_lut_map_desc.format = rhi::Format::RGBA16_FLOAT;
+		brdf_lut_map_desc.dimension = rhi::TextureDimension::kTexture2D;
+		brdf_lut_map_desc.width = 512;
+		brdf_lut_map_desc.height = 512;
+		brdf_lut_map_desc.is_render_target = true;
+		brdf_lut_map_desc.debug_name = "BrdfLut";
+
+		rhi::ClearValue clear_value;
+		clear_value.color[0] = 0;
+		clear_value.color[1] = 0;
+		clear_value.color[2] = 0;
+		clear_value.color[3] = 1;
+
+		rhi::TextureHandle brdf_map = device->CreateTexture(brdf_lut_map_desc, &clear_value);
+
+		rhi::RenderTarget render_target;
+		render_target.AttachAttachment(rhi::AttachmentPoint::kColor0, brdf_map);
+		
+		SetupRenderTarget(command_list, render_target);
+		
+		DrawQuad(command_list, s_render_data->brdf_lut_shader);
+
+		return brdf_map;
+	}
+
 	void Renderer::BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform)
 	{
 		s_scene_data.projection_matrix = camera.GetProjection();
@@ -286,9 +501,25 @@ namespace light
 	void Renderer::BeginRenderPass(rhi::CommandList* command_list, RenderPass* render_pass)
 	{
 		const rhi::RenderTarget& render_target = render_pass->GetResources().render_target;
-
 		SetupRenderTarget(command_list, render_target);
+	}
 
+	void Renderer::EndRenderPass(rhi::CommandList* command_list, RenderPass* render_pass)
+	{
+
+	}
+
+	void Renderer::SetupLight(Light light)
+	{
+		if (s_scene_data.num_light < kMaxLight)
+		{
+			s_scene_data.light[s_scene_data.num_light++] = light;
+		}
+	}
+
+	void Renderer::SetupRenderTarget(rhi::CommandList* command_list, const rhi::RenderTarget& render_target)
+	{
+		command_list->SetRenderTarget(render_target);
 		command_list->SetViewport(render_target.GetViewport());
 		command_list->SetScissorRect({ 0,0,std::numeric_limits<int32_t>::max(),std::numeric_limits<int32_t>::max() });
 
@@ -321,24 +552,7 @@ namespace light
 					texture->GetClearValue()->depth_stencil.depth, texture->GetClearValue()->depth_stencil.stencil);
 			}
 		}
-	}
 
-	void Renderer::EndRenderPass(rhi::CommandList* command_list, RenderPass* render_pass)
-	{
-
-	}
-
-	void Renderer::SetupLight(Light light)
-	{
-		if (s_scene_data.num_light < kMaxLight)
-		{
-			s_scene_data.light[s_scene_data.num_light++] = light;
-		}
-	}
-
-	void Renderer::SetupRenderTarget(rhi::CommandList* command_list, const rhi::RenderTarget& render_target)
-	{
-		command_list->SetRenderTarget(render_target);
 		s_render_data->render_target = render_target;
 	}
 
@@ -489,16 +703,16 @@ namespace light
 	{
 		size_t hash = 0;
 
-		light::HashCombine(hash, (uint64_t)shader->GetCullMode());
+		/*light::HashCombine(hash, (uint64_t)shader->GetCullMode());
 		HashCombine(hash, shader->GetBindResources().size());
 
 		for (auto& bind_resource : shader->GetBindResources())
 		{
 			light::HashCombine(hash, bind_resource);
-		}
+		}*/
 
-		light::HashCombine(hash, render_target);
-
+		HashCombine(hash, shader);
+		HashCombine(hash, render_target);
 		// todo:是否遍历input_layout进行hash?
 		HashCombine(hash, input_layout);
 
