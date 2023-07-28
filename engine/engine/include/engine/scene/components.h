@@ -5,15 +5,14 @@
 #include "engine/scene/scene_camera.h"
 #include "engine/scene/script.h"
 #include "engine/renderer/mesh.h"
-#include "engine/renderer/shader_library.h"
+
 #include "engine/serializer/material_serializer.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/quaternion.hpp"
-
-
+#include "entt/entt.hpp"
 
 namespace light
 {
@@ -57,6 +56,15 @@ namespace light
 		
 	};
 
+	struct RelationshipComponent : public Component
+	{
+		size_t children;
+		entt::entity first = entt::null;
+		entt::entity prev = entt::null;
+		entt::entity next = entt::null;
+		entt::entity parent = entt::null;
+	};
+
 	struct META() SpriteRendererComponent : public Component
 	{
 		glm::vec4 color = { 0.0f,0.0f,0.0f,1.0f };
@@ -66,6 +74,7 @@ namespace light
 		SpriteRendererComponent(const glm::vec4& color)
 			: color(color)
 		{
+
 		}
 	};
 
@@ -105,6 +114,16 @@ namespace light
 		void SerializeText(YAML::Emitter* out);
 
 		void DeserializeText(YAML::Node node);
+	};
+
+	struct META() SkeletalMeshComponent : public MeshComponent
+	{
+		SkeletalMeshComponent() = default;
+
+		// 计算模型的初始全局pose
+		void ComputeGlobalPose();
+
+		std::vector<glm::mat4> bone_global_pose;
 	};
 
 	struct META() LightComponent : public Component

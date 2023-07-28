@@ -54,6 +54,18 @@ namespace light
 
 		bool IsValid() const;
 
+		void SetParent(Entity parent) const;
+
+		void AddChild(Entity child) const;
+
+		void RemoveChild(Entity child) const;
+
+		bool HasParent() const;
+
+		Entity GetChild(size_t index) const;
+
+		size_t GetNumChildren() const;
+
 		bool operator==(const Entity& other) const { return scene_ == other.scene_ && entity_handle_ == other.entity_handle_; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
 

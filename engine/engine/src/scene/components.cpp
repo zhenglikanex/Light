@@ -118,4 +118,10 @@ namespace light
 			materials[i++] = material;
 		}
 	}
+
+	void SkeletalMeshComponent::ComputeGlobalPose()
+	{
+		
+	}
 }
+
