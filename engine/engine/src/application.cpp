@@ -47,7 +47,6 @@ namespace light
 	{
 		running_ = true;
 
-
 		{
 			{
 				meta::TypeData& data = meta::Registry::Get().AddTypeData<glm::vec4>("glm::vec4");
@@ -80,7 +79,6 @@ namespace light
 		}
 
 		RegisterTypesGenerated();
-
 
 		Log::Init();
 
@@ -137,6 +135,8 @@ namespace light
 			imgui_renderer_->Init(device_);
 		}
 
+		render_thread_ = std::thread(&Renderer::RenderLoop);
+
 		AssetManager::Init();
 		Renderer::Init();
 		Renderer2D::Init();
@@ -176,15 +176,26 @@ namespace light
 			auto seconds = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_clock_).count();
 			last_frame_clock_ = now;
 
+			Renderer::WaitRenderCommand();
+
+			Renderer::NextFrame();
+
 			timestep_ = Timestep(seconds);
 
-			imgui_renderer_->BeginFrame();
+			Renderer::Submit([this]()
+				{
+					imgui_renderer_->BeginFrame();
+				});
+			
 
 			layer_stack_.OnUpdate(timestep_, minimized_);
 
-			imgui_renderer_->EndFrame(swap_chain_->GetRenderTarget());
+			Renderer::Submit([this]()
+				{
+					imgui_renderer_->EndFrame(swap_chain_->GetRenderTarget());
+					swap_chain_->Present();
+				});
 
-			swap_chain_->Present();
 
 			window_->OnUpdate();
 

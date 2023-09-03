@@ -6,6 +6,7 @@
 #include "engine/renderer/material.h"
 #include "engine/renderer/render_pass.h"
 #include "engine/renderer/shader_library.h"
+#include "engine/renderer/render_command_stream.h"
 
 #include "engine/rhi/command_list.h"
 #include "engine/rhi/graphics_pipeline.h"
@@ -15,9 +16,14 @@
 
 namespace light
 {
+	class RenderThread;
+
 	class Renderer
 	{
 	public:
+
+		static constexpr uint32_t kNumRenderCommandStreams;
+
 		struct QuadVertex
 		{
 			glm::vec3 position;
@@ -59,6 +65,20 @@ namespace light
 		static void Init();
 		static void Shutdown();
 
+		template<class Func>
+		static void Submit(Func&& func)
+		{
+			GetBackRenderCommandStream().Submit(std::move(func));
+		}
+
+		static void RenderLoop(RenderThread* render_thread);
+
+		static void WaitRenderCommand();
+
+		static void NextFrame();
+
+		static void SwapCommandStream();
+
 		// 设置当前帧统一变量,如相机，光源，环境参数
 		static void BeginScene(rhi::CommandList* command_list,const Camera& camera, const glm::mat4& transform);
 		static void BeginScene(rhi::CommandList* command_list,const EditorCamera& camera);
@@ -88,7 +108,14 @@ namespace light
 
 		static rhi::GraphicsPipelineHandle CreateGraphicsPipeline(const Shader* shader, const rhi::RenderTarget& render_target,size_t vertex_type);
 
+		static RenderCommandStream& GetFrontRenderCommandStream();
+
+		static RenderCommandStream& GetBackRenderCommandStream();
+
 		static SceneData s_scene_data;
 		static RenderData* s_render_data;
+		static RenderCommandStream s_render_command_streams[kNumRenderCommandStreams];
+		static std::atomic<bool> s_is_running;
+		static uint64_t frame_count_;
 	};
 }

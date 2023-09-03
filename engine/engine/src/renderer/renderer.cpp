@@ -5,6 +5,7 @@
 #include "engine/renderer/editor_camera.h"
 #include "engine/renderer/mesh.h"
 #include "engine/core/application.h"
+#include "engine/renderer/render_thread.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -58,6 +59,31 @@ namespace light
 	{
 		delete s_render_data;
 		s_render_data = nullptr;
+	}
+
+	void Renderer::RenderLoop(RenderThread* render_thread)
+	{
+		while(s_is_running)
+		{
+			render_thread->SetStatus(RenderThread::Status::kBusy);
+			GetRenderCommandStream().Execute();
+			render_thread->SetStatus(RenderThread::Status::kIdle);
+		}
+	}
+
+	void Renderer::WaitRenderCommand()
+	{
+
+	}
+
+	void Renderer::NextFrame()
+	{
+		
+	}
+
+	void Renderer::SwapCommandStream()
+	{
+		++frame_count_;
 	}
 
 	void Renderer::BeginScene(rhi::CommandList* command_list, const Camera& camera, const glm::mat4& transform)
@@ -296,5 +322,19 @@ namespace light
 		pso_desc.primitive_type = rhi::PrimitiveTopology::kTriangleList;
 
 		return device->CreateGraphicsPipeline(pso_desc, render_target);
+	}
+
+	RenderCommandStream& Renderer::GetFrontRenderCommandStream()
+	{
+		uint32_t index = frame_count_ % kNumRenderCommandStreams;
+
+		return s_render_command_streams[index];
+	}
+
+	RenderCommandStream& Renderer::GetBackRenderCommandStream()
+	{
+		uint32_t index = (frame_count_ + 1) % kNumRenderCommandStreams;
+
+		return s_render_command_streams[index];
 	}
 }

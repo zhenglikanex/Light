@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <chrono>
+#include <thread>
 
 #include "engine/core/timestep.h"
 
@@ -65,6 +66,7 @@ namespace light
 		rhi::SwapChainHandle swap_chain_;
 		rhi::TextureHandle depth_texture_;
 		std::unique_ptr<rhi::ImGuiRenderer> imgui_renderer_;
+		std::thread render_thread_;
 		LayerStack layer_stack_;
 		ImguiLayer* imgui_layer_;
 		Timestep timestep_;
